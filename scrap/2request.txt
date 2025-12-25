@@ -1,0 +1,74 @@
+{
+    "supported_features": [
+        "MULTIPLE_PROPOSALS",
+        "UNAVAILABLE_PROVIDERS",
+        "PUBLIC_TRANSPORT",
+        "PUBLIC_TRANSPORT_BUY_TICKET",
+        "PREBOOKING_RIDE_SUPPLIER",
+        "PREBOOKING_INTER_MODAL",
+        "INTERMODAL_SECOND_LEG",
+        "GENERIC_PROPOSALS",
+        "NOW_LATER",
+        "AUTONOMOUS_VEHICLE",
+        "THIRD_PARTY",
+        "RECURRING_INTERMODAL"
+    ],
+    "client_details": {
+        "client_state": {
+            "charging": false,
+            "battery_level": 25,
+            "client_ts": 1766614636.2410688
+        },
+        "client_spec": {
+            "client_os_version": "26.3",
+            "device_model": "iPhone16,1",
+            "device_name": "iPhone",
+            "client_os": 0,
+            "device_id": "2C33CDBD-5C95-4F2B-9393-C96A9F142A30",
+            "app_id": "UniversityOfChicagoRider",
+            "client_version": {
+                "major_version": "4.22.9",
+                "minor_version": "8"
+            },
+            "client_type": 0,
+            "app_name": "RideSmart"
+        }
+    },
+    "prescheduled_recurring_series_details": {
+        "recurring_series_type": "OT",
+        "n_passengers": 1,
+        "destination": {
+            "latlng": {
+                "lng": -87.5996863,
+                "lat": 41.7914561
+            },
+            "full_geocoded_addr": "Regenstein/Mansueto Libraries",
+            "geocoded_addr": "Regenstein/Mansueto Libraries"
+        },
+        "origin": {
+            "latlng": {
+                "lng": -87.5908128,
+                "lat": 41.7878692
+            },
+            "full_geocoded_addr": "I-House",
+            "geocoded_addr": "I-House"
+        }
+    },
+    "end_date_timestamp": 1766614636.241024,
+    "whos_asking": {
+        "acct_type": 0,
+        "auth_token": "2|1:0|10:1766613738|4:user|16:MDo6MzkyMjI2Nw==|660589b256fd37343e884f050a9324756e1d11ffede68656a88021f705b5fcb6",
+        "id": 3922267
+    },
+    "sub_services": [
+        "U_Chicago_Safe_Ride"
+    ],
+    "city_id": 783,
+    "rider_service_flag": 0,
+    "id": 0,
+    "mp_session_id": -508397384696823077,
+    "prescheduled_recurring_series_id": 0,
+    "prescheduled_recurring_series_ride_details": {
+        "display_time": []
+    }
+}

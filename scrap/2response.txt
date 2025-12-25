@@ -1,0 +1,2966 @@
+{
+    "header_text": "Select a ride",
+    "proposals": [
+        {
+            "proposal_id": 355846726321240,
+            "ride_info": {
+                "n_passengers": 1,
+                "origin": {
+                    "latlng": {
+                        "lat": 41.7878692,
+                        "lng": -87.5908128
+                    }
+                },
+                "destination": {
+                    "latlng": {
+                        "lat": 41.7914561,
+                        "lng": -87.5996863
+                    }
+                },
+                "pickup": {
+                    "location": {
+                        "short_description": "59th St & Metra",
+                        "latlng": {
+                            "lat": 41.787917,
+                            "lng": -87.588802
+                        },
+                        "description": "59th St & Metra"
+                    },
+                    "eta_ts": 1766615400,
+                    "description_prefix": "Pickup",
+                    "walking_distance_description": "167m",
+                    "walking_distance_in_meters": 167
+                },
+                "dropoff": {
+                    "location": {
+                        "short_description": "Regenstein Library (N)",
+                        "latlng": {
+                            "lat": 41.791467,
+                            "lng": -87.599609
+                        }
+                    },
+                    "eta_ts": 1766615400,
+                    "description_prefix": ""
+                },
+                "ride_cost": 0,
+                "show_price_on_proposal": false,
+                "time_display_type": "PICKUP_ETA",
+                "public_transport_info": {
+                    "line_id": "South",
+                    "alternative_lines": [],
+                    "pickup_station_id": "8658",
+                    "dropoff_station_id": "8633"
+                },
+                "legs_preview": [
+                    {
+                        "type": "walking",
+                        "duration": 2,
+                        "labels": []
+                    },
+                    {
+                        "type": "bus",
+                        "line_id": "South",
+                        "line_color": "#DD550C",
+                        "alternative_lines": [],
+                        "origin_station_code": "",
+                        "origin_station_number": "8658",
+                        "destination_station_code": "",
+                        "destination_station_number": "8633",
+                        "polyline": [
+                            {
+                                "lat": 41.787917,
+                                "lng": -87.588802
+                            },
+                            {
+                                "lat": 41.787874,
+                                "lng": -87.588801
+                            },
+                            {
+                                "lat": 41.78787,
+                                "lng": -87.58905
+                            },
+                            {
+                                "lat": 41.78787,
+                                "lng": -87.58912
+                            },
+                            {
+                                "lat": 41.78786,
+                                "lng": -87.59016
+                            },
+                            {
+                                "lat": 41.78783,
+                                "lng": -87.5915
+                            },
+                            {
+                                "lat": 41.78782,
+                                "lng": -87.59394
+                            },
+                            {
+                                "lat": 41.78781,
+                                "lng": -87.59474
+                            },
+                            {
+                                "lat": 41.7878,
+                                "lng": -87.59592
+                            },
+                            {
+                                "lat": 41.7878,
+                                "lng": -87.59637
+                            },
+                            {
+                                "lat": 41.78812,
+                                "lng": -87.59638
+                            },
+                            {
+                                "lat": 41.78834,
+                                "lng": -87.59638
+                            },
+                            {
+                                "lat": 41.78863,
+                                "lng": -87.59639
+                            },
+                            {
+                                "lat": 41.7891,
+                                "lng": -87.5964
+                            },
+                            {
+                                "lat": 41.789554,
+                                "lng": -87.596409
+                            },
+                            {
+                                "lat": 41.78962,
+                                "lng": -87.59641
+                            },
+                            {
+                                "lat": 41.79045,
+                                "lng": -87.59643
+                            },
+                            {
+                                "lat": 41.79144,
+                                "lng": -87.59645
+                            },
+                            {
+                                "lat": 41.79144,
+                                "lng": -87.59667
+                            },
+                            {
+                                "lat": 41.79143,
+                                "lng": -87.59727
+                            },
+                            {
+                                "lat": 41.79142,
+                                "lng": -87.59807
+                            },
+                            {
+                                "lat": 41.79142,
+                                "lng": -87.59849
+                            },
+                            {
+                                "lat": 41.79141,
+                                "lng": -87.59927
+                            },
+                            {
+                                "lat": 41.791402,
+                                "lng": -87.599606
+                            },
+                            {
+                                "lat": 41.791467,
+                                "lng": -87.599609
+                            }
+                        ],
+                        "stops": [
+                            {
+                                "id": "8658",
+                                "name": "59th St & Metra",
+                                "code": "",
+                                "location": {
+                                    "lat": 41.787917,
+                                    "lng": -87.588802
+                                },
+                                "stop_identifier": {
+                                    "external_id": "8658"
+                                }
+                            },
+                            {
+                                "id": "8652",
+                                "name": "Booth School",
+                                "code": "",
+                                "location": {
+                                    "lat": 41.789555,
+                                    "lng": -87.596358
+                                },
+                                "stop_identifier": {
+                                    "external_id": "8652"
+                                }
+                            },
+                            {
+                                "id": "8633",
+                                "name": "Regenstein Library (N)",
+                                "code": "",
+                                "location": {
+                                    "lat": 41.791467,
+                                    "lng": -87.599609
+                                },
+                                "stop_identifier": {
+                                    "external_id": "8633"
+                                }
+                            }
+                        ],
+                        "labels": [],
+                        "alternative_legs": [
+                            {
+                                "line": {
+                                    "line_id": "1076",
+                                    "color": "#DD550C",
+                                    "short_name": "South",
+                                    "long_name": "South",
+                                    "headsign": "60th St. & Ellis (SE Corner)",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766616300,
+                                    "planned_departure_ts": 1766616300,
+                                    "actual_departure_ts": 1766616300,
+                                    "duration_to_last_stop": 0,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "1076",
+                                    "color": "#DD550C",
+                                    "short_name": "South",
+                                    "long_name": "South",
+                                    "headsign": "60th St. & Ellis (SE Corner)",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766617200,
+                                    "planned_departure_ts": 1766617200,
+                                    "actual_departure_ts": 1766617200,
+                                    "duration_to_last_stop": 0,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "1076",
+                                    "color": "#DD550C",
+                                    "short_name": "South",
+                                    "long_name": "South",
+                                    "headsign": "60th St. & Ellis (SE Corner)",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766618100,
+                                    "planned_departure_ts": 1766618100,
+                                    "actual_departure_ts": 1766618100,
+                                    "duration_to_last_stop": 0,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "1076",
+                                    "color": "#DD550C",
+                                    "short_name": "South",
+                                    "long_name": "South",
+                                    "headsign": "60th St. & Ellis (SE Corner)",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766619000,
+                                    "planned_departure_ts": 1766619000,
+                                    "actual_departure_ts": 1766619000,
+                                    "duration_to_last_stop": 0,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "1076",
+                                    "color": "#DD550C",
+                                    "short_name": "South",
+                                    "long_name": "South",
+                                    "headsign": "60th St. & Ellis (SE Corner)",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766619900,
+                                    "planned_departure_ts": 1766619900,
+                                    "actual_departure_ts": 1766619900,
+                                    "duration_to_last_stop": 0,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "1076",
+                                    "color": "#DD550C",
+                                    "short_name": "South",
+                                    "long_name": "South",
+                                    "headsign": "60th St. & Ellis (SE Corner)",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766620800,
+                                    "planned_departure_ts": 1766620800,
+                                    "actual_departure_ts": 1766620800,
+                                    "duration_to_last_stop": 0,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "1076",
+                                    "color": "#DD550C",
+                                    "short_name": "South",
+                                    "long_name": "South",
+                                    "headsign": "60th St. & Ellis (SE Corner)",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766621700,
+                                    "planned_departure_ts": 1766621700,
+                                    "actual_departure_ts": 1766621700,
+                                    "duration_to_last_stop": 0,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "1076",
+                                    "color": "#DD550C",
+                                    "short_name": "South",
+                                    "long_name": "South",
+                                    "headsign": "60th St. & Ellis (SE Corner)",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766622600,
+                                    "planned_departure_ts": 1766622600,
+                                    "actual_departure_ts": 1766622600,
+                                    "duration_to_last_stop": 0,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "1076",
+                                    "color": "#DD550C",
+                                    "short_name": "South",
+                                    "long_name": "South",
+                                    "headsign": "60th St. & Ellis (SE Corner)",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766623500,
+                                    "planned_departure_ts": 1766623500,
+                                    "actual_departure_ts": 1766623500,
+                                    "duration_to_last_stop": 0,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "1076",
+                                    "color": "#DD550C",
+                                    "short_name": "South",
+                                    "long_name": "South",
+                                    "headsign": "60th St. & Ellis (SE Corner)",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766624400,
+                                    "planned_departure_ts": 1766624400,
+                                    "actual_departure_ts": 1766624400,
+                                    "duration_to_last_stop": 0,
+                                    "timezone": "America/Chicago"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "type": "walking",
+                        "duration": 0,
+                        "labels": []
+                    }
+                ],
+                "recurring_series_type": "OT"
+            },
+            "is_qr_badge_displayed": false,
+            "type": "multi_leg_public_transportation",
+            "ride_category_label": "South",
+            "currency": "$",
+            "ride_supplier": 6,
+            "proposal_type": 0,
+            "dropoff_eta_info": {
+                "dropoff_eta_texts": [
+                    {
+                        "name": "avg_dropoff_eta",
+                        "text": "None"
+                    }
+                ]
+            },
+            "proposal_uuid": "d1512d38-83fb-4d2a-94b0-e3b15319400e",
+            "network_planner_proposal_uuid": "d1512d38-83fb-4d2a-94b0-e3b15319400e",
+            "prescheduled_recurring_series_id": 430343901,
+            "show_public_transport_wfr": false,
+            "call_to_action_button_text": "Show route",
+            "can_show_route": true,
+            "trip_id": "b7f46a31-8370-4e30-8b07-e8044bfc8ba3"
+        },
+        {
+            "proposal_id": 355853570114648,
+            "ride_info": {
+                "n_passengers": 1,
+                "origin": {
+                    "latlng": {
+                        "lat": 41.7878692,
+                        "lng": -87.5908128
+                    }
+                },
+                "destination": {
+                    "latlng": {
+                        "lat": 41.7914561,
+                        "lng": -87.5996863
+                    }
+                },
+                "pickup": {
+                    "location": {
+                        "short_description": "International House",
+                        "latlng": {
+                            "lat": 41.78792,
+                            "lng": -87.590881
+                        },
+                        "description": "International House"
+                    },
+                    "eta_ts": 1766615400,
+                    "description_prefix": "Pickup",
+                    "walking_distance_description": "12m",
+                    "walking_distance_in_meters": 12
+                },
+                "dropoff": {
+                    "location": {
+                        "short_description": "Max Palevsky Residential Commons (NE Corner)",
+                        "latlng": {
+                            "lat": 41.793129,
+                            "lng": -87.601288
+                        }
+                    },
+                    "eta_ts": 1766615400,
+                    "description_prefix": ""
+                },
+                "ride_cost": 0,
+                "show_price_on_proposal": false,
+                "time_display_type": "PICKUP_ETA",
+                "public_transport_info": {
+                    "line_id": "CEN",
+                    "alternative_lines": [],
+                    "pickup_station_id": "9593",
+                    "dropoff_station_id": "8634"
+                },
+                "legs_preview": [
+                    {
+                        "type": "walking",
+                        "duration": 0,
+                        "labels": []
+                    },
+                    {
+                        "type": "bus",
+                        "line_id": "CEN",
+                        "line_color": "#FF9900",
+                        "alternative_lines": [],
+                        "origin_station_code": "",
+                        "origin_station_number": "9593",
+                        "destination_station_code": "",
+                        "destination_station_number": "8634",
+                        "polyline": [
+                            {
+                                "lat": 41.78792,
+                                "lng": -87.590881
+                            },
+                            {
+                                "lat": 41.787862,
+                                "lng": -87.59088
+                            },
+                            {
+                                "lat": 41.78786,
+                                "lng": -87.59115
+                            },
+                            {
+                                "lat": 41.78786,
+                                "lng": -87.59154
+                            },
+                            {
+                                "lat": 41.78625,
+                                "lng": -87.5915
+                            },
+                            {
+                                "lat": 41.78608,
+                                "lng": -87.5915
+                            },
+                            {
+                                "lat": 41.78607,
+                                "lng": -87.59192
+                            },
+                            {
+                                "lat": 41.78606,
+                                "lng": -87.59309
+                            },
+                            {
+                                "lat": 41.78605,
+                                "lng": -87.59391
+                            },
+                            {
+                                "lat": 41.78605,
+                                "lng": -87.594054
+                            },
+                            {
+                                "lat": 41.78605,
+                                "lng": -87.5947
+                            },
+                            {
+                                "lat": 41.78604,
+                                "lng": -87.59487
+                            },
+                            {
+                                "lat": 41.78603,
+                                "lng": -87.59608
+                            },
+                            {
+                                "lat": 41.786,
+                                "lng": -87.59632
+                            },
+                            {
+                                "lat": 41.78597,
+                                "lng": -87.5966
+                            },
+                            {
+                                "lat": 41.78595,
+                                "lng": -87.59795
+                            },
+                            {
+                                "lat": 41.78594,
+                                "lng": -87.59884
+                            },
+                            {
+                                "lat": 41.78593,
+                                "lng": -87.59928
+                            },
+                            {
+                                "lat": 41.78593,
+                                "lng": -87.5997
+                            },
+                            {
+                                "lat": 41.78593,
+                                "lng": -87.59995
+                            },
+                            {
+                                "lat": 41.785904,
+                                "lng": -87.60102
+                            },
+                            {
+                                "lat": 41.7859,
+                                "lng": -87.60117
+                            },
+                            {
+                                "lat": 41.78646,
+                                "lng": -87.6012
+                            },
+                            {
+                                "lat": 41.78663,
+                                "lng": -87.6012
+                            },
+                            {
+                                "lat": 41.78717,
+                                "lng": -87.60121
+                            },
+                            {
+                                "lat": 41.78729,
+                                "lng": -87.60121
+                            },
+                            {
+                                "lat": 41.78763,
+                                "lng": -87.60122
+                            },
+                            {
+                                "lat": 41.78775,
+                                "lng": -87.60122
+                            },
+                            {
+                                "lat": 41.78878,
+                                "lng": -87.60124
+                            },
+                            {
+                                "lat": 41.78923,
+                                "lng": -87.60125
+                            },
+                            {
+                                "lat": 41.789496,
+                                "lng": -87.601258
+                            },
+                            {
+                                "lat": 41.78989,
+                                "lng": -87.60127
+                            },
+                            {
+                                "lat": 41.79024,
+                                "lng": -87.60127
+                            },
+                            {
+                                "lat": 41.79061,
+                                "lng": -87.60128
+                            },
+                            {
+                                "lat": 41.79139,
+                                "lng": -87.6013
+                            },
+                            {
+                                "lat": 41.79291,
+                                "lng": -87.60131
+                            },
+                            {
+                                "lat": 41.793128,
+                                "lng": -87.601317
+                            },
+                            {
+                                "lat": 41.793129,
+                                "lng": -87.601288
+                            }
+                        ],
+                        "stops": [
+                            {
+                                "id": "9593",
+                                "name": "International House",
+                                "code": "",
+                                "location": {
+                                    "lat": 41.78792,
+                                    "lng": -87.590881
+                                },
+                                "stop_identifier": {
+                                    "external_id": "9593"
+                                }
+                            },
+                            {
+                                "id": "8584",
+                                "name": "Keller Center WB",
+                                "code": "",
+                                "location": {
+                                    "lat": 41.786109,
+                                    "lng": -87.594054
+                                },
+                                "stop_identifier": {
+                                    "external_id": "8584"
+                                }
+                            },
+                            {
+                                "id": "8644",
+                                "name": "Burton-Judson Courts (NE Corner)",
+                                "code": "",
+                                "location": {
+                                    "lat": 41.785991,
+                                    "lng": -87.601024
+                                },
+                                "stop_identifier": {
+                                    "external_id": "8644"
+                                }
+                            },
+                            {
+                                "id": "8597",
+                                "name": "Levi Hall (E)",
+                                "code": "",
+                                "location": {
+                                    "lat": 41.789497,
+                                    "lng": -87.601204
+                                },
+                                "stop_identifier": {
+                                    "external_id": "8597"
+                                }
+                            },
+                            {
+                                "id": "8634",
+                                "name": "Max Palevsky Residential Commons (NE Corner)",
+                                "code": "",
+                                "location": {
+                                    "lat": 41.793129,
+                                    "lng": -87.601288
+                                },
+                                "stop_identifier": {
+                                    "external_id": "8634"
+                                }
+                            }
+                        ],
+                        "labels": [],
+                        "alternative_legs": [
+                            {
+                                "line": {
+                                    "line_id": "1078",
+                                    "color": "#FF9900",
+                                    "short_name": "CEN",
+                                    "long_name": "Central",
+                                    "headsign": "Reynolds Club",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766616300,
+                                    "planned_departure_ts": 1766616300,
+                                    "actual_departure_ts": 1766616300,
+                                    "duration_to_last_stop": 0,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "1078",
+                                    "color": "#FF9900",
+                                    "short_name": "CEN",
+                                    "long_name": "Central",
+                                    "headsign": "Reynolds Club",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766617200,
+                                    "planned_departure_ts": 1766617200,
+                                    "actual_departure_ts": 1766617200,
+                                    "duration_to_last_stop": 0,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "1078",
+                                    "color": "#FF9900",
+                                    "short_name": "CEN",
+                                    "long_name": "Central",
+                                    "headsign": "Reynolds Club",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766618100,
+                                    "planned_departure_ts": 1766618100,
+                                    "actual_departure_ts": 1766618100,
+                                    "duration_to_last_stop": 0,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "1078",
+                                    "color": "#FF9900",
+                                    "short_name": "CEN",
+                                    "long_name": "Central",
+                                    "headsign": "Reynolds Club",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766619000,
+                                    "planned_departure_ts": 1766619000,
+                                    "actual_departure_ts": 1766619000,
+                                    "duration_to_last_stop": 0,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "1078",
+                                    "color": "#FF9900",
+                                    "short_name": "CEN",
+                                    "long_name": "Central",
+                                    "headsign": "Reynolds Club",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766619900,
+                                    "planned_departure_ts": 1766619900,
+                                    "actual_departure_ts": 1766619900,
+                                    "duration_to_last_stop": 0,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "1078",
+                                    "color": "#FF9900",
+                                    "short_name": "CEN",
+                                    "long_name": "Central",
+                                    "headsign": "Reynolds Club",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766620800,
+                                    "planned_departure_ts": 1766620800,
+                                    "actual_departure_ts": 1766620800,
+                                    "duration_to_last_stop": 0,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "1078",
+                                    "color": "#FF9900",
+                                    "short_name": "CEN",
+                                    "long_name": "Central",
+                                    "headsign": "Reynolds Club",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766621700,
+                                    "planned_departure_ts": 1766621700,
+                                    "actual_departure_ts": 1766621700,
+                                    "duration_to_last_stop": 0,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "1078",
+                                    "color": "#FF9900",
+                                    "short_name": "CEN",
+                                    "long_name": "Central",
+                                    "headsign": "Reynolds Club",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766622600,
+                                    "planned_departure_ts": 1766622600,
+                                    "actual_departure_ts": 1766622600,
+                                    "duration_to_last_stop": 0,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "1078",
+                                    "color": "#FF9900",
+                                    "short_name": "CEN",
+                                    "long_name": "Central",
+                                    "headsign": "Reynolds Club",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766623500,
+                                    "planned_departure_ts": 1766623500,
+                                    "actual_departure_ts": 1766623500,
+                                    "duration_to_last_stop": 0,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "1078",
+                                    "color": "#FF9900",
+                                    "short_name": "CEN",
+                                    "long_name": "Central",
+                                    "headsign": "Reynolds Club",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766624400,
+                                    "planned_departure_ts": 1766624400,
+                                    "actual_departure_ts": 1766624400,
+                                    "duration_to_last_stop": 0,
+                                    "timezone": "America/Chicago"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "type": "walking",
+                        "duration": 3,
+                        "labels": []
+                    }
+                ],
+                "recurring_series_type": "OT"
+            },
+            "is_qr_badge_displayed": false,
+            "type": "multi_leg_public_transportation",
+            "ride_category_label": "CEN",
+            "currency": "$",
+            "ride_supplier": 6,
+            "proposal_type": 0,
+            "dropoff_eta_info": {
+                "dropoff_eta_texts": [
+                    {
+                        "name": "avg_dropoff_eta",
+                        "text": "None"
+                    }
+                ]
+            },
+            "proposal_uuid": "1bd8aa23-0eec-49f8-9474-ba1c91ab02f9",
+            "network_planner_proposal_uuid": "1bd8aa23-0eec-49f8-9474-ba1c91ab02f9",
+            "prescheduled_recurring_series_id": 430343901,
+            "show_public_transport_wfr": false,
+            "call_to_action_button_text": "Show route",
+            "can_show_route": true,
+            "trip_id": "b7f46a31-8370-4e30-8b07-e8044bfc8ba3"
+        },
+        {
+            "proposal_id": 355861433123928,
+            "ride_info": {
+                "n_passengers": 1,
+                "origin": {
+                    "latlng": {
+                        "lat": 41.7878692,
+                        "lng": -87.5908128
+                    }
+                },
+                "destination": {
+                    "latlng": {
+                        "lat": 41.7914561,
+                        "lng": -87.5996863
+                    }
+                },
+                "pickup": {
+                    "location": {
+                        "short_description": "Dorchester & 60th Street",
+                        "latlng": {
+                            "lat": 41.786243,
+                            "lng": -87.591404
+                        },
+                        "description": "Dorchester & 60th Street"
+                    },
+                    "eta_ts": 1766615789,
+                    "description_prefix": "Pickup",
+                    "walking_distance_description": "243m",
+                    "walking_distance_in_meters": 243
+                },
+                "dropoff": {
+                    "location": {
+                        "short_description": "University & 57th Street",
+                        "latlng": {
+                            "lat": 41.79134,
+                            "lng": -87.598015
+                        }
+                    },
+                    "eta_ts": 1766615955,
+                    "description_prefix": ""
+                },
+                "ride_cost": 0,
+                "duration": "2 min",
+                "show_price_on_proposal": false,
+                "time_display_type": "PICKUP_ETA",
+                "public_transport_info": {
+                    "line_id": "171",
+                    "alternative_lines": [],
+                    "pickup_station_id": "17423",
+                    "dropoff_station_id": "16036"
+                },
+                "legs_preview": [
+                    {
+                        "type": "walking",
+                        "duration": 2,
+                        "labels": []
+                    },
+                    {
+                        "type": "bus",
+                        "line_id": "171",
+                        "line_color": "#b71234",
+                        "alternative_lines": [],
+                        "origin_station_code": "",
+                        "origin_station_number": "17423",
+                        "destination_station_code": "",
+                        "destination_station_number": "16036",
+                        "polyline": [
+                            {
+                                "lat": 41.786243,
+                                "lng": -87.591404
+                            },
+                            {
+                                "lat": 41.78616,
+                                "lng": -87.59148
+                            },
+                            {
+                                "lat": 41.78633,
+                                "lng": -87.59148
+                            },
+                            {
+                                "lat": 41.786327,
+                                "lng": -87.591418
+                            },
+                            {
+                                "lat": 41.78633,
+                                "lng": -87.59148
+                            },
+                            {
+                                "lat": 41.78644,
+                                "lng": -87.59148
+                            },
+                            {
+                                "lat": 41.78655,
+                                "lng": -87.59149
+                            },
+                            {
+                                "lat": 41.78669,
+                                "lng": -87.59149
+                            },
+                            {
+                                "lat": 41.786835,
+                                "lng": -87.591492
+                            },
+                            {
+                                "lat": 41.78698,
+                                "lng": -87.591495
+                            },
+                            {
+                                "lat": 41.787125,
+                                "lng": -87.591497
+                            },
+                            {
+                                "lat": 41.78727,
+                                "lng": -87.5915
+                            },
+                            {
+                                "lat": 41.78742,
+                                "lng": -87.5915
+                            },
+                            {
+                                "lat": 41.787575,
+                                "lng": -87.591505
+                            },
+                            {
+                                "lat": 41.78773,
+                                "lng": -87.59151
+                            },
+                            {
+                                "lat": 41.78784,
+                                "lng": -87.59151
+                            },
+                            {
+                                "lat": 41.78784,
+                                "lng": -87.59169
+                            },
+                            {
+                                "lat": 41.787839,
+                                "lng": -87.591856
+                            },
+                            {
+                                "lat": 41.787838,
+                                "lng": -87.592023
+                            },
+                            {
+                                "lat": 41.787836,
+                                "lng": -87.592189
+                            },
+                            {
+                                "lat": 41.787835,
+                                "lng": -87.592355
+                            },
+                            {
+                                "lat": 41.787834,
+                                "lng": -87.592521
+                            },
+                            {
+                                "lat": 41.787833,
+                                "lng": -87.592688
+                            },
+                            {
+                                "lat": 41.787831,
+                                "lng": -87.592854
+                            },
+                            {
+                                "lat": 41.78783,
+                                "lng": -87.59302
+                            },
+                            {
+                                "lat": 41.78783,
+                                "lng": -87.59317
+                            },
+                            {
+                                "lat": 41.78783,
+                                "lng": -87.59326
+                            },
+                            {
+                                "lat": 41.787825,
+                                "lng": -87.59343
+                            },
+                            {
+                                "lat": 41.78783,
+                                "lng": -87.593685
+                            },
+                            {
+                                "lat": 41.78783,
+                                "lng": -87.59394
+                            },
+                            {
+                                "lat": 41.787828,
+                                "lng": -87.594093
+                            },
+                            {
+                                "lat": 41.787825,
+                                "lng": -87.594245
+                            },
+                            {
+                                "lat": 41.787823,
+                                "lng": -87.594398
+                            },
+                            {
+                                "lat": 41.787821,
+                                "lng": -87.594504
+                            },
+                            {
+                                "lat": 41.78782,
+                                "lng": -87.59455
+                            },
+                            {
+                                "lat": 41.787871,
+                                "lng": -87.594547
+                            },
+                            {
+                                "lat": 41.78782,
+                                "lng": -87.59455
+                            },
+                            {
+                                "lat": 41.78782,
+                                "lng": -87.59465
+                            },
+                            {
+                                "lat": 41.78782,
+                                "lng": -87.59476
+                            },
+                            {
+                                "lat": 41.78782,
+                                "lng": -87.59487
+                            },
+                            {
+                                "lat": 41.78782,
+                                "lng": -87.595025
+                            },
+                            {
+                                "lat": 41.78782,
+                                "lng": -87.59518
+                            },
+                            {
+                                "lat": 41.787818,
+                                "lng": -87.595428
+                            },
+                            {
+                                "lat": 41.787815,
+                                "lng": -87.595675
+                            },
+                            {
+                                "lat": 41.787813,
+                                "lng": -87.595923
+                            },
+                            {
+                                "lat": 41.78781,
+                                "lng": -87.59617
+                            },
+                            {
+                                "lat": 41.78781,
+                                "lng": -87.59624
+                            },
+                            {
+                                "lat": 41.78781,
+                                "lng": -87.59626
+                            },
+                            {
+                                "lat": 41.7878,
+                                "lng": -87.59638
+                            },
+                            {
+                                "lat": 41.7878,
+                                "lng": -87.59649
+                            },
+                            {
+                                "lat": 41.7878,
+                                "lng": -87.5965
+                            },
+                            {
+                                "lat": 41.7878,
+                                "lng": -87.59652
+                            },
+                            {
+                                "lat": 41.7878,
+                                "lng": -87.59665
+                            },
+                            {
+                                "lat": 41.7878,
+                                "lng": -87.59678
+                            },
+                            {
+                                "lat": 41.7878,
+                                "lng": -87.59691
+                            },
+                            {
+                                "lat": 41.7878,
+                                "lng": -87.59704
+                            },
+                            {
+                                "lat": 41.787798,
+                                "lng": -87.597245
+                            },
+                            {
+                                "lat": 41.787795,
+                                "lng": -87.59745
+                            },
+                            {
+                                "lat": 41.787793,
+                                "lng": -87.597655
+                            },
+                            {
+                                "lat": 41.78779,
+                                "lng": -87.59786
+                            },
+                            {
+                                "lat": 41.78778,
+                                "lng": -87.59795
+                            },
+                            {
+                                "lat": 41.78777,
+                                "lng": -87.59801
+                            },
+                            {
+                                "lat": 41.78785,
+                                "lng": -87.59799
+                            },
+                            {
+                                "lat": 41.787985,
+                                "lng": -87.597995
+                            },
+                            {
+                                "lat": 41.78812,
+                                "lng": -87.598
+                            },
+                            {
+                                "lat": 41.788255,
+                                "lng": -87.598005
+                            },
+                            {
+                                "lat": 41.78839,
+                                "lng": -87.59801
+                            },
+                            {
+                                "lat": 41.7885,
+                                "lng": -87.59801
+                            },
+                            {
+                                "lat": 41.78863,
+                                "lng": -87.598012
+                            },
+                            {
+                                "lat": 41.78876,
+                                "lng": -87.598015
+                            },
+                            {
+                                "lat": 41.78889,
+                                "lng": -87.598017
+                            },
+                            {
+                                "lat": 41.78902,
+                                "lng": -87.59802
+                            },
+                            {
+                                "lat": 41.78916,
+                                "lng": -87.59803
+                            },
+                            {
+                                "lat": 41.78926,
+                                "lng": -87.59803
+                            },
+                            {
+                                "lat": 41.78936,
+                                "lng": -87.59803
+                            },
+                            {
+                                "lat": 41.78947,
+                                "lng": -87.59803
+                            },
+                            {
+                                "lat": 41.78959,
+                                "lng": -87.59804
+                            },
+                            {
+                                "lat": 41.78967,
+                                "lng": -87.59804
+                            },
+                            {
+                                "lat": 41.789768,
+                                "lng": -87.598042
+                            },
+                            {
+                                "lat": 41.789865,
+                                "lng": -87.598045
+                            },
+                            {
+                                "lat": 41.789963,
+                                "lng": -87.598047
+                            },
+                            {
+                                "lat": 41.79006,
+                                "lng": -87.59805
+                            },
+                            {
+                                "lat": 41.790168,
+                                "lng": -87.598052
+                            },
+                            {
+                                "lat": 41.790275,
+                                "lng": -87.598055
+                            },
+                            {
+                                "lat": 41.790383,
+                                "lng": -87.598057
+                            },
+                            {
+                                "lat": 41.79049,
+                                "lng": -87.59806
+                            },
+                            {
+                                "lat": 41.79068,
+                                "lng": -87.59806
+                            },
+                            {
+                                "lat": 41.790783,
+                                "lng": -87.598062
+                            },
+                            {
+                                "lat": 41.790885,
+                                "lng": -87.598065
+                            },
+                            {
+                                "lat": 41.790988,
+                                "lng": -87.598067
+                            },
+                            {
+                                "lat": 41.79109,
+                                "lng": -87.59807
+                            },
+                            {
+                                "lat": 41.791195,
+                                "lng": -87.598075
+                            },
+                            {
+                                "lat": 41.79133,
+                                "lng": -87.59808
+                            },
+                            {
+                                "lat": 41.79134,
+                                "lng": -87.598015
+                            }
+                        ],
+                        "stops": [
+                            {
+                                "id": "17423",
+                                "name": "Dorchester & 60th Street",
+                                "code": "",
+                                "location": {
+                                    "lat": 41.786243,
+                                    "lng": -87.591404
+                                },
+                                "stop_identifier": {
+                                    "external_id": "17423"
+                                }
+                            },
+                            {
+                                "id": "13197",
+                                "name": "59th Street & Kimbark",
+                                "code": "",
+                                "location": {
+                                    "lat": 41.787879,
+                                    "lng": -87.594506
+                                },
+                                "stop_identifier": {
+                                    "external_id": "13197"
+                                }
+                            },
+                            {
+                                "id": "16036",
+                                "name": "University & 57th Street",
+                                "code": "",
+                                "location": {
+                                    "lat": 41.79134,
+                                    "lng": -87.598015
+                                },
+                                "stop_identifier": {
+                                    "external_id": "16036"
+                                }
+                            }
+                        ],
+                        "labels": [],
+                        "alternative_legs": [
+                            {
+                                "line": {
+                                    "line_id": "171",
+                                    "color": "#b71234",
+                                    "short_name": "171",
+                                    "long_name": "U. of Chicago/Hyde Park",
+                                    "headsign": "Shoreland Dorm",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766616855,
+                                    "planned_departure_ts": 1766616689,
+                                    "actual_departure_ts": 1766616689,
+                                    "duration_to_last_stop": 166,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "171",
+                                    "color": "#b71234",
+                                    "short_name": "171",
+                                    "long_name": "U. of Chicago/Hyde Park",
+                                    "headsign": "Shoreland Dorm",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766617755,
+                                    "planned_departure_ts": 1766617589,
+                                    "actual_departure_ts": 1766617589,
+                                    "duration_to_last_stop": 166,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "171",
+                                    "color": "#b71234",
+                                    "short_name": "171",
+                                    "long_name": "U. of Chicago/Hyde Park",
+                                    "headsign": "Shoreland Dorm",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766618655,
+                                    "planned_departure_ts": 1766618489,
+                                    "actual_departure_ts": 1766618489,
+                                    "duration_to_last_stop": 166,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "171",
+                                    "color": "#b71234",
+                                    "short_name": "171",
+                                    "long_name": "U. of Chicago/Hyde Park",
+                                    "headsign": "Shoreland Dorm",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766619555,
+                                    "planned_departure_ts": 1766619389,
+                                    "actual_departure_ts": 1766619389,
+                                    "duration_to_last_stop": 166,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "171",
+                                    "color": "#b71234",
+                                    "short_name": "171",
+                                    "long_name": "U. of Chicago/Hyde Park",
+                                    "headsign": "Shoreland Dorm",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766620455,
+                                    "planned_departure_ts": 1766620289,
+                                    "actual_departure_ts": 1766620289,
+                                    "duration_to_last_stop": 166,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "171",
+                                    "color": "#b71234",
+                                    "short_name": "171",
+                                    "long_name": "U. of Chicago/Hyde Park",
+                                    "headsign": "Shoreland Dorm",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766621355,
+                                    "planned_departure_ts": 1766621189,
+                                    "actual_departure_ts": 1766621189,
+                                    "duration_to_last_stop": 166,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "171",
+                                    "color": "#b71234",
+                                    "short_name": "171",
+                                    "long_name": "U. of Chicago/Hyde Park",
+                                    "headsign": "Shoreland Dorm",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766622255,
+                                    "planned_departure_ts": 1766622089,
+                                    "actual_departure_ts": 1766622089,
+                                    "duration_to_last_stop": 166,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "171",
+                                    "color": "#b71234",
+                                    "short_name": "171",
+                                    "long_name": "U. of Chicago/Hyde Park",
+                                    "headsign": "Shoreland Dorm",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766624175,
+                                    "planned_departure_ts": 1766624009,
+                                    "actual_departure_ts": 1766624009,
+                                    "duration_to_last_stop": 166,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "171",
+                                    "color": "#b71234",
+                                    "short_name": "171",
+                                    "long_name": "U. of Chicago/Hyde Park",
+                                    "headsign": "Shoreland Dorm",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766626455,
+                                    "planned_departure_ts": 1766626289,
+                                    "actual_departure_ts": 1766626289,
+                                    "duration_to_last_stop": 166,
+                                    "timezone": "America/Chicago"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "type": "walking",
+                        "duration": 1,
+                        "labels": []
+                    }
+                ],
+                "recurring_series_type": "OT"
+            },
+            "is_qr_badge_displayed": false,
+            "type": "multi_leg_public_transportation",
+            "ride_category_label": "171",
+            "currency": "$",
+            "ride_supplier": 6,
+            "proposal_type": 0,
+            "dropoff_eta_info": {
+                "dropoff_eta_texts": [
+                    {
+                        "name": "avg_dropoff_eta",
+                        "text": "None"
+                    }
+                ]
+            },
+            "proposal_uuid": "40b2a095-163a-45eb-8b87-5daca8285520",
+            "network_planner_proposal_uuid": "40b2a095-163a-45eb-8b87-5daca8285520",
+            "prescheduled_recurring_series_id": 430343901,
+            "show_public_transport_wfr": false,
+            "call_to_action_button_text": "Show route",
+            "can_show_route": true,
+            "trip_id": "b7f46a31-8370-4e30-8b07-e8044bfc8ba3"
+        },
+        {
+            "proposal_id": 355869527868504,
+            "ride_info": {
+                "n_passengers": 1,
+                "origin": {
+                    "latlng": {
+                        "lat": 41.7878692,
+                        "lng": -87.5908128
+                    }
+                },
+                "destination": {
+                    "latlng": {
+                        "lat": 41.7914561,
+                        "lng": -87.5996863
+                    }
+                },
+                "pickup": {
+                    "location": {
+                        "short_description": "59th St & Metra",
+                        "latlng": {
+                            "lat": 41.787917,
+                            "lng": -87.588802
+                        },
+                        "description": "59th St & Metra"
+                    },
+                    "eta_ts": 1766615400,
+                    "description_prefix": "Pickup",
+                    "walking_distance_description": "167m",
+                    "walking_distance_in_meters": 167
+                },
+                "dropoff": {
+                    "location": {
+                        "short_description": "59th & Ellis",
+                        "latlng": {
+                            "lat": 41.787782,
+                            "lng": -87.60105
+                        }
+                    },
+                    "eta_ts": 1766615400,
+                    "description_prefix": ""
+                },
+                "ride_cost": 0,
+                "show_price_on_proposal": false,
+                "time_display_type": "PICKUP_ETA",
+                "public_transport_info": {
+                    "line_id": "MM",
+                    "alternative_lines": [],
+                    "pickup_station_id": "8658",
+                    "dropoff_station_id": "8654"
+                },
+                "legs_preview": [
+                    {
+                        "type": "walking",
+                        "duration": 2,
+                        "labels": []
+                    },
+                    {
+                        "type": "bus",
+                        "line_id": "MM",
+                        "line_color": "#008080",
+                        "alternative_lines": [],
+                        "origin_station_code": "",
+                        "origin_station_number": "8658",
+                        "destination_station_code": "",
+                        "destination_station_number": "8654",
+                        "polyline": [
+                            {
+                                "lat": 41.787917,
+                                "lng": -87.588802
+                            },
+                            {
+                                "lat": 41.787881,
+                                "lng": -87.588801
+                            },
+                            {
+                                "lat": 41.787879,
+                                "lng": -87.589037
+                            },
+                            {
+                                "lat": 41.787878,
+                                "lng": -87.589121
+                            },
+                            {
+                                "lat": 41.787876,
+                                "lng": -87.589252
+                            },
+                            {
+                                "lat": 41.787874,
+                                "lng": -87.589444
+                            },
+                            {
+                                "lat": 41.787864,
+                                "lng": -87.590086
+                            },
+                            {
+                                "lat": 41.787863,
+                                "lng": -87.590165
+                            },
+                            {
+                                "lat": 41.787863,
+                                "lng": -87.590281
+                            },
+                            {
+                                "lat": 41.787857,
+                                "lng": -87.591404
+                            },
+                            {
+                                "lat": 41.787857,
+                                "lng": -87.591512
+                            },
+                            {
+                                "lat": 41.787856,
+                                "lng": -87.591628
+                            },
+                            {
+                                "lat": 41.787829,
+                                "lng": -87.593947
+                            },
+                            {
+                                "lat": 41.787824,
+                                "lng": -87.594352
+                            },
+                            {
+                                "lat": 41.787822,
+                                "lng": -87.594508
+                            },
+                            {
+                                "lat": 41.787819,
+                                "lng": -87.594746
+                            },
+                            {
+                                "lat": 41.787802,
+                                "lng": -87.596273
+                            },
+                            {
+                                "lat": 41.787801,
+                                "lng": -87.596376
+                            },
+                            {
+                                "lat": 41.787799,
+                                "lng": -87.596485
+                            },
+                            {
+                                "lat": 41.78778,
+                                "lng": -87.597993
+                            },
+                            {
+                                "lat": 41.787779,
+                                "lng": -87.598081
+                            },
+                            {
+                                "lat": 41.787774,
+                                "lng": -87.598552
+                            },
+                            {
+                                "lat": 41.787764,
+                                "lng": -87.599608
+                            },
+                            {
+                                "lat": 41.787753,
+                                "lng": -87.600646
+                            },
+                            {
+                                "lat": 41.787749,
+                                "lng": -87.601039
+                            },
+                            {
+                                "lat": 41.787782,
+                                "lng": -87.60105
+                            }
+                        ],
+                        "stops": [
+                            {
+                                "id": "8658",
+                                "name": "59th St & Metra",
+                                "code": "",
+                                "location": {
+                                    "lat": 41.787917,
+                                    "lng": -87.588802
+                                },
+                                "stop_identifier": {
+                                    "external_id": "8658"
+                                }
+                            },
+                            {
+                                "id": "8607",
+                                "name": "59th St & Kimbark / Lab School",
+                                "code": "",
+                                "location": {
+                                    "lat": 41.787858,
+                                    "lng": -87.594509
+                                },
+                                "stop_identifier": {
+                                    "external_id": "8607"
+                                }
+                            },
+                            {
+                                "id": "8654",
+                                "name": "59th & Ellis",
+                                "code": "",
+                                "location": {
+                                    "lat": 41.787782,
+                                    "lng": -87.60105
+                                },
+                                "stop_identifier": {
+                                    "external_id": "8654"
+                                }
+                            }
+                        ],
+                        "labels": [],
+                        "alternative_legs": [
+                            {
+                                "line": {
+                                    "line_id": "5703",
+                                    "color": "#008080",
+                                    "short_name": "MM",
+                                    "long_name": "Midway Metra",
+                                    "headsign": "Goldblatt Pavilion",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766616000,
+                                    "planned_departure_ts": 1766616000,
+                                    "actual_departure_ts": 1766616000,
+                                    "duration_to_last_stop": 0,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "5703",
+                                    "color": "#008080",
+                                    "short_name": "MM",
+                                    "long_name": "Midway Metra",
+                                    "headsign": "Goldblatt Pavilion",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766616600,
+                                    "planned_departure_ts": 1766616600,
+                                    "actual_departure_ts": 1766616600,
+                                    "duration_to_last_stop": 0,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "5703",
+                                    "color": "#008080",
+                                    "short_name": "MM",
+                                    "long_name": "Midway Metra",
+                                    "headsign": "Goldblatt Pavilion",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766617200,
+                                    "planned_departure_ts": 1766617200,
+                                    "actual_departure_ts": 1766617200,
+                                    "duration_to_last_stop": 0,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "5703",
+                                    "color": "#008080",
+                                    "short_name": "MM",
+                                    "long_name": "Midway Metra",
+                                    "headsign": "Goldblatt Pavilion",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766617800,
+                                    "planned_departure_ts": 1766617800,
+                                    "actual_departure_ts": 1766617800,
+                                    "duration_to_last_stop": 0,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "5703",
+                                    "color": "#008080",
+                                    "short_name": "MM",
+                                    "long_name": "Midway Metra",
+                                    "headsign": "Goldblatt Pavilion",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766618400,
+                                    "planned_departure_ts": 1766618400,
+                                    "actual_departure_ts": 1766618400,
+                                    "duration_to_last_stop": 0,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "5703",
+                                    "color": "#008080",
+                                    "short_name": "MM",
+                                    "long_name": "Midway Metra",
+                                    "headsign": "Goldblatt Pavilion",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766619000,
+                                    "planned_departure_ts": 1766619000,
+                                    "actual_departure_ts": 1766619000,
+                                    "duration_to_last_stop": 0,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "5703",
+                                    "color": "#008080",
+                                    "short_name": "MM",
+                                    "long_name": "Midway Metra",
+                                    "headsign": "Goldblatt Pavilion",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766619600,
+                                    "planned_departure_ts": 1766619600,
+                                    "actual_departure_ts": 1766619600,
+                                    "duration_to_last_stop": 0,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "5703",
+                                    "color": "#008080",
+                                    "short_name": "MM",
+                                    "long_name": "Midway Metra",
+                                    "headsign": "Goldblatt Pavilion",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766620200,
+                                    "planned_departure_ts": 1766620200,
+                                    "actual_departure_ts": 1766620200,
+                                    "duration_to_last_stop": 0,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "5703",
+                                    "color": "#008080",
+                                    "short_name": "MM",
+                                    "long_name": "Midway Metra",
+                                    "headsign": "Goldblatt Pavilion",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766620800,
+                                    "planned_departure_ts": 1766620800,
+                                    "actual_departure_ts": 1766620800,
+                                    "duration_to_last_stop": 0,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "5703",
+                                    "color": "#008080",
+                                    "short_name": "MM",
+                                    "long_name": "Midway Metra",
+                                    "headsign": "Goldblatt Pavilion",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766621400,
+                                    "planned_departure_ts": 1766621400,
+                                    "actual_departure_ts": 1766621400,
+                                    "duration_to_last_stop": 0,
+                                    "timezone": "America/Chicago"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "type": "walking",
+                        "duration": 6,
+                        "labels": []
+                    }
+                ],
+                "recurring_series_type": "OT"
+            },
+            "is_qr_badge_displayed": false,
+            "type": "multi_leg_public_transportation",
+            "ride_category_label": "MM",
+            "currency": "$",
+            "ride_supplier": 6,
+            "proposal_type": 0,
+            "dropoff_eta_info": {
+                "dropoff_eta_texts": [
+                    {
+                        "name": "avg_dropoff_eta",
+                        "text": "None"
+                    }
+                ]
+            },
+            "proposal_uuid": "c52f0572-77b1-4f3a-9de7-bcc1176b506c",
+            "network_planner_proposal_uuid": "c52f0572-77b1-4f3a-9de7-bcc1176b506c",
+            "prescheduled_recurring_series_id": 430343901,
+            "show_public_transport_wfr": false,
+            "call_to_action_button_text": "Show route",
+            "can_show_route": true,
+            "trip_id": "b7f46a31-8370-4e30-8b07-e8044bfc8ba3"
+        },
+        {
+            "proposal_id": 355876293280856,
+            "ride_info": {
+                "n_passengers": 1,
+                "origin": {
+                    "latlng": {
+                        "lat": 41.7878692,
+                        "lng": -87.5908128
+                    }
+                },
+                "destination": {
+                    "latlng": {
+                        "lat": 41.7914561,
+                        "lng": -87.5996863
+                    }
+                },
+                "pickup": {
+                    "location": {
+                        "short_description": "Dorchester & 60th Street",
+                        "latlng": {
+                            "lat": 41.786243,
+                            "lng": -87.591404
+                        },
+                        "description": "Dorchester & 60th Street"
+                    },
+                    "eta_ts": 1766615688,
+                    "description_prefix": "Pickup",
+                    "walking_distance_description": "243m",
+                    "walking_distance_in_meters": 243
+                },
+                "dropoff": {
+                    "location": {
+                        "short_description": "Woodlawn & 57th Street",
+                        "latlng": {
+                            "lat": 41.791656,
+                            "lng": -87.596407
+                        }
+                    },
+                    "eta_ts": 1766615884,
+                    "description_prefix": ""
+                },
+                "ride_cost": 0,
+                "duration": "3 min",
+                "show_price_on_proposal": false,
+                "time_display_type": "PICKUP_ETA",
+                "public_transport_info": {
+                    "line_id": "172",
+                    "alternative_lines": [],
+                    "pickup_station_id": "17423",
+                    "dropoff_station_id": "14040"
+                },
+                "legs_preview": [
+                    {
+                        "type": "walking",
+                        "duration": 2,
+                        "labels": []
+                    },
+                    {
+                        "type": "bus",
+                        "line_id": "172",
+                        "line_color": "#99999C",
+                        "alternative_lines": [],
+                        "origin_station_code": "",
+                        "origin_station_number": "17423",
+                        "destination_station_code": "",
+                        "destination_station_number": "14040",
+                        "polyline": [
+                            {
+                                "lat": 41.786243,
+                                "lng": -87.591404
+                            },
+                            {
+                                "lat": 41.78616,
+                                "lng": -87.59148
+                            },
+                            {
+                                "lat": 41.78633,
+                                "lng": -87.59148
+                            },
+                            {
+                                "lat": 41.786327,
+                                "lng": -87.591418
+                            },
+                            {
+                                "lat": 41.78633,
+                                "lng": -87.59148
+                            },
+                            {
+                                "lat": 41.78644,
+                                "lng": -87.59148
+                            },
+                            {
+                                "lat": 41.78655,
+                                "lng": -87.59149
+                            },
+                            {
+                                "lat": 41.78669,
+                                "lng": -87.59149
+                            },
+                            {
+                                "lat": 41.786835,
+                                "lng": -87.591492
+                            },
+                            {
+                                "lat": 41.78698,
+                                "lng": -87.591495
+                            },
+                            {
+                                "lat": 41.787125,
+                                "lng": -87.591497
+                            },
+                            {
+                                "lat": 41.78727,
+                                "lng": -87.5915
+                            },
+                            {
+                                "lat": 41.78742,
+                                "lng": -87.5915
+                            },
+                            {
+                                "lat": 41.787575,
+                                "lng": -87.591505
+                            },
+                            {
+                                "lat": 41.78773,
+                                "lng": -87.59151
+                            },
+                            {
+                                "lat": 41.78784,
+                                "lng": -87.59151
+                            },
+                            {
+                                "lat": 41.78784,
+                                "lng": -87.59169
+                            },
+                            {
+                                "lat": 41.787839,
+                                "lng": -87.591856
+                            },
+                            {
+                                "lat": 41.787838,
+                                "lng": -87.592023
+                            },
+                            {
+                                "lat": 41.787836,
+                                "lng": -87.592189
+                            },
+                            {
+                                "lat": 41.787835,
+                                "lng": -87.592355
+                            },
+                            {
+                                "lat": 41.787834,
+                                "lng": -87.592521
+                            },
+                            {
+                                "lat": 41.787833,
+                                "lng": -87.592688
+                            },
+                            {
+                                "lat": 41.787831,
+                                "lng": -87.592854
+                            },
+                            {
+                                "lat": 41.78783,
+                                "lng": -87.59302
+                            },
+                            {
+                                "lat": 41.78783,
+                                "lng": -87.59317
+                            },
+                            {
+                                "lat": 41.78783,
+                                "lng": -87.59326
+                            },
+                            {
+                                "lat": 41.787825,
+                                "lng": -87.59343
+                            },
+                            {
+                                "lat": 41.78783,
+                                "lng": -87.593685
+                            },
+                            {
+                                "lat": 41.78783,
+                                "lng": -87.59394
+                            },
+                            {
+                                "lat": 41.787828,
+                                "lng": -87.594093
+                            },
+                            {
+                                "lat": 41.787825,
+                                "lng": -87.594245
+                            },
+                            {
+                                "lat": 41.787823,
+                                "lng": -87.594398
+                            },
+                            {
+                                "lat": 41.787821,
+                                "lng": -87.594504
+                            },
+                            {
+                                "lat": 41.78782,
+                                "lng": -87.59455
+                            },
+                            {
+                                "lat": 41.787871,
+                                "lng": -87.594547
+                            },
+                            {
+                                "lat": 41.78782,
+                                "lng": -87.59455
+                            },
+                            {
+                                "lat": 41.78782,
+                                "lng": -87.59465
+                            },
+                            {
+                                "lat": 41.78782,
+                                "lng": -87.59476
+                            },
+                            {
+                                "lat": 41.78782,
+                                "lng": -87.59487
+                            },
+                            {
+                                "lat": 41.78782,
+                                "lng": -87.595025
+                            },
+                            {
+                                "lat": 41.78782,
+                                "lng": -87.59518
+                            },
+                            {
+                                "lat": 41.787818,
+                                "lng": -87.595428
+                            },
+                            {
+                                "lat": 41.787815,
+                                "lng": -87.595675
+                            },
+                            {
+                                "lat": 41.787813,
+                                "lng": -87.595923
+                            },
+                            {
+                                "lat": 41.78781,
+                                "lng": -87.59617
+                            },
+                            {
+                                "lat": 41.78781,
+                                "lng": -87.59624
+                            },
+                            {
+                                "lat": 41.78781,
+                                "lng": -87.59626
+                            },
+                            {
+                                "lat": 41.7878,
+                                "lng": -87.59638
+                            },
+                            {
+                                "lat": 41.78791,
+                                "lng": -87.59638
+                            },
+                            {
+                                "lat": 41.78793,
+                                "lng": -87.59638
+                            },
+                            {
+                                "lat": 41.78798,
+                                "lng": -87.59638
+                            },
+                            {
+                                "lat": 41.78811,
+                                "lng": -87.59638
+                            },
+                            {
+                                "lat": 41.78824,
+                                "lng": -87.59639
+                            },
+                            {
+                                "lat": 41.78835,
+                                "lng": -87.59639
+                            },
+                            {
+                                "lat": 41.78852,
+                                "lng": -87.59639
+                            },
+                            {
+                                "lat": 41.78856,
+                                "lng": -87.59639
+                            },
+                            {
+                                "lat": 41.78863,
+                                "lng": -87.59639
+                            },
+                            {
+                                "lat": 41.7887,
+                                "lng": -87.5964
+                            },
+                            {
+                                "lat": 41.7888,
+                                "lng": -87.596402
+                            },
+                            {
+                                "lat": 41.7889,
+                                "lng": -87.596405
+                            },
+                            {
+                                "lat": 41.789,
+                                "lng": -87.596407
+                            },
+                            {
+                                "lat": 41.7891,
+                                "lng": -87.59641
+                            },
+                            {
+                                "lat": 41.78928,
+                                "lng": -87.59641
+                            },
+                            {
+                                "lat": 41.78942,
+                                "lng": -87.59641
+                            },
+                            {
+                                "lat": 41.78944,
+                                "lng": -87.59641
+                            },
+                            {
+                                "lat": 41.7895,
+                                "lng": -87.59641
+                            },
+                            {
+                                "lat": 41.789496,
+                                "lng": -87.596364
+                            },
+                            {
+                                "lat": 41.7895,
+                                "lng": -87.59641
+                            },
+                            {
+                                "lat": 41.78952,
+                                "lng": -87.59642
+                            },
+                            {
+                                "lat": 41.78962,
+                                "lng": -87.59642
+                            },
+                            {
+                                "lat": 41.78974,
+                                "lng": -87.59642
+                            },
+                            {
+                                "lat": 41.78979,
+                                "lng": -87.59642
+                            },
+                            {
+                                "lat": 41.7898,
+                                "lng": -87.59642
+                            },
+                            {
+                                "lat": 41.789953,
+                                "lng": -87.596425
+                            },
+                            {
+                                "lat": 41.790105,
+                                "lng": -87.59643
+                            },
+                            {
+                                "lat": 41.790258,
+                                "lng": -87.596435
+                            },
+                            {
+                                "lat": 41.79041,
+                                "lng": -87.59644
+                            },
+                            {
+                                "lat": 41.79046,
+                                "lng": -87.59644
+                            },
+                            {
+                                "lat": 41.790588,
+                                "lng": -87.596442
+                            },
+                            {
+                                "lat": 41.790715,
+                                "lng": -87.596445
+                            },
+                            {
+                                "lat": 41.790843,
+                                "lng": -87.596447
+                            },
+                            {
+                                "lat": 41.79097,
+                                "lng": -87.59645
+                            },
+                            {
+                                "lat": 41.79116,
+                                "lng": -87.596455
+                            },
+                            {
+                                "lat": 41.79135,
+                                "lng": -87.59646
+                            },
+                            {
+                                "lat": 41.79145,
+                                "lng": -87.59647
+                            },
+                            {
+                                "lat": 41.79153,
+                                "lng": -87.59647
+                            },
+                            {
+                                "lat": 41.79156,
+                                "lng": -87.59647
+                            },
+                            {
+                                "lat": 41.79163,
+                                "lng": -87.59647
+                            },
+                            {
+                                "lat": 41.791656,
+                                "lng": -87.596407
+                            }
+                        ],
+                        "stops": [
+                            {
+                                "id": "17423",
+                                "name": "Dorchester & 60th Street",
+                                "code": "",
+                                "location": {
+                                    "lat": 41.786243,
+                                    "lng": -87.591404
+                                },
+                                "stop_identifier": {
+                                    "external_id": "17423"
+                                }
+                            },
+                            {
+                                "id": "13197",
+                                "name": "59th Street & Kimbark",
+                                "code": "",
+                                "location": {
+                                    "lat": 41.787879,
+                                    "lng": -87.594506
+                                },
+                                "stop_identifier": {
+                                    "external_id": "13197"
+                                }
+                            },
+                            {
+                                "id": "14041",
+                                "name": "Woodlawn & 58th Street",
+                                "code": "",
+                                "location": {
+                                    "lat": 41.789574,
+                                    "lng": -87.596356
+                                },
+                                "stop_identifier": {
+                                    "external_id": "14041"
+                                }
+                            },
+                            {
+                                "id": "14040",
+                                "name": "Woodlawn & 57th Street",
+                                "code": "",
+                                "location": {
+                                    "lat": 41.791656,
+                                    "lng": -87.596407
+                                },
+                                "stop_identifier": {
+                                    "external_id": "14040"
+                                }
+                            }
+                        ],
+                        "labels": [],
+                        "alternative_legs": [
+                            {
+                                "line": {
+                                    "line_id": "172",
+                                    "color": "#99999C",
+                                    "short_name": "172",
+                                    "long_name": "U. of Chicago/Kenwood",
+                                    "headsign": "E Hyde Park & Lake Shore Drive",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766616784,
+                                    "planned_departure_ts": 1766616588,
+                                    "actual_departure_ts": 1766616588,
+                                    "duration_to_last_stop": 196,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "172",
+                                    "color": "#99999C",
+                                    "short_name": "172",
+                                    "long_name": "U. of Chicago/Kenwood",
+                                    "headsign": "E Hyde Park & Lake Shore Drive",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766617684,
+                                    "planned_departure_ts": 1766617488,
+                                    "actual_departure_ts": 1766617488,
+                                    "duration_to_last_stop": 196,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "172",
+                                    "color": "#99999C",
+                                    "short_name": "172",
+                                    "long_name": "U. of Chicago/Kenwood",
+                                    "headsign": "E Hyde Park & Lake Shore Drive",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766618584,
+                                    "planned_departure_ts": 1766618388,
+                                    "actual_departure_ts": 1766618388,
+                                    "duration_to_last_stop": 196,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "172",
+                                    "color": "#99999C",
+                                    "short_name": "172",
+                                    "long_name": "U. of Chicago/Kenwood",
+                                    "headsign": "E Hyde Park & Lake Shore Drive",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766619484,
+                                    "planned_departure_ts": 1766619288,
+                                    "actual_departure_ts": 1766619288,
+                                    "duration_to_last_stop": 196,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "172",
+                                    "color": "#99999C",
+                                    "short_name": "172",
+                                    "long_name": "U. of Chicago/Kenwood",
+                                    "headsign": "E Hyde Park & Lake Shore Drive",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766620384,
+                                    "planned_departure_ts": 1766620188,
+                                    "actual_departure_ts": 1766620188,
+                                    "duration_to_last_stop": 196,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "172",
+                                    "color": "#99999C",
+                                    "short_name": "172",
+                                    "long_name": "U. of Chicago/Kenwood",
+                                    "headsign": "E Hyde Park & Lake Shore Drive",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766621284,
+                                    "planned_departure_ts": 1766621088,
+                                    "actual_departure_ts": 1766621088,
+                                    "duration_to_last_stop": 196,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "172",
+                                    "color": "#99999C",
+                                    "short_name": "172",
+                                    "long_name": "U. of Chicago/Kenwood",
+                                    "headsign": "E Hyde Park & Lake Shore Drive",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766622184,
+                                    "planned_departure_ts": 1766621988,
+                                    "actual_departure_ts": 1766621988,
+                                    "duration_to_last_stop": 196,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "172",
+                                    "color": "#99999C",
+                                    "short_name": "172",
+                                    "long_name": "U. of Chicago/Kenwood",
+                                    "headsign": "E Hyde Park & Lake Shore Drive",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766623084,
+                                    "planned_departure_ts": 1766622888,
+                                    "actual_departure_ts": 1766622888,
+                                    "duration_to_last_stop": 196,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "172",
+                                    "color": "#99999C",
+                                    "short_name": "172",
+                                    "long_name": "U. of Chicago/Kenwood",
+                                    "headsign": "E Hyde Park & Lake Shore Drive",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766624884,
+                                    "planned_departure_ts": 1766624688,
+                                    "actual_departure_ts": 1766624688,
+                                    "duration_to_last_stop": 196,
+                                    "timezone": "America/Chicago"
+                                }
+                            },
+                            {
+                                "line": {
+                                    "line_id": "172",
+                                    "color": "#99999C",
+                                    "short_name": "172",
+                                    "long_name": "U. of Chicago/Kenwood",
+                                    "headsign": "E Hyde Park & Lake Shore Drive",
+                                    "transportation_type": "Bus",
+                                    "agency_name": "GenericBus",
+                                    "agency_url": null,
+                                    "route_id": null,
+                                    "agency_id": null,
+                                    "additional_properties": null
+                                },
+                                "trip": {
+                                    "trip_id": "test_id",
+                                    "planned_arrival_ts": 1766626684,
+                                    "planned_departure_ts": 1766626488,
+                                    "actual_departure_ts": 1766626488,
+                                    "duration_to_last_stop": 196,
+                                    "timezone": "America/Chicago"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "type": "walking",
+                        "duration": 3,
+                        "labels": []
+                    }
+                ],
+                "recurring_series_type": "OT"
+            },
+            "is_qr_badge_displayed": false,
+            "type": "multi_leg_public_transportation",
+            "ride_category_label": "172",
+            "currency": "$",
+            "ride_supplier": 6,
+            "proposal_type": 0,
+            "dropoff_eta_info": {
+                "dropoff_eta_texts": [
+                    {
+                        "name": "avg_dropoff_eta",
+                        "text": "None"
+                    }
+                ]
+            },
+            "proposal_uuid": "9deb6bec-9f3c-4016-bab9-36f21cde1b24",
+            "network_planner_proposal_uuid": "9deb6bec-9f3c-4016-bab9-36f21cde1b24",
+            "prescheduled_recurring_series_id": 430343901,
+            "show_public_transport_wfr": false,
+            "call_to_action_button_text": "Show route",
+            "can_show_route": true,
+            "trip_id": "b7f46a31-8370-4e30-8b07-e8044bfc8ba3"
+        }
+    ],
+    "disabled_edit_ride_button": false,
+    "unavailable_providers": [
+        {
+            "header": "Our service runs weekdays between 5pm and 4am.",
+            "proposal_type": "via",
+            "reason": "OUT_OF_SERVICE_HOURS",
+            "ride_supplier": 0
+        }
+    ]
+}

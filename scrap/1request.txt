@@ -1,0 +1,74 @@
+{
+    "whos_asking": {
+        "id": 3922267,
+        "acct_type": 0,
+        "auth_token": "2|1:0|10:1766613738|4:user|16:MDo6MzkyMjI2Nw==|660589b256fd37343e884f050a9324756e1d11ffede68656a88021f705b5fcb6"
+    },
+    "prescheduled_recurring_series_details": {
+        "origin": {
+            "geocoded_addr": "I-House",
+            "full_geocoded_addr": "I-House",
+            "latlng": {
+                "lat": 41.7878692,
+                "lng": -87.5908128
+            }
+        },
+        "destination": {
+            "full_geocoded_addr": "Regenstein/Mansueto Libraries",
+            "latlng": {
+                "lat": 41.7914561,
+                "lng": -87.5996863
+            },
+            "geocoded_addr": "Regenstein/Mansueto Libraries"
+        },
+        "recurring_series_type": "OT",
+        "n_passengers": 1
+    },
+    "city_id": 783,
+    "prescheduled_recurring_series_id": 0,
+    "end_date_timestamp": 1766614013.166594,
+    "supported_features": [
+        "MULTIPLE_PROPOSALS",
+        "UNAVAILABLE_PROVIDERS",
+        "PUBLIC_TRANSPORT",
+        "PUBLIC_TRANSPORT_BUY_TICKET",
+        "PREBOOKING_RIDE_SUPPLIER",
+        "PREBOOKING_INTER_MODAL",
+        "INTERMODAL_SECOND_LEG",
+        "GENERIC_PROPOSALS",
+        "NOW_LATER",
+        "AUTONOMOUS_VEHICLE",
+        "THIRD_PARTY",
+        "RECURRING_INTERMODAL"
+    ],
+    "id": 0,
+    "client_details": {
+        "client_state": {
+            "charging": false,
+            "battery_level": 25,
+            "client_ts": 1766614013.1666532
+        },
+        "client_spec": {
+            "device_id": "2C33CDBD-5C95-4F2B-9393-C96A9F142A30",
+            "client_os_version": "26.3",
+            "client_version": {
+                "major_version": "4.22.9",
+                "minor_version": "8"
+            },
+            "client_os": 0,
+            "device_name": "iPhone",
+            "app_id": "UniversityOfChicagoRider",
+            "app_name": "RideSmart",
+            "device_model": "iPhone16,1",
+            "client_type": 0
+        }
+    },
+    "prescheduled_recurring_series_ride_details": {
+        "display_time": []
+    },
+    "rider_service_flag": 0,
+    "sub_services": [
+        "U_Chicago_Safe_Ride"
+    ],
+    "mp_session_id": -508397384696823077
+}
