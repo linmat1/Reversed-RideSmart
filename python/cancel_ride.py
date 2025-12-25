@@ -1,6 +1,9 @@
 import requests
 import json
-import config
+try:
+    from python import config
+except ImportError:
+    import config
 
 def cancel_ride(ride_id):
     """

@@ -1,13 +1,16 @@
 import requests
 import json
-import config
+try:
+    from python import config
+except ImportError:
+    import config
 
 # API endpoint
 url = "https://router-ucaca.live.ridewithvia.com/ops/rider/proposal/prescheduled/recurring/book"
 
 # Dynamic variables
-prescheduled_ride_id = 438043022
-proposal_uuid = "e4540e98-6cbc-4a4d-be83-f666a93047f3"
+prescheduled_ride_id = 438068778
+proposal_uuid = "7ef08a13-f66d-498b-aaec-dfced43269c0"
 ride_id = prescheduled_ride_id
 auth_token = config.auth_token
 origin = {

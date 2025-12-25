@@ -1,12 +1,15 @@
 import requests
 import json
-import config
+try:
+    from python import config
+except ImportError:
+    import config
 
 # API endpoint
 url = "https://router-ucaca.live.ridewithvia.com/ops/rider/ride/cancel"
 
 # Dynamic variables
-ride_id = 438043022
+ride_id = 430394471
 auth_token = config.auth_token
 
 # JSON payload

@@ -1,6 +1,9 @@
 import requests
 import json
-import config
+try:
+    from python import config
+except ImportError:
+    import config
 
 # API endpoint
 url = "https://router-ucaca.live.ridewithvia.com/ops/rider/proposal/prescheduled/recurring/validate"

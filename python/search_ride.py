@@ -1,18 +1,28 @@
 import requests
 import json
-import config
+try:
+    from python import config
+except ImportError:
+    import config
 
-def search_ride(origin, destination):
+def search_ride(origin=None, destination=None):
     """
     Search for ride proposals between origin and destination.
     
     Args:
         origin: dict with keys 'latlng', 'geocoded_addr', 'full_geocoded_addr'
+               If None, uses default from config
         destination: dict with keys 'latlng', 'geocoded_addr', 'full_geocoded_addr'
+                    If None, uses default from config
     
     Returns:
         Response JSON or None if error
     """
+    # Use defaults from config if not provided
+    if origin is None:
+        origin = config.default_origin
+    if destination is None:
+        destination = config.default_destination
     # API endpoint
     url = "https://router-ucaca.live.ridewithvia.com/ops/rider/proposal/prescheduled/recurring/validate"
     

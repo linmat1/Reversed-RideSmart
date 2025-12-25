@@ -1,6 +1,9 @@
 import requests
 import json
-import config
+try:
+    from python import config
+except ImportError:
+    import config
 
 def book_ride(prescheduled_ride_id, proposal_uuid, origin, destination):
     """
