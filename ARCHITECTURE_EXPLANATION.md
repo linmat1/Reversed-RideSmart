@@ -264,7 +264,7 @@ User Action
 
 ## Backend Architecture (Flask)
 
-### 1. **Flask Application Setup** (`api.py`)
+### 1. **Flask Application Setup** (`backend/api.py`)
 
 ```python
 from flask import Flask, jsonify, request
@@ -598,16 +598,16 @@ Reversed-RideSmart/
 │   │   └── App.css              # Component styles
 │   └── package.json             # Dependencies
 │
-├── src/                         # Python backend modules
-│   ├── search_ride.py           # Search functionality
-│   ├── book_ride.py             # Booking functionality
-│   ├── cancel_ride.py           # Cancellation functionality
-│   ├── config.py                # Global config
-│   └── destination_config.py   # Route definitions
-│
-├── api.py                       # Flask API server
-├── main.py                      # CLI version (not used by frontend)
-└── requirements.txt             # Python dependencies
+├── backend/                     # Python backend
+│   ├── src/                     # Python backend modules
+│   │   ├── search_ride.py       # Search functionality
+│   │   ├── book_ride.py         # Booking functionality
+│   │   ├── cancel_ride.py       # Cancellation functionality
+│   │   ├── config.py            # Global config
+│   │   └── destination_config.py # Route definitions
+│   ├── api.py                   # Flask API server
+│   ├── main.py                  # CLI version (not used by frontend)
+│   └── requirements.txt         # Python dependencies
 ```
 
 ---
@@ -616,6 +616,7 @@ Reversed-RideSmart/
 
 1. **Start Backend:**
    ```bash
+   cd backend
    python api.py
    # Runs on http://localhost:5000
    ```
