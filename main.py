@@ -1,8 +1,8 @@
-from python.search_ride import search_ride
-from python.book_ride import book_ride
-from python.cancel_ride import cancel_ride
-from python import config
-from python.display_available_rides import display_available_rides
+from src.search_ride import search_ride
+from src.book_ride import book_ride
+from src.cancel_ride import cancel_ride
+from src import config
+from src.display_available_rides import display_available_rides
 import json
 from datetime import datetime
 
