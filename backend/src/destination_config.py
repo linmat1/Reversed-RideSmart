@@ -48,6 +48,25 @@ LOCATIONS = {
             "full_geocoded_addr": "<full address>",
             "geocoded_addr": "<short address>"
         }
+    },
+    
+    "notnamed_to_ihouse": {
+        "origin": {
+            "latlng": {
+                "lng": -87.601145,
+                "lat": 41.788064
+            },
+            "full_geocoded_addr": "NA",
+            "geocoded_addr": "NA"
+        },
+        "destination": {
+            "latlng": {
+                "lng": -87.5908127,
+                "lat": 41.7878692
+            },
+            "full_geocoded_addr": "NA",
+            "geocoded_addr": "NA"
+        }
     }
 }
 

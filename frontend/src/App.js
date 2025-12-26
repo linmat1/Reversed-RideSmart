@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
+import MapSelector from './MapSelector';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
@@ -14,6 +15,10 @@ function App() {
   const [routes, setRoutes] = useState([]);
   const [selectedRoute, setSelectedRoute] = useState(null);
   const [loadingRoutes, setLoadingRoutes] = useState(true);
+  const [searchMode, setSearchMode] = useState('route'); // 'route' or 'map'
+  const [mapOrigin, setMapOrigin] = useState(null);
+  const [mapDestination, setMapDestination] = useState(null);
+  const [mapSelectMode, setMapSelectMode] = useState('origin'); // 'origin', 'destination', or 'none'
 
   useEffect(() => {
     // Fetch available routes on component mount
@@ -37,8 +42,14 @@ function App() {
   }, []);
 
   const searchRides = async () => {
-    if (!selectedRoute) {
+    // Validate based on search mode
+    if (searchMode === 'route' && !selectedRoute) {
       setError('Please select a route');
+      return;
+    }
+    
+    if (searchMode === 'map' && (!mapOrigin || !mapDestination)) {
+      setError('Please select both origin and destination on the map');
       return;
     }
 
@@ -49,14 +60,38 @@ function App() {
     setBookedRide(null);
 
     try {
+      let requestBody = {};
+      
+      if (searchMode === 'route') {
+        requestBody = { route_id: selectedRoute };
+      } else {
+        // Map mode - send custom coordinates
+        requestBody = {
+          origin: {
+            latlng: {
+              lat: mapOrigin.lat,
+              lng: mapOrigin.lng
+            },
+            full_geocoded_addr: `Custom Location (${mapOrigin.lat.toFixed(6)}, ${mapOrigin.lng.toFixed(6)})`,
+            geocoded_addr: `(${mapOrigin.lat.toFixed(6)}, ${mapOrigin.lng.toFixed(6)})`
+          },
+          destination: {
+            latlng: {
+              lat: mapDestination.lat,
+              lng: mapDestination.lng
+            },
+            full_geocoded_addr: `Custom Location (${mapDestination.lat.toFixed(6)}, ${mapDestination.lng.toFixed(6)})`,
+            geocoded_addr: `(${mapDestination.lat.toFixed(6)}, ${mapDestination.lng.toFixed(6)})`
+          }
+        };
+      }
+
       const response = await fetch(`${API_BASE}/api/search`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          route_id: selectedRoute,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -79,17 +114,37 @@ function App() {
   };
 
   const bookRide = async (proposal) => {
-    if (!selectedRoute) {
-      setError('Please select a route');
-      return;
-    }
-
     setSelectedProposal(proposal);
     setBooking(true);
     setError(null);
 
     try {
-      const currentRoute = routes.find(r => r.id === selectedRoute);
+      let origin, destination;
+      
+      if (searchMode === 'route') {
+        const currentRoute = routes.find(r => r.id === selectedRoute);
+        origin = currentRoute?.origin.data;
+        destination = currentRoute?.destination.data;
+      } else {
+        // Map mode - use map coordinates
+        origin = {
+          latlng: {
+            lat: mapOrigin.lat,
+            lng: mapOrigin.lng
+          },
+          full_geocoded_addr: `Custom Location (${mapOrigin.lat.toFixed(6)}, ${mapOrigin.lng.toFixed(6)})`,
+          geocoded_addr: `(${mapOrigin.lat.toFixed(6)}, ${mapOrigin.lng.toFixed(6)})`
+        };
+        destination = {
+          latlng: {
+            lat: mapDestination.lat,
+            lng: mapDestination.lng
+          },
+          full_geocoded_addr: `Custom Location (${mapDestination.lat.toFixed(6)}, ${mapDestination.lng.toFixed(6)})`,
+          geocoded_addr: `(${mapDestination.lat.toFixed(6)}, ${mapDestination.lng.toFixed(6)})`
+        };
+      }
+
       const response = await fetch(`${API_BASE}/api/book`, {
         method: 'POST',
         headers: {
@@ -98,8 +153,8 @@ function App() {
         body: JSON.stringify({
           prescheduled_ride_id: proposal.prescheduled_ride_id,
           proposal_uuid: proposal.proposal_uuid,
-          origin: currentRoute?.origin.data,
-          destination: currentRoute?.destination.data,
+          origin: origin,
+          destination: destination,
         }),
       });
 
@@ -188,27 +243,106 @@ function App() {
               </div>
             ) : (
               <>
-                <div className="route-selector">
-                  <label htmlFor="route-select" className="route-label">
-                    Select Route:
-                  </label>
-                  <select
-                    id="route-select"
-                    value={selectedRoute || ''}
-                    onChange={(e) => setSelectedRoute(e.target.value)}
-                    className="route-select"
+                <div className="search-mode-toggle">
+                  <button
+                    className={`mode-toggle-btn ${searchMode === 'route' ? 'active' : ''}`}
+                    onClick={() => {
+                      setSearchMode('route');
+                      setMapOrigin(null);
+                      setMapDestination(null);
+                      setMapSelectMode('origin');
+                    }}
                   >
-                    {routes.map((route) => (
-                      <option key={route.id} value={route.id}>
-                        {route.origin.name} → {route.destination.name}
-                      </option>
-                    ))}
-                  </select>
+                    Use Route
+                  </button>
+                  <button
+                    className={`mode-toggle-btn ${searchMode === 'map' ? 'active' : ''}`}
+                    onClick={() => {
+                      setSearchMode('map');
+                      setMapOrigin(null);
+                      setMapDestination(null);
+                      setMapSelectMode('origin');
+                    }}
+                  >
+                    Use Map
+                  </button>
                 </div>
+
+                {searchMode === 'route' ? (
+                  <>
+                    <div className="route-selector">
+                      <label htmlFor="route-select" className="route-label">
+                        Select Route:
+                      </label>
+                      <select
+                        id="route-select"
+                        value={selectedRoute || ''}
+                        onChange={(e) => setSelectedRoute(e.target.value)}
+                        className="route-select"
+                      >
+                        {routes.map((route) => (
+                          <option key={route.id} value={route.id}>
+                            {route.origin.name} → {route.destination.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="map-controls">
+                      <div className="map-buttons">
+                        <button
+                          className={`map-select-btn ${mapSelectMode === 'origin' ? 'active' : ''}`}
+                          onClick={() => setMapSelectMode('origin')}
+                          disabled={!mapOrigin && mapSelectMode !== 'origin'}
+                        >
+                          {mapOrigin ? '✓ Origin Set' : 'Set Origin'}
+                        </button>
+                        <button
+                          className={`map-select-btn ${mapSelectMode === 'destination' ? 'active' : ''}`}
+                          onClick={() => setMapSelectMode('destination')}
+                          disabled={!mapDestination && mapSelectMode !== 'destination'}
+                        >
+                          {mapDestination ? '✓ Destination Set' : 'Set Destination'}
+                        </button>
+                        {(mapOrigin || mapDestination) && (
+                          <button
+                            className="map-clear-btn"
+                            onClick={() => {
+                              setMapOrigin(null);
+                              setMapDestination(null);
+                              setMapSelectMode('origin');
+                            }}
+                          >
+                            Clear All
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <MapSelector
+                      origin={mapOrigin}
+                      destination={mapDestination}
+                      onOriginSelect={(coords) => {
+                        setMapOrigin(coords);
+                        setMapSelectMode('destination');
+                      }}
+                      onDestinationSelect={(coords) => {
+                        setMapDestination(coords);
+                        setMapSelectMode('none');
+                      }}
+                      selectMode={mapSelectMode}
+                    />
+                  </>
+                )}
+
                 <button 
                   onClick={searchRides} 
                   className="search-button"
-                  disabled={!selectedRoute}
+                  disabled={
+                    (searchMode === 'route' && !selectedRoute) ||
+                    (searchMode === 'map' && (!mapOrigin || !mapDestination))
+                  }
                 >
                   Search for Rides
                 </button>

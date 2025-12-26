@@ -1,0 +1,57 @@
+.map-selector-container {
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.map-container {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.map-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  border-radius: 12px;
+  color: #d0d0d0;
+  font-size: 1.1rem;
+}
+
+.map-instructions {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  backdrop-filter: blur(10px);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #d0d0d0;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+.map-instructions p {
+  margin: 0;
+}
+
+.map-instructions strong {
+  color: #ffffff;
+}
+
+/* Override Leaflet popup styles for dark theme */
+.leaflet-popup-content-wrapper {
+  background: #1a1a2e;
+  color: #e0e0e0;
+  border-radius: 8px;
+}
+
+.leaflet-popup-tip {
+  background: #1a1a2e;
+}
+
+.leaflet-container {
+  background: #16213e;
+}
+
