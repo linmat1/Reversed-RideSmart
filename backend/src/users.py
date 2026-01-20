@@ -21,6 +21,13 @@ USERS = {
         "auth_token": "2|1:0|10:1755430822|4:user|12:MDo6MTQ0MzU=|56dcc3456c7e4df66ea6f718f3161351b3a786449b220007e2a5e6891c8936ac",
         "user_id": 14435
     },
+
+    "joshuacheung": {
+        "name": "Joshua Cheung",
+        "auth_token": "2|1:0|10:1757091676|4:user|12:MDo6Tm9uZQ==|6eed2aa6bc04e31c5c5f6fa5648791137ba36b62860a4e5cd37e10b968af0dc4",
+        "user_id": 3880693
+    },
+
     
     # Add more users below following this format:
     # "username": {
