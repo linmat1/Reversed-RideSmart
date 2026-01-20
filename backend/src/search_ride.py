@@ -5,7 +5,7 @@ try:
 except ImportError:
     import config
 
-def search_ride(origin=None, destination=None):
+def search_ride(origin=None, destination=None, auth_token=None, user_id=None):
     """
     Search for ride proposals between origin and destination.
     
@@ -14,6 +14,8 @@ def search_ride(origin=None, destination=None):
                If None, uses default from config
         destination: dict with keys 'latlng', 'geocoded_addr', 'full_geocoded_addr'
                     If None, uses default from config
+        auth_token: str, authentication token. If None, uses default from config
+        user_id: int, user ID. If None, uses default from config
     
     Returns:
         Response JSON or None if error
@@ -23,6 +25,11 @@ def search_ride(origin=None, destination=None):
         origin = config.default_origin
     if destination is None:
         destination = config.default_destination
+    if auth_token is None:
+        auth_token = config.auth_token
+    if user_id is None:
+        user_id = config.user_id
+        
     # API endpoint
     url = "https://router-ucaca.live.ridewithvia.com/ops/rider/proposal/prescheduled/recurring/validate"
     
@@ -50,8 +57,8 @@ def search_ride(origin=None, destination=None):
             }
         },
         "whos_asking": {
-            "auth_token": config.auth_token,
-            "id": 3922267,
+            "auth_token": auth_token,
+            "id": user_id,
             "acct_type": 0
         },
         "prescheduled_recurring_series_id": 0,

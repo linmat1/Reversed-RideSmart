@@ -5,7 +5,7 @@ try:
 except ImportError:
     import config
 
-def book_ride(prescheduled_ride_id, proposal_uuid, origin, destination):
+def book_ride(prescheduled_ride_id, proposal_uuid, origin, destination, auth_token=None, user_id=None):
     """
     Book a ride with the given proposal UUID and ride ID.
     
@@ -14,10 +14,18 @@ def book_ride(prescheduled_ride_id, proposal_uuid, origin, destination):
         proposal_uuid: str, the UUID of the proposal to book
         origin: dict with keys 'latlng', 'geocoded_addr', 'full_geocoded_addr'
         destination: dict with keys 'latlng', 'geocoded_addr', 'full_geocoded_addr'
+        auth_token: str, authentication token. If None, uses default from config
+        user_id: int, user ID. If None, uses default from config
     
     Returns:
         Response JSON or None if error
     """
+    # Use defaults from config if not provided
+    if auth_token is None:
+        auth_token = config.auth_token
+    if user_id is None:
+        user_id = config.user_id
+        
     # API endpoint
     url = "https://router-ucaca.live.ridewithvia.com/ops/rider/proposal/prescheduled/recurring/book"
     
@@ -51,9 +59,9 @@ def book_ride(prescheduled_ride_id, proposal_uuid, origin, destination):
         ],
         "rider_service_flag": 0,
         "whos_asking": {
-            "id": 3922267,
+            "id": user_id,
             "acct_type": 0,
-            "auth_token": config.auth_token
+            "auth_token": auth_token
         },
         "city_id": 783,
         "prescheduled_recurring_series_details": {

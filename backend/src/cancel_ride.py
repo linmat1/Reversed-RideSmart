@@ -5,16 +5,24 @@ try:
 except ImportError:
     import config
 
-def cancel_ride(ride_id):
+def cancel_ride(ride_id, auth_token=None, user_id=None):
     """
     Cancel a ride with the given ride ID.
     
     Args:
         ride_id: int, the ride ID to cancel
+        auth_token: str, authentication token. If None, uses default from config
+        user_id: int, user ID. If None, uses default from config
     
     Returns:
         Response JSON or None if error
     """
+    # Use defaults from config if not provided
+    if auth_token is None:
+        auth_token = config.auth_token
+    if user_id is None:
+        user_id = config.user_id
+        
     # API endpoint
     url = "https://router-ucaca.live.ridewithvia.com/ops/rider/ride/cancel"
     
@@ -43,8 +51,8 @@ def cancel_ride(ride_id):
         },
         "ride_id": ride_id,
         "whos_asking": {
-            "auth_token": config.auth_token,
-            "id": 3922267,
+            "auth_token": auth_token,
+            "id": user_id,
             "acct_type": 0
         },
         "mp_session_id": 8004176786723592206,

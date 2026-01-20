@@ -7,8 +7,10 @@ from flask_cors import CORS
 from src.search_ride import search_ride
 from src.book_ride import book_ride
 from src.cancel_ride import cancel_ride
+from src.get_route import get_route
 from src import config
 from src.destination_config import LOCATIONS, get_location_pair
+from src.users import list_users, get_user, get_auth_token, get_user_id
 import json
 
 app = Flask(__name__)
@@ -35,7 +37,12 @@ def search():
         if 'destination' in data and 'route_id' not in data:
             destination = data['destination']
         
-        response = search_ride(origin, destination)
+        # Get user credentials if specified
+        user_key = data.get('user_id')
+        auth_token = get_auth_token(user_key) if user_key else None
+        user_id = get_user_id(user_key) if user_key else None
+        
+        response = search_ride(origin, destination, auth_token=auth_token, user_id=user_id)
         
         if response is None:
             return jsonify({"error": "Search failed"}), 500
@@ -60,7 +67,13 @@ def book():
         if not prescheduled_ride_id or not proposal_uuid:
             return jsonify({"error": "Missing required fields"}), 400
         
-        response = book_ride(prescheduled_ride_id, proposal_uuid, origin, destination)
+        # Get user credentials if specified
+        user_key = data.get('user_id')
+        auth_token = get_auth_token(user_key) if user_key else None
+        user_id = get_user_id(user_key) if user_key else None
+        
+        response = book_ride(prescheduled_ride_id, proposal_uuid, origin, destination, 
+                            auth_token=auth_token, user_id=user_id)
         
         if response is None:
             return jsonify({"error": "Booking failed"}), 500
@@ -81,7 +94,12 @@ def cancel():
         if not ride_id:
             return jsonify({"error": "Missing ride_id"}), 400
         
-        response = cancel_ride(ride_id)
+        # Get user credentials if specified
+        user_key = data.get('user_id')
+        auth_token = get_auth_token(user_key) if user_key else None
+        user_id = get_user_id(user_key) if user_key else None
+        
+        response = cancel_ride(ride_id, auth_token=auth_token, user_id=user_id)
         
         if response is None:
             return jsonify({"error": "Cancellation failed"}), 500
@@ -98,6 +116,27 @@ def get_config():
             "origin": config.default_origin,
             "destination": config.default_destination
         })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/route/get', methods=['POST'])
+def get_ride_route():
+    """Get the route for a booked ride"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+        
+        route_identifier = data.get('route_identifier')
+        if not route_identifier:
+            return jsonify({"error": "Missing route_identifier"}), 400
+        
+        response = get_route(route_identifier)
+        
+        if response is None:
+            return jsonify({"error": "Failed to get route"}), 500
+        
+        return jsonify(response)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -125,6 +164,15 @@ def get_routes():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/users', methods=['GET'])
+def get_users():
+    """Get all available users"""
+    try:
+        users = list_users()
+        return jsonify({"users": users})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5001)
 

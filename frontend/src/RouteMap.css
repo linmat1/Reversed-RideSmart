@@ -1,0 +1,136 @@
+.route-map-container {
+  margin: 20px 0;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.route-map-container h3 {
+  color: #fff;
+  margin-bottom: 15px;
+  font-size: 1.3rem;
+  text-align: center;
+}
+
+.trip-details {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.trip-location {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 8px 0;
+  color: #e0e0e0;
+}
+
+.trip-location:first-child {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 12px;
+  margin-bottom: 4px;
+}
+
+.trip-icon {
+  font-size: 14px;
+  margin-top: 3px;
+}
+
+.trip-icon.pickup {
+  color: #2ecc71;
+}
+
+.trip-icon.dropoff {
+  color: #e74c3c;
+}
+
+.trip-location strong {
+  color: #fff;
+}
+
+.trip-time {
+  color: #4ecdc4;
+  font-size: 0.9em;
+  margin-left: 8px;
+}
+
+.route-map {
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.route-map-loading,
+.route-map-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  color: #888;
+}
+
+.route-map-error {
+  color: #ff6b6b;
+}
+
+.route-map-legend {
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+  margin-top: 15px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ccc;
+  font-size: 0.9rem;
+}
+
+.legend-marker {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+}
+
+.legend-marker.pickup {
+  background: #2ecc71;
+}
+
+.legend-marker.dropoff {
+  background: #e74c3c;
+}
+
+.legend-line {
+  width: 30px;
+  height: 4px;
+  background: #8B0000;
+  border-radius: 2px;
+}
+
+/* Custom popup styling */
+.leaflet-popup-content-wrapper {
+  background: #1a1a2e;
+  color: #fff;
+  border-radius: 8px;
+}
+
+.leaflet-popup-content {
+  margin: 10px;
+}
+
+.leaflet-popup-content strong {
+  color: #4ecdc4;
+}
+
+.leaflet-popup-tip {
+  background: #1a1a2e;
+}

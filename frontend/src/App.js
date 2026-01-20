@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import MapSelector from './MapSelector';
+import RouteMap from './RouteMap';
 
-const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
 function App() {
   const [proposals, setProposals] = useState([]);
@@ -19,8 +20,30 @@ function App() {
   const [mapOrigin, setMapOrigin] = useState(null);
   const [mapDestination, setMapDestination] = useState(null);
   const [mapSelectMode, setMapSelectMode] = useState('origin'); // 'origin', 'destination', or 'none'
+  const [cancelledMessage, setCancelledMessage] = useState(null);
+  const [routeData, setRouteData] = useState(null);
+  const [loadingRoute, setLoadingRoute] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   useEffect(() => {
+    // Fetch available users on component mount
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch(`${API_BASE}/api/users`);
+        if (response.ok) {
+          const data = await response.json();
+          setUsers(data.users || []);
+          if (data.users && data.users.length > 0) {
+            setSelectedUser(data.users[0].id);
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching users:', err);
+      }
+    };
+    fetchUsers();
+
     // Fetch available routes on component mount
     const fetchRoutes = async () => {
       try {
@@ -58,31 +81,30 @@ function App() {
     setProposals([]);
     setSelectedProposal(null);
     setBookedRide(null);
+    setCancelledMessage(null);
 
     try {
-      let requestBody = {};
+      let requestBody = { user_id: selectedUser };
       
       if (searchMode === 'route') {
-        requestBody = { route_id: selectedRoute };
+        requestBody.route_id = selectedRoute;
       } else {
         // Map mode - send custom coordinates
-        requestBody = {
-          origin: {
-            latlng: {
-              lat: mapOrigin.lat,
-              lng: mapOrigin.lng
-            },
-            full_geocoded_addr: `Custom Location (${mapOrigin.lat.toFixed(6)}, ${mapOrigin.lng.toFixed(6)})`,
-            geocoded_addr: `(${mapOrigin.lat.toFixed(6)}, ${mapOrigin.lng.toFixed(6)})`
+        requestBody.origin = {
+          latlng: {
+            lat: mapOrigin.lat,
+            lng: mapOrigin.lng
           },
-          destination: {
-            latlng: {
-              lat: mapDestination.lat,
-              lng: mapDestination.lng
-            },
-            full_geocoded_addr: `Custom Location (${mapDestination.lat.toFixed(6)}, ${mapDestination.lng.toFixed(6)})`,
-            geocoded_addr: `(${mapDestination.lat.toFixed(6)}, ${mapDestination.lng.toFixed(6)})`
-          }
+          full_geocoded_addr: `Custom Location (${mapOrigin.lat.toFixed(6)}, ${mapOrigin.lng.toFixed(6)})`,
+          geocoded_addr: `(${mapOrigin.lat.toFixed(6)}, ${mapOrigin.lng.toFixed(6)})`
+        };
+        requestBody.destination = {
+          latlng: {
+            lat: mapDestination.lat,
+            lng: mapDestination.lng
+          },
+          full_geocoded_addr: `Custom Location (${mapDestination.lat.toFixed(6)}, ${mapDestination.lng.toFixed(6)})`,
+          geocoded_addr: `(${mapDestination.lat.toFixed(6)}, ${mapDestination.lng.toFixed(6)})`
         };
       }
 
@@ -155,6 +177,7 @@ function App() {
           proposal_uuid: proposal.proposal_uuid,
           origin: origin,
           destination: destination,
+          user_id: selectedUser,
         }),
       });
 
@@ -168,10 +191,39 @@ function App() {
         ...proposal,
         bookingResponse: data,
       });
+      
+      // Fetch the route if route_identifier is available
+      if (data.route_identifier) {
+        fetchRoute(data.route_identifier);
+      }
     } catch (err) {
       setError(err.message || 'Error booking ride');
     } finally {
       setBooking(false);
+    }
+  };
+
+  const fetchRoute = async (routeIdentifier) => {
+    setLoadingRoute(true);
+    try {
+      const response = await fetch(`${API_BASE}/api/route/get`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          route_identifier: routeIdentifier,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setRouteData(data);
+      }
+    } catch (err) {
+      console.error('Error fetching route:', err);
+    } finally {
+      setLoadingRoute(false);
     }
   };
 
@@ -187,6 +239,7 @@ function App() {
         },
         body: JSON.stringify({
           ride_id: rideId,
+          user_id: selectedUser,
         }),
       });
 
@@ -198,7 +251,9 @@ function App() {
       const data = await response.json();
       setBookedRide(null);
       setSelectedProposal(null);
-      alert('Ride cancelled successfully!');
+      setRouteData(null);
+      setProposals([]);  // Clear proposals to go back to home screen
+      setCancelledMessage('Ride cancelled successfully!');
     } catch (err) {
       setError(err.message || 'Error cancelling ride');
     } finally {
@@ -216,11 +271,6 @@ function App() {
     }
   };
 
-  const formatCost = (cost) => {
-    if (!cost || cost === 0) return 'Free';
-    return `$${cost.toFixed(2)}`;
-  };
-
   return (
     <div className="App">
       <header className="App-header">
@@ -235,7 +285,19 @@ function App() {
           </div>
         )}
 
-        {!proposals.length && !loading && !bookedRide && (
+        {cancelledMessage && (
+          <div className="success-message cancelled-message">
+            <h2>✓ {cancelledMessage}</h2>
+            <button 
+              className="new-search-button"
+              onClick={() => setCancelledMessage(null)}
+            >
+              Start New Search
+            </button>
+          </div>
+        )}
+
+        {!proposals.length && !loading && !bookedRide && !cancelledMessage && (
           <div className="search-section">
             {loadingRoutes ? (
               <div className="loading">
@@ -243,6 +305,27 @@ function App() {
               </div>
             ) : (
               <>
+                {/* User Selector */}
+                {users.length > 0 && (
+                  <div className="user-selector">
+                    <label htmlFor="user-select" className="user-label">
+                      👤 Booking as:
+                    </label>
+                    <select
+                      id="user-select"
+                      value={selectedUser || ''}
+                      onChange={(e) => setSelectedUser(e.target.value)}
+                      className="user-select"
+                    >
+                      {users.map((user) => (
+                        <option key={user.id} value={user.id}>
+                          {user.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
                 <div className="search-mode-toggle">
                   <button
                     className={`mode-toggle-btn ${searchMode === 'route' ? 'active' : ''}`}
@@ -373,31 +456,30 @@ function App() {
               {proposals.map((proposal, index) => {
                 const rideInfo = proposal.ride_info || {};
                 const pickup = rideInfo.pickup || {};
-                const dropoff = rideInfo.dropoff || {};
-                const pickupLoc = pickup.location || {};
-                const dropoffLoc = dropoff.location || {};
-
-                const pickupDesc = pickupLoc.short_description || pickupLoc.description || 'Unknown';
-                const dropoffDesc = dropoffLoc.short_description || dropoffLoc.description || 'Unknown';
-                const walkingDist = pickup.walking_distance_description || '';
                 const eta = formatTime(pickup.eta_ts);
-                const cost = formatCost(rideInfo.ride_cost);
+                
+                // Determine if it's RideSmart or Lyft
+                const rideSupplier = proposal.ride_supplier || rideInfo.ride_supplier;
+                const isLyft = rideSupplier === 1 || proposal.type === 'lyft' || proposal.provider === 'lyft';
+                const vehicleType = isLyft ? '🚗 Lyft' : '🚐 RideSmart';
 
                 return (
                   <div key={index} className="ride-card" style={{ animationDelay: `${index * 0.1}s` }}>
                     <div className="ride-number">Ride #{index + 1}</div>
+                    <div className="ride-badge" style={{ 
+                      background: isLyft ? '#FF00BF' : '#4ecdc4',
+                      color: '#fff',
+                      padding: '4px 10px',
+                      borderRadius: '12px',
+                      fontSize: '0.85rem',
+                      marginBottom: '10px',
+                      display: 'inline-block'
+                    }}>
+                      {vehicleType}
+                    </div>
                     <div className="ride-details">
                       <div className="ride-field">
-                        <strong>Pickup:</strong> {pickupDesc} {walkingDist && `(${walkingDist} walk)`}
-                      </div>
-                      <div className="ride-field">
-                        <strong>Dropoff:</strong> {dropoffDesc}
-                      </div>
-                      <div className="ride-field">
                         <strong>ETA:</strong> {eta}
-                      </div>
-                      <div className="ride-field">
-                        <strong>Cost:</strong> {cost}
                       </div>
                       <div className="ride-field small">
                         <strong>Proposal ID:</strong> {proposal.proposal_id || 'N/A'}
@@ -459,6 +541,18 @@ function App() {
                 <p><strong>Proposal UUID:</strong> {bookedRide.proposal_uuid}</p>
               </div>
             </div>
+            
+            {/* Route Map Display */}
+            {loadingRoute && (
+              <div className="loading">
+                <p>Loading route...</p>
+              </div>
+            )}
+            <RouteMap 
+              routeData={routeData} 
+              bookingData={bookedRide?.bookingResponse} 
+            />
+            
             <div className="cancel-section">
               <button
                 onClick={() => cancelRide(bookedRide.prescheduled_ride_id)}
@@ -472,6 +566,7 @@ function App() {
                   setBookedRide(null);
                   setSelectedProposal(null);
                   setProposals([]);
+                  setRouteData(null);
                 }}
                 className="new-search-button"
               >
