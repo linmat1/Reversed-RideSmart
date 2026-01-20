@@ -68,7 +68,7 @@ def book_ride(prescheduled_ride_id, proposal_uuid, origin, destination, auth_tok
             "origin": origin,
             "destination": destination,
             "recurring_series_type": "OT",
-            "n_passengers": 2,
+            "n_passengers": config.n_passengers,
             "plus_one_types": [
                 {
                     "id": 6261,
@@ -83,7 +83,7 @@ def book_ride(prescheduled_ride_id, proposal_uuid, origin, destination, auth_tok
                     "maximum_passengers_count": 1,
                     "minimum_passengers_count": 0,
                     "title": "Extra Rider",
-                    "current_passengers_count": 1,
+                    "current_passengers_count": 1 if config.include_extra_rider else 0,
                     "is_item": False
                 }
             ]

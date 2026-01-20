@@ -16,6 +16,10 @@ user_id = get_user_id(DEFAULT_USER)
 default_origin = get_active_origin()
 default_destination = get_active_destination()
 
+# Passenger configuration - always book for 2 people (self + extra rider)
+n_passengers = 2  # Total number of passengers
+include_extra_rider = True  # Whether to include an extra rider
+
 # Function to get current timestamp (for "now" timestamps)
 def get_current_timestamp():
     return time.time()

@@ -98,7 +98,7 @@ def search_ride(origin=None, destination=None, auth_token=None, user_id=None):
                 },
                 {
                     "is_item": False,
-                    "current_passengers_count": 0,
+                    "current_passengers_count": 1 if config.include_extra_rider else 0,
                     "minimum_passengers_count": 0,
                     "title": "Extra Rider",
                     "id": 6263,
@@ -106,7 +106,7 @@ def search_ride(origin=None, destination=None, auth_token=None, user_id=None):
                 }
             ],
             "destination": destination,
-            "n_passengers": 1
+            "n_passengers": config.n_passengers
         },
         "mp_session_id": 6640750950572533545,
         "rider_service_flag": 0,

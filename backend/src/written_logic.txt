@@ -1,1 +1,24 @@
-test
+now here's the purpose of this app
+
+i'm trying to automatically book lyfts instead of ridesmart vehicles for people
+
+Here's how it works
+
+When someone searches for a ridesmart route, if there aren't enough drivers/vehicles available, it will allow the user to book a lyft for free.
+
+So what this app is trying to do, is, have lots of other people book the same route the initial person is going on, so that there aren't enough vehicles/spaces free,
+which means the original booker would then get a lyft.
+
+So there's probably some logic that needs to be implemented for this:
+
+- say person going from A to B is the original person
+- search a different person (to check if lyft is already available)
+- if yes, search as original person and book the lyft
+- if not, search as another different person to check if lyft is available
+- continue searching as different people to see if lyft is available
+- when a lyft is available, search as original person and book lyft
+- (there are probably ways of speeding this up, like, if the 1st non original searcher sees 3 vehicles/rides available, book all 3 with 3 different accounts - remember, one account can only book one ride)
+- (but the above shouldn't be implemented yet, it's a bit complicated for now)
+
+- i also need you to make either a front-end or command line interface for this, to track exactly what process of the logic is being executed
+
