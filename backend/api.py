@@ -10,7 +10,8 @@ from src.cancel_ride import cancel_ride
 from src.get_route import get_route
 from src import config
 from src.destination_config import LOCATIONS, get_location_pair
-from src.users import list_users, get_user, get_auth_token, get_user_id
+from src.users import list_users, get_user, get_auth_token, get_user_id, USERS
+from src.lyft_orchestrator import LyftOrchestrator
 import json
 
 app = Flask(__name__)
@@ -170,6 +171,113 @@ def get_users():
     try:
         users = list_users()
         return jsonify({"users": users})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/lyft/run', methods=['POST'])
+def run_lyft_orchestrator():
+    """
+    Run the Lyft orchestrator to get a free Lyft ride.
+    
+    Request body:
+        - original_user: str, user key of person who wants the Lyft
+        - route_id: str, route ID from destination_config (optional)
+        - origin: dict, custom origin (optional, used if route_id not provided)
+        - destination: dict, custom destination (optional)
+    """
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+        
+        original_user = data.get('original_user')
+        if not original_user:
+            return jsonify({"error": "Missing original_user"}), 400
+        
+        if original_user not in USERS:
+            return jsonify({"error": f"User '{original_user}' not found"}), 400
+        
+        # Get origin/destination
+        if 'route_id' in data:
+            try:
+                origin, destination = get_location_pair(data['route_id'])
+            except ValueError:
+                return jsonify({"error": f"Route '{data['route_id']}' not found"}), 400
+        else:
+            origin = data.get('origin', config.default_origin)
+            destination = data.get('destination', config.default_destination)
+        
+        # Run the orchestrator
+        orchestrator = LyftOrchestrator(original_user, origin, destination)
+        result = orchestrator.run()
+        
+        return jsonify({
+            "success": result['success'],
+            "message": result['message'],
+            "lyft_booking": result['lyft_booking'],
+            "log": orchestrator.log
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/lyft/check', methods=['POST'])
+def check_lyft_availability():
+    """
+    Quick check if Lyft is available for a route (without booking anything).
+    
+    Request body:
+        - user_id: str, user key to search as
+        - route_id: str, route ID (optional)
+        - origin/destination: custom locations (optional)
+    """
+    try:
+        data = request.get_json() or {}
+        
+        user_key = data.get('user_id')
+        auth_token = get_auth_token(user_key) if user_key else None
+        user_id = get_user_id(user_key) if user_key else None
+        
+        # Get origin/destination
+        if 'route_id' in data:
+            try:
+                origin, destination = get_location_pair(data['route_id'])
+            except ValueError:
+                return jsonify({"error": f"Route '{data['route_id']}' not found"}), 400
+        else:
+            origin = data.get('origin', config.default_origin)
+            destination = data.get('destination', config.default_destination)
+        
+        # Search for rides
+        response = search_ride(origin, destination, auth_token=auth_token, user_id=user_id)
+        
+        if not response or 'proposals' not in response:
+            return jsonify({
+                "has_lyft": False,
+                "ridesmart_count": 0,
+                "proposals": []
+            })
+        
+        proposals = response.get('proposals', [])
+        
+        # Categorize proposals
+        lyft_count = 0
+        ridesmart_count = 0
+        
+        for p in proposals:
+            ride_info = p.get('ride_info', {})
+            ride_supplier = p.get('ride_supplier') or ride_info.get('ride_supplier')
+            
+            if ride_supplier == 1 or p.get('type') == 'lyft' or p.get('provider') == 'lyft':
+                lyft_count += 1
+            else:
+                ridesmart_count += 1
+        
+        return jsonify({
+            "has_lyft": lyft_count > 0,
+            "lyft_count": lyft_count,
+            "ridesmart_count": ridesmart_count,
+            "total_proposals": len(proposals)
+        })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

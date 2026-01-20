@@ -86,6 +86,25 @@
   animation: fadeIn 1s ease-out;
 }
 
+.lyft-mode-button {
+  margin-top: 15px;
+  padding: 12px 28px;
+  font-size: 1rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #FF00BF 0%, #FF6B35 100%);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 15px rgba(255, 0, 191, 0.3);
+}
+
+.lyft-mode-button:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(255, 0, 191, 0.4);
+}
+
 .App-main {
   flex: 1;
   max-width: 1200px;

@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import MapSelector from './MapSelector';
 import RouteMap from './RouteMap';
+import LyftBooker from './LyftBooker';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
 function App() {
+  const [appMode, setAppMode] = useState('normal'); // 'normal' or 'lyft'
   const [proposals, setProposals] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -91,20 +93,20 @@ function App() {
       } else {
         // Map mode - send custom coordinates
         requestBody.origin = {
-          latlng: {
-            lat: mapOrigin.lat,
-            lng: mapOrigin.lng
-          },
-          full_geocoded_addr: `Custom Location (${mapOrigin.lat.toFixed(6)}, ${mapOrigin.lng.toFixed(6)})`,
-          geocoded_addr: `(${mapOrigin.lat.toFixed(6)}, ${mapOrigin.lng.toFixed(6)})`
+            latlng: {
+              lat: mapOrigin.lat,
+              lng: mapOrigin.lng
+            },
+            full_geocoded_addr: `Custom Location (${mapOrigin.lat.toFixed(6)}, ${mapOrigin.lng.toFixed(6)})`,
+            geocoded_addr: `(${mapOrigin.lat.toFixed(6)}, ${mapOrigin.lng.toFixed(6)})`
         };
         requestBody.destination = {
-          latlng: {
-            lat: mapDestination.lat,
-            lng: mapDestination.lng
-          },
-          full_geocoded_addr: `Custom Location (${mapDestination.lat.toFixed(6)}, ${mapDestination.lng.toFixed(6)})`,
-          geocoded_addr: `(${mapDestination.lat.toFixed(6)}, ${mapDestination.lng.toFixed(6)})`
+            latlng: {
+              lat: mapDestination.lat,
+              lng: mapDestination.lng
+            },
+            full_geocoded_addr: `Custom Location (${mapDestination.lat.toFixed(6)}, ${mapDestination.lng.toFixed(6)})`,
+            geocoded_addr: `(${mapDestination.lat.toFixed(6)}, ${mapDestination.lng.toFixed(6)})`
         };
       }
 
@@ -271,11 +273,26 @@ function App() {
     }
   };
 
+  // If in Lyft Booker mode, show that component
+  if (appMode === 'lyft') {
+    return (
+      <div className="App">
+        <LyftBooker onBack={() => setAppMode('normal')} />
+      </div>
+    );
+  }
+
   return (
     <div className="App">
       <header className="App-header">
         <h1>RideSmart</h1>
         <p>Search, Book, and Cancel Rides</p>
+        <button 
+          className="lyft-mode-button"
+          onClick={() => setAppMode('lyft')}
+        >
+          🚗 Lyft Booker Mode
+        </button>
       </header>
 
       <main className="App-main">
