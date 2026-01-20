@@ -17,6 +17,24 @@ import json
 app = Flask(__name__)
 CORS(app)  # Enable CORS for React frontend
 
+@app.route('/')
+def index():
+    """Health check / API info"""
+    return jsonify({
+        "status": "ok",
+        "message": "RideSmart API is running",
+        "endpoints": [
+            "GET  /api/config",
+            "GET  /api/routes", 
+            "GET  /api/users",
+            "POST /api/search",
+            "POST /api/book",
+            "POST /api/cancel",
+            "POST /api/lyft/run",
+            "POST /api/lyft/check"
+        ]
+    })
+
 @app.route('/api/search', methods=['POST'])
 def search():
     """Search for available rides"""
