@@ -24,6 +24,29 @@ backend/
 pip install -r requirements.txt
 ```
 
+2. Configure user credentials:
+   - Copy `.env.example` to `.env`:
+     ```bash
+     cp .env.example .env
+     ```
+   - Edit `.env` and fill in your actual auth tokens and user IDs
+   - **Important**: Never commit `.env` to version control - it contains sensitive credentials
+   - The `.env` file is already in `.gitignore` for your safety
+
+3. Environment variable format:
+   ```
+   USER_USERNAME_NAME=Display Name
+   USER_USERNAME_AUTH_TOKEN=your_auth_token_here
+   USER_USERNAME_USER_ID=1234567
+   ```
+   
+   Example:
+   ```
+   USER_MATTHEW_NAME=Matthew
+   USER_MATTHEW_AUTH_TOKEN=2|1:0|10:1766628685|4:user|16:...
+   USER_MATTHEW_USER_ID=3922267
+   ```
+
 ## Running the API Server
 
 Start the Flask API server:

@@ -1,49 +1,71 @@
 """
 User Configuration File
-Add new users here with their auth tokens.
+Loads user credentials from environment variables (.env file).
 
 Each user needs:
 - name: Display name for the frontend
 - auth_token: The authentication token from the RideSmart app
 - user_id: The user ID (found in the auth token or API responses)
+
+Environment variables format:
+USER_MATTHEW_NAME=Matthew
+USER_MATTHEW_AUTH_TOKEN=your_token_here
+USER_MATTHEW_USER_ID=3922267
+
+USER_TOMASLV_NAME=Tomas
+USER_TOMASLV_AUTH_TOKEN=your_token_here
+USER_TOMASLV_USER_ID=14435
+
+etc.
 """
 
-# Dictionary of all available users
-USERS = {
-    "matthew": {
-        "name": "Matthew",
-        "auth_token": "2|1:0|10:1766628685|4:user|16:MDo6MzkyMjI2Nw==|4963019708d112f67c6becd48c16172837faf99dff1bc5d1ffe87c44a20e42ab",
-        "user_id": 3922267
-    },
+import os
+from dotenv import load_dotenv
 
-    "tomaslv": {
-        "name": "Tomas",
-        "auth_token": "2|1:0|10:1755430822|4:user|12:MDo6MTQ0MzU=|56dcc3456c7e4df66ea6f718f3161351b3a786449b220007e2a5e6891c8936ac",
-        "user_id": 14435
-    },
+# Load environment variables from .env file
+# Look for .env in the backend directory
+env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
+load_dotenv(env_path)
 
-    "joshuacheung": {
-        "name": "Joshua Cheung",
-        "auth_token": "2|1:0|10:1757091676|4:user|12:MDo6Tm9uZQ==|6eed2aa6bc04e31c5c5f6fa5648791137ba36b62860a4e5cd37e10b968af0dc4",
-        "user_id": 3880693
-    },
+# Dictionary of all available users (loaded from environment variables)
+USERS = {}
 
-    "charlesmarsden": {
-        "name": "Charles Marsden",
-        "auth_token": "2|1:0|10:1758342159|4:user|12:MDo6Tm9uZQ==|55add92c763fa043e997787b4d62b603a2f98a61e0a5a7aaa6e725e59762e0da",
-        "user_id": 3942937
-    },
+# Load users from environment variables
+# Look for variables matching pattern: USER_{USERNAME}_{FIELD}
+env_vars = os.environ
+user_keys = set()
+
+# Find all user keys from environment variables
+for key in env_vars.keys():
+    if key.startswith('USER_') and key.endswith('_NAME'):
+        # Extract username from key like USER_MATTHEW_NAME -> matthew
+        user_key = key.replace('USER_', '').replace('_NAME', '').lower()
+        user_keys.add(user_key)
+
+# Build USERS dictionary from environment variables
+for user_key in user_keys:
+    name_key = f'USER_{user_key.upper()}_NAME'
+    token_key = f'USER_{user_key.upper()}_AUTH_TOKEN'
+    id_key = f'USER_{user_key.upper()}_USER_ID'
     
-    # Add more users below following this format:
-    # "username": {
-    #     "name": "Display Name",
-    #     "auth_token": "paste_auth_token_here",
-    #     "user_id": 1234567
-    # },
-}
+    name = os.getenv(name_key)
+    auth_token = os.getenv(token_key)
+    user_id_str = os.getenv(id_key)
+    
+    if name and auth_token and user_id_str:
+        try:
+            user_id = int(user_id_str)
+            USERS[user_key] = {
+                "name": name,
+                "auth_token": auth_token,
+                "user_id": user_id
+            }
+        except ValueError:
+            print(f"Warning: Invalid user_id for user {user_key}: {user_id_str}")
 
 # Default user (used if no user is specified)
-DEFAULT_USER = "matthew"
+# Can be overridden with DEFAULT_USER environment variable
+DEFAULT_USER = os.getenv('DEFAULT_USER', 'matthew')
 
 
 def get_user(user_key=None):
