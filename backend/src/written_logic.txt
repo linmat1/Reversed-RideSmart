@@ -25,3 +25,16 @@ So there's probably some logic that needs to be implemented for this:
 remember, if there are any errors in booking or searching (it might be because the account already has a ride booked etc.), just move on to another account
 
 =============================
+
+the orchestrator function isn't working well right now. The log shouldn't be displayed after it is run, it should be LIVE. What this means is:
+
+- it should show the exact status for everything
+- e.g. "searching with filler one, name,"
+- then saying "booking XXX ride with filler one name" where XXX is all the details of the ride being booked
+- then saying "searching with filler two name", and "booking YYY with filler two name"
+- then saying "searching with filler three name", and saying "filler three found lyft, booking with original name"
+
+also, in case of any errors, the program MUST cancel all rides, booking a ride and not attending is unacceptable
+- also provide functionality for manual canellation for each individual person separately
+
+=============================
