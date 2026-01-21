@@ -28,6 +28,11 @@ USERS = {
         "user_id": 3880693
     },
 
+    "charlesmarsden": {
+        "name": "Charles Marsden",
+        "auth_token": "2|1:0|10:1758342159|4:user|12:MDo6Tm9uZQ==|55add92c763fa043e997787b4d62b603a2f98a61e0a5a7aaa6e725e59762e0da",
+        "user_id": 3942937
+    },
     
     # Add more users below following this format:
     # "username": {
