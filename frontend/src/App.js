@@ -250,7 +250,7 @@ function App() {
         throw new Error(errorData.error || 'Cancellation failed');
       }
 
-      const data = await response.json();
+      await response.json(); // Response is not used, but we need to consume it
       setBookedRide(null);
       setSelectedProposal(null);
       setRouteData(null);

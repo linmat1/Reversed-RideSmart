@@ -101,6 +101,31 @@ class LyftOrchestrator:
             'ridesmart_proposals': ridesmart_proposals
         }
     
+    def _get_ride_details(self, proposal):
+        """Extract readable ride details from a proposal."""
+        ride_info = proposal.get('ride_info', {})
+        pickup = ride_info.get('pickup', {})
+        dropoff = ride_info.get('dropoff', {})
+        
+        pickup_loc = pickup.get('location', {})
+        pickup_desc = pickup_loc.get('short_description') or pickup_loc.get('description', 'Unknown')
+        dropoff_loc = dropoff.get('location', {})
+        dropoff_desc = dropoff_loc.get('short_description') or dropoff_loc.get('description', 'Unknown')
+        
+        # Check if it's Lyft
+        import json
+        proposal_str = json.dumps(proposal).lower()
+        is_lyft = 'lyft' in proposal_str
+        ride_type = "Lyft" if is_lyft else "RideSmart"
+        
+        return {
+            'type': ride_type,
+            'pickup': pickup_desc,
+            'dropoff': dropoff_desc,
+            'proposal_id': proposal.get('proposal_id', 'N/A'),
+            'prescheduled_ride_id': proposal.get('prescheduled_ride_id', 'N/A')
+        }
+    
     def _book_ride(self, user_key, proposal):
         """
         Book a ride as a specific user.
