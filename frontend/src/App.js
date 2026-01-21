@@ -7,7 +7,8 @@ import LyftBooker from './LyftBooker';
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
 function App() {
-  const [appMode, setAppMode] = useState('normal'); // 'normal' or 'lyft'
+  const [appMode, setAppMode] = useState('lyft'); // 'normal' or 'lyft' - default to 'lyft'
+  const [showIndividualBooking, setShowIndividualBooking] = useState(false); // Track if individual booking is shown
   const [proposals, setProposals] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -18,7 +19,7 @@ function App() {
   const [routes, setRoutes] = useState([]);
   const [selectedRoute, setSelectedRoute] = useState(null);
   const [loadingRoutes, setLoadingRoutes] = useState(true);
-  const [searchMode, setSearchMode] = useState('route'); // 'route' or 'map'
+  const [searchMode, setSearchMode] = useState('map'); // 'route' or 'map' - default to 'map'
   const [mapOrigin, setMapOrigin] = useState(null);
   const [mapDestination, setMapDestination] = useState(null);
   const [mapSelectMode, setMapSelectMode] = useState('origin'); // 'origin', 'destination', or 'none'
@@ -277,6 +278,41 @@ function App() {
   if (appMode === 'lyft') {
     return (
       <div className="App">
+        <header className="App-header">
+          <h1>RideSmart</h1>
+          <p>Get Free Lyft Rides</p>
+        </header>
+
+        <div className="info-section">
+          <div className="info-card">
+            <div className="info-content">
+              <div className="info-item">
+                <span className="info-label">Service Hours:</span>
+                <span className="info-value">5:00 PM – 4:00 AM on weekdays</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Boundaries:</span>
+                <span className="info-value">You must book within RideSmart boundaries, or this app will show errors</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mode-switch-section">
+          <button 
+            className="individual-booking-button"
+            onClick={() => {
+              setAppMode('normal');
+              setShowIndividualBooking(true);
+            }}
+          >
+            📱 Individual Booking
+          </button>
+          <p className="individual-booking-subtext">
+            Book normal RideSmart rides to your phone (no Lyft)
+          </p>
+        </div>
+
         <LyftBooker onBack={() => setAppMode('normal')} />
       </div>
     );
@@ -289,7 +325,10 @@ function App() {
         <p>Search, Book, and Cancel Rides</p>
         <button 
           className="lyft-mode-button"
-          onClick={() => setAppMode('lyft')}
+          onClick={() => {
+            setAppMode('lyft');
+            setShowIndividualBooking(false);
+          }}
         >
           🚗 Lyft Booker Mode
         </button>
@@ -297,11 +336,15 @@ function App() {
 
       <div className="info-section">
         <div className="info-card">
-          <span className="info-icon">🕐</span>
           <div className="info-content">
-            <strong>Service Hours</strong>
-            <p>RideSmart operates <strong>5:00 PM – 4:00 AM</strong> on weekdays</p>
-            <p>==You must book within the boundaries of RideSmart, or this app will just show errors==</p>
+            <div className="info-item">
+              <span className="info-label">Service Hours:</span>
+              <span className="info-value">5:00 PM – 4:00 AM on weekdays</span>
+            </div>
+            <div className="info-item">
+              <span className="info-label">Boundaries:</span>
+              <span className="info-value">You must book within RideSmart boundaries, or this app will show errors</span>
+            </div>
           </div>
         </div>
       </div>
@@ -318,14 +361,32 @@ function App() {
             <h2>✓ {cancelledMessage}</h2>
             <button 
               className="new-search-button"
-              onClick={() => setCancelledMessage(null)}
+              onClick={() => {
+                setCancelledMessage(null);
+                setShowIndividualBooking(false);
+              }}
             >
               Start New Search
             </button>
           </div>
         )}
 
-        {!proposals.length && !loading && !bookedRide && !cancelledMessage && (
+        {!proposals.length && !loading && !bookedRide && !cancelledMessage && !showIndividualBooking && (
+          <div className="search-section">
+            <div className="individual-booking-prompt">
+              <h2>Individual Ride Booking</h2>
+              <p>Book a single ride using RideSmart or Lyft</p>
+              <button 
+                className="start-individual-booking-button"
+                onClick={() => setShowIndividualBooking(true)}
+              >
+                Start Individual Booking
+              </button>
+            </div>
+          </div>
+        )}
+
+        {!proposals.length && !loading && !bookedRide && !cancelledMessage && showIndividualBooking && (
           <div className="search-section">
             {loadingRoutes ? (
               <div className="loading">
@@ -356,17 +417,6 @@ function App() {
 
                 <div className="search-mode-toggle">
                   <button
-                    className={`mode-toggle-btn ${searchMode === 'route' ? 'active' : ''}`}
-                    onClick={() => {
-                      setSearchMode('route');
-                      setMapOrigin(null);
-                      setMapDestination(null);
-                      setMapSelectMode('origin');
-                    }}
-                  >
-                    Use Route
-                  </button>
-                  <button
                     className={`mode-toggle-btn ${searchMode === 'map' ? 'active' : ''}`}
                     onClick={() => {
                       setSearchMode('map');
@@ -376,6 +426,17 @@ function App() {
                     }}
                   >
                     Use Map
+                  </button>
+                  <button
+                    className={`mode-toggle-btn ${searchMode === 'route' ? 'active' : ''}`}
+                    onClick={() => {
+                      setSearchMode('route');
+                      setMapOrigin(null);
+                      setMapDestination(null);
+                      setMapSelectMode('origin');
+                    }}
+                  >
+                    Use Route
                   </button>
                 </div>
 
@@ -472,7 +533,7 @@ function App() {
           <div className="rides-section">
             <div className="rides-header">
               <h2>Available Rides</h2>
-              {selectedRoute && routes.find(r => r.id === selectedRoute) && (
+              {searchMode === 'route' && selectedRoute && routes.find(r => r.id === selectedRoute) && (
                 <div className="current-route">
                   <span className="route-indicator">
                     {routes.find(r => r.id === selectedRoute).origin.name} → {routes.find(r => r.id === selectedRoute).destination.name}
@@ -531,24 +592,31 @@ function App() {
               })}
             </div>
             <div className="search-again-section">
-              <div className="route-selector">
-                <label htmlFor="route-select-again" className="route-label">
-                  Change Route:
-                </label>
-                <select
-                  id="route-select-again"
-                  value={selectedRoute || ''}
-                  onChange={(e) => setSelectedRoute(e.target.value)}
-                  className="route-select"
-                >
-                  {routes.map((route) => (
-                    <option key={route.id} value={route.id}>
-                      {route.origin.name} → {route.destination.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <button onClick={searchRides} className="search-again-button">
+              {searchMode === 'route' && (
+                <div className="route-selector">
+                  <label htmlFor="route-select-again" className="route-label">
+                    Change Route:
+                  </label>
+                  <select
+                    id="route-select-again"
+                    value={selectedRoute || ''}
+                    onChange={(e) => setSelectedRoute(e.target.value)}
+                    className="route-select"
+                  >
+                    {routes.map((route) => (
+                      <option key={route.id} value={route.id}>
+                        {route.origin.name} → {route.destination.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              <button 
+                onClick={() => {
+                  searchRides();
+                }} 
+                className="search-again-button"
+              >
                 Search Again
               </button>
             </div>
@@ -597,6 +665,7 @@ function App() {
                   setSelectedProposal(null);
                   setProposals([]);
                   setRouteData(null);
+                  setShowIndividualBooking(false);
                 }}
                 className="new-search-button"
               >

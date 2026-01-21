@@ -9,7 +9,7 @@ function LyftBooker({ onBack }) {
   const [routes, setRoutes] = useState([]);
   const [originalUser, setOriginalUser] = useState('');
   const [selectedRoute, setSelectedRoute] = useState('');
-  const [searchMode, setSearchMode] = useState('route'); // 'route' or 'map'
+  const [searchMode, setSearchMode] = useState('map'); // 'route' or 'map' - default to 'map'
   const [mapOrigin, setMapOrigin] = useState(null);
   const [mapDestination, setMapDestination] = useState(null);
   const [mapSelectMode, setMapSelectMode] = useState('origin'); // 'origin', 'destination', or 'none'
@@ -40,9 +40,7 @@ function LyftBooker({ onBack }) {
         if (usersRes.ok) {
           const usersData = await usersRes.json();
           setUsers(usersData.users || []);
-          if (usersData.users?.length > 0) {
-            setOriginalUser(usersData.users[0].id);
-          }
+          // Don't set default user - user must select
         }
 
         if (routesRes.ok) {
@@ -64,7 +62,7 @@ function LyftBooker({ onBack }) {
   const runOrchestrator = async () => {
     // Validate based on search mode
     if (!originalUser) {
-      alert('Please select a user');
+      alert('Please select an original person (who wants the lyft sent to)');
       return;
     }
 
@@ -295,7 +293,6 @@ function LyftBooker({ onBack }) {
   return (
     <div className="lyft-booker">
       <div className="lyft-header">
-        <button className="back-button" onClick={onBack}>← Back</button>
         <h1>🚗 Lyft Booker</h1>
         <p>Get free Lyft rides by filling RideSmart capacity</p>
       </div>
@@ -303,12 +300,13 @@ function LyftBooker({ onBack }) {
       {!running && !result && (
         <div className="lyft-setup">
           <div className="setup-section">
-            <label>👤 Original Person (who wants the Lyft):</label>
+            <label>👤 Original Person (who wants the lyft sent to):</label>
             <select 
               value={originalUser} 
               onChange={(e) => setOriginalUser(e.target.value)}
               className="lyft-select"
             >
+              <option value="">-- Select a person --</option>
               {users.map(user => (
                 <option key={user.id} value={user.id}>{user.name}</option>
               ))}
@@ -319,17 +317,6 @@ function LyftBooker({ onBack }) {
             <label>📍 Route Selection:</label>
             <div className="search-mode-toggle">
               <button
-                className={`mode-toggle-btn ${searchMode === 'route' ? 'active' : ''}`}
-                onClick={() => {
-                  setSearchMode('route');
-                  setMapOrigin(null);
-                  setMapDestination(null);
-                  setMapSelectMode('origin');
-                }}
-              >
-                Use Route
-              </button>
-              <button
                 className={`mode-toggle-btn ${searchMode === 'map' ? 'active' : ''}`}
                 onClick={() => {
                   setSearchMode('map');
@@ -339,6 +326,17 @@ function LyftBooker({ onBack }) {
                 }}
               >
                 Use Map
+              </button>
+              <button
+                className={`mode-toggle-btn ${searchMode === 'route' ? 'active' : ''}`}
+                onClick={() => {
+                  setSearchMode('route');
+                  setMapOrigin(null);
+                  setMapDestination(null);
+                  setMapSelectMode('origin');
+                }}
+              >
+                Use Route
               </button>
             </div>
           </div>
@@ -428,6 +426,7 @@ function LyftBooker({ onBack }) {
             className="start-button"
             onClick={runOrchestrator}
             disabled={
+              !originalUser ||
               users.length < 2 ||
               (searchMode === 'route' && !selectedRoute) ||
               (searchMode === 'map' && (!mapOrigin || !mapDestination))

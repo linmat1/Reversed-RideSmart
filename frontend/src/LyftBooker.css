@@ -62,6 +62,7 @@
   border: 2px solid #ddd;
   border-radius: 8px;
   background: white;
+  color: #333;
   cursor: pointer;
   transition: border-color 0.2s;
 }
@@ -69,6 +70,12 @@
 .lyft-select:focus {
   border-color: #FF00BF;
   outline: none;
+}
+
+.lyft-select option {
+  background: white;
+  color: #333;
+  padding: 8px;
 }
 
 .setup-info {
@@ -343,7 +350,7 @@
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-  color: #d0d0d0;
+  color: #666;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(10px);
@@ -381,7 +388,7 @@
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-  color: #d0d0d0;
+  color: #666;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(10px);

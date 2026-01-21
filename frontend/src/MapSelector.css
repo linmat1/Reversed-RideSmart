@@ -23,13 +23,21 @@
 .map-instructions {
   margin-top: 1rem;
   padding: 1rem;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.1) 100%);
   backdrop-filter: blur(10px);
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #d0d0d0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
   text-align: center;
   font-size: 0.95rem;
+  font-weight: 500;
+}
+
+/* For light backgrounds (like in LyftBooker white card) */
+.lyft-setup .map-instructions {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  color: #333;
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .map-instructions p {
@@ -38,6 +46,12 @@
 
 .map-instructions strong {
   color: #ffffff;
+  font-weight: 700;
+}
+
+/* For light backgrounds */
+.lyft-setup .map-instructions strong {
+  color: #333;
 }
 
 /* Override Leaflet popup styles for dark theme */
