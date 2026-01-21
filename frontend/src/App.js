@@ -301,6 +301,7 @@ function App() {
           <div className="info-content">
             <strong>Service Hours</strong>
             <p>RideSmart operates <strong>5:00 PM – 4:00 AM</strong> on weekdays</p>
+            <p>==You must book within the boundaries of RideSmart, or this app will just show errors==</p>
           </div>
         </div>
       </div>
