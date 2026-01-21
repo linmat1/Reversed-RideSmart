@@ -295,6 +295,16 @@ function App() {
         </button>
       </header>
 
+      <div className="info-section">
+        <div className="info-card">
+          <span className="info-icon">🕐</span>
+          <div className="info-content">
+            <strong>Service Hours</strong>
+            <p>RideSmart operates <strong>5:00 PM – 4:00 AM</strong> on weekdays</p>
+          </div>
+        </div>
+      </div>
+
       <main className="App-main">
         {error && (
           <div className="error-message">
