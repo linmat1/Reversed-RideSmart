@@ -28,6 +28,7 @@ function App() {
   const [loadingRoute, setLoadingRoute] = useState(false);
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [gettingLocation, setGettingLocation] = useState(false);
 
   useEffect(() => {
     // Fetch available users on component mount
@@ -274,6 +275,50 @@ function App() {
     }
   };
 
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser');
+      return;
+    }
+
+    setGettingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const coords = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+        setMapOrigin(coords);
+        setMapSelectMode('destination');
+        setGettingLocation(false);
+      },
+      (error) => {
+        setGettingLocation(false);
+        let errorMessage = 'Unable to get your location. ';
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage += 'Please allow location access in your browser settings.';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage += 'Location information is unavailable.';
+            break;
+          case error.TIMEOUT:
+            errorMessage += 'Location request timed out.';
+            break;
+          default:
+            errorMessage += 'An unknown error occurred.';
+            break;
+        }
+        alert(errorMessage);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+  };
+
   // If in Lyft Booker mode, show that component
   if (appMode === 'lyft') {
     return (
@@ -470,6 +515,14 @@ function App() {
                           disabled={!mapOrigin && mapSelectMode !== 'origin'}
                         >
                           {mapOrigin ? '✓ Origin Set' : 'Set Origin'}
+                        </button>
+                        <button
+                          className="map-current-location-btn"
+                          onClick={getCurrentLocation}
+                          disabled={gettingLocation}
+                          title="Use your current location as origin"
+                        >
+                          {gettingLocation ? '📍 Getting Location...' : '📍 Use Current Location'}
                         </button>
                         <button
                           className={`map-select-btn ${mapSelectMode === 'destination' ? 'active' : ''}`}

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './MapSelector.css';
@@ -46,6 +46,17 @@ function MapClickHandler({ onMapClick, selectMode }) {
   return null;
 }
 
+// Component to center map on origin when it changes
+function MapCenter({ center, zoom }) {
+  const map = useMap();
+  useEffect(() => {
+    if (center) {
+      map.setView(center, zoom || map.getZoom());
+    }
+  }, [center, zoom, map]);
+  return null;
+}
+
 function MapSelector({ origin, destination, onOriginSelect, onDestinationSelect, selectMode }) {
   const [mapReady, setMapReady] = useState(false);
 
@@ -69,6 +80,10 @@ function MapSelector({ origin, destination, onOriginSelect, onDestinationSelect,
   // Default center (University of Chicago area)
   const defaultCenter = [41.788064, -87.601145];
   const defaultZoom = 13;
+  
+  // Determine map center - use origin if set, otherwise use default
+  const mapCenter = origin ? [origin.lat, origin.lng] : defaultCenter;
+  const mapZoom = origin ? 15 : defaultZoom; // Zoom in more when origin is set
 
   if (!mapReady) {
     return <div className="map-loading">Loading map...</div>;
@@ -77,15 +92,17 @@ function MapSelector({ origin, destination, onOriginSelect, onDestinationSelect,
   return (
     <div className="map-selector-container">
       <MapContainer
-        center={defaultCenter}
-        zoom={defaultZoom}
+        center={mapCenter}
+        zoom={mapZoom}
         style={{ height: '400px', width: '100%', borderRadius: '12px' }}
         className="map-container"
+        key={`${mapCenter[0]}-${mapCenter[1]}`} // Force re-render when center changes
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        <MapCenter center={mapCenter} zoom={mapZoom} />
         <MapClickHandler onMapClick={handleMapClick} selectMode={selectMode} />
         {origin && (
           <Marker position={[origin.lat, origin.lng]} icon={originIcon}>
