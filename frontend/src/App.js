@@ -476,16 +476,9 @@ function App() {
                 const eta = formatTime(pickup.eta_ts);
                 
                 // Determine if it's RideSmart or Lyft
-                // Check multiple possible indicators for Lyft
-                const rideSupplier = proposal.ride_supplier || rideInfo.ride_supplier;
-                const proposalOptionsId = proposal.proposal_options_id || '';
-                const externalProviderType = proposal.extra_details?.external_provider_type || 
-                                            rideInfo.extra_details?.external_provider_type || '';
-                const isLyft = rideSupplier === 1 || 
-                              proposal.type === 'lyft' || 
-                              proposal.provider === 'lyft' ||
-                              proposalOptionsId.toLowerCase().includes('lyft') ||
-                              externalProviderType.toLowerCase() === 'lyft';
+                // Simple approach: scan the entire proposal for "lyft" anywhere
+                const proposalStr = JSON.stringify(proposal).toLowerCase();
+                const isLyft = proposalStr.includes('lyft');
                 const vehicleType = isLyft ? '🚗 Lyft' : '🚐 RideSmart';
 
                 return (

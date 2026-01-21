@@ -83,21 +83,10 @@ class LyftOrchestrator:
         ridesmart_proposals = []
         
         for p in proposals:
-            ride_info = p.get('ride_info', {})
-            ride_supplier = p.get('ride_supplier') or ride_info.get('ride_supplier')
-            
-            # Check multiple possible indicators for Lyft
-            proposal_options_id = p.get('proposal_options_id', '') or ''
-            extra_details = p.get('extra_details', {}) or ride_info.get('extra_details', {}) or {}
-            external_provider_type = extra_details.get('external_provider_type', '') or ''
-            
-            is_lyft = (
-                ride_supplier == 1 or 
-                p.get('type') == 'lyft' or 
-                p.get('provider') == 'lyft' or
-                'lyft' in proposal_options_id.lower() or
-                external_provider_type.lower() == 'lyft'
-            )
+            # Simple approach: scan the entire proposal for "lyft" anywhere
+            import json
+            proposal_str = json.dumps(p).lower()
+            is_lyft = 'lyft' in proposal_str
             
             if is_lyft:
                 lyft_proposals.append(p)
