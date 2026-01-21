@@ -279,7 +279,7 @@ function App() {
     return (
       <div className="App">
         <header className="App-header">
-          <h1>RideSmart</h1>
+          <h1>RideSmarter</h1>
           <p>Get Free Lyft Rides</p>
         </header>
 
@@ -288,7 +288,7 @@ function App() {
             <div className="info-content">
               <div className="info-item">
                 <span className="info-label">Service Hours:</span>
-                <span className="info-value">5:00 PM – 4:00 AM on weekdays</span>
+                <span className="info-value">5:00 PM – 4:00 AM</span>
               </div>
               <div className="info-item">
                 <span className="info-label">Boundaries:</span>
