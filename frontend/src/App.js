@@ -29,6 +29,7 @@ function App() {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [gettingLocation, setGettingLocation] = useState(false);
+  const [centerOnOrigin, setCenterOnOrigin] = useState(false); // Only center when using current location
 
   useEffect(() => {
     // Fetch available users on component mount
@@ -290,7 +291,10 @@ function App() {
         };
         setMapOrigin(coords);
         setMapSelectMode('destination');
+        setCenterOnOrigin(true); // Trigger map centering only for current location
         setGettingLocation(false);
+        // Reset centerOnOrigin after a brief moment so it can be triggered again if needed
+        setTimeout(() => setCenterOnOrigin(false), 100);
       },
       (error) => {
         setGettingLocation(false);
@@ -510,39 +514,69 @@ function App() {
                     <div className="map-controls">
                       <div className="map-buttons">
                         <button
-                          className={`map-select-btn ${mapSelectMode === 'origin' ? 'active' : ''}`}
-                          onClick={() => setMapSelectMode('origin')}
-                          disabled={!mapOrigin && mapSelectMode !== 'origin'}
-                        >
-                          {mapOrigin ? '✓ Origin Set' : 'Set Origin'}
-                        </button>
-                        <button
                           className="map-current-location-btn"
                           onClick={getCurrentLocation}
                           disabled={gettingLocation}
                           title="Use your current location as origin"
                         >
-                          {gettingLocation ? '📍 Getting Location...' : '📍 Use Current Location'}
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="8" cy="8" r="4" fill="currentColor"/>
+                            <rect x="7" y="2" width="2" height="2" fill="currentColor"/>
+                            <rect x="7" y="12" width="2" height="2" fill="currentColor"/>
+                            <rect x="2" y="7" width="2" height="2" fill="currentColor"/>
+                            <rect x="12" y="7" width="2" height="2" fill="currentColor"/>
+                          </svg>
+                          <span className="current-location-text">
+                            <span>Use current</span>
+                            <span>location</span>
+                          </span>
+                        </button>
+                        <button
+                          className={`map-select-btn ${mapSelectMode === 'origin' ? 'active' : ''}`}
+                          onClick={() => setMapSelectMode('origin')}
+                          disabled={!mapOrigin && mapSelectMode !== 'origin'}
+                        >
+                          {mapOrigin ? (
+                            <>
+                              <span>✓ Origin</span>
+                              <span>Set</span>
+                            </>
+                          ) : (
+                            <>
+                              <span>Set</span>
+                              <span>Origin</span>
+                            </>
+                          )}
                         </button>
                         <button
                           className={`map-select-btn ${mapSelectMode === 'destination' ? 'active' : ''}`}
                           onClick={() => setMapSelectMode('destination')}
                           disabled={!mapDestination && mapSelectMode !== 'destination'}
                         >
-                          {mapDestination ? '✓ Destination Set' : 'Set Destination'}
+                          {mapDestination ? (
+                            <>
+                              <span>✓ Destination</span>
+                              <span>Set</span>
+                            </>
+                          ) : (
+                            <>
+                              <span>Set</span>
+                              <span>Destination</span>
+                            </>
+                          )}
                         </button>
-                        {(mapOrigin || mapDestination) && (
-                          <button
-                            className="map-clear-btn"
-                            onClick={() => {
-                              setMapOrigin(null);
-                              setMapDestination(null);
-                              setMapSelectMode('origin');
-                            }}
-                          >
-                            Clear All
-                          </button>
-                        )}
+                        <button
+                          className="map-clear-btn"
+                          onClick={() => {
+                            setMapOrigin(null);
+                            setMapDestination(null);
+                            setMapSelectMode('origin');
+                          }}
+                          disabled={!mapOrigin && !mapDestination}
+                          title="Clear all selected locations"
+                        >
+                          Clear All
+                        </button>
                       </div>
                     </div>
                     <MapSelector
@@ -551,12 +585,14 @@ function App() {
                       onOriginSelect={(coords) => {
                         setMapOrigin(coords);
                         setMapSelectMode('destination');
+                        setCenterOnOrigin(false); // Don't center when manually clicking
                       }}
                       onDestinationSelect={(coords) => {
                         setMapDestination(coords);
                         setMapSelectMode('none');
                       }}
                       selectMode={mapSelectMode}
+                      centerOnOrigin={centerOnOrigin}
                     />
                   </>
                 )}

@@ -46,18 +46,18 @@ function MapClickHandler({ onMapClick, selectMode }) {
   return null;
 }
 
-// Component to center map on origin when it changes
-function MapCenter({ center, zoom }) {
+// Component to center map on a specific location (only used when explicitly needed)
+function MapCenter({ center, zoom, shouldCenter }) {
   const map = useMap();
   useEffect(() => {
-    if (center) {
+    if (shouldCenter && center) {
       map.setView(center, zoom || map.getZoom());
     }
-  }, [center, zoom, map]);
+  }, [shouldCenter, center, zoom, map]);
   return null;
 }
 
-function MapSelector({ origin, destination, onOriginSelect, onDestinationSelect, selectMode }) {
+function MapSelector({ origin, destination, onOriginSelect, onDestinationSelect, selectMode, centerOnOrigin }) {
   const [mapReady, setMapReady] = useState(false);
 
   useEffect(() => {
@@ -80,10 +80,6 @@ function MapSelector({ origin, destination, onOriginSelect, onDestinationSelect,
   // Default center (University of Chicago area)
   const defaultCenter = [41.788064, -87.601145];
   const defaultZoom = 13;
-  
-  // Determine map center - use origin if set, otherwise use default
-  const mapCenter = origin ? [origin.lat, origin.lng] : defaultCenter;
-  const mapZoom = origin ? 15 : defaultZoom; // Zoom in more when origin is set
 
   if (!mapReady) {
     return <div className="map-loading">Loading map...</div>;
@@ -92,17 +88,18 @@ function MapSelector({ origin, destination, onOriginSelect, onDestinationSelect,
   return (
     <div className="map-selector-container">
       <MapContainer
-        center={mapCenter}
-        zoom={mapZoom}
+        center={defaultCenter}
+        zoom={defaultZoom}
         style={{ height: '400px', width: '100%', borderRadius: '12px' }}
         className="map-container"
-        key={`${mapCenter[0]}-${mapCenter[1]}`} // Force re-render when center changes
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <MapCenter center={mapCenter} zoom={mapZoom} />
+        {centerOnOrigin && origin && (
+          <MapCenter center={[origin.lat, origin.lng]} zoom={15} shouldCenter={centerOnOrigin} />
+        )}
         <MapClickHandler onMapClick={handleMapClick} selectMode={selectMode} />
         {origin && (
           <Marker position={[origin.lat, origin.lng]} icon={originIcon}>

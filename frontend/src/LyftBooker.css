@@ -401,7 +401,7 @@
   display: flex;
   gap: 1rem;
   justify-content: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap; /* Keep all buttons on one line */
   min-height: 50px; /* Prevent layout shifts when buttons change state */
   align-items: center;
 }
@@ -417,6 +417,20 @@
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(10px);
+  width: 160px; /* Fixed width to prevent size changes - set to accommodate "✓ Destination Set" */
+  text-align: center;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  line-height: 1.2;
+}
+
+.map-select-btn span {
+  display: block;
 }
 
 .map-select-btn:hover:not(:disabled) {
@@ -437,8 +451,8 @@
 }
 
 .map-current-location-btn {
-  padding: 0.75rem 1.5rem;
-  font-size: 0.95rem;
+  padding: 0.5rem 0.6rem;
+  font-size: 0.75rem;
   font-weight: 600;
   border-radius: 8px;
   border: 1px solid rgba(33, 150, 243, 0.3);
@@ -447,6 +461,30 @@
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  flex-direction: column;
+  width: auto;
+  min-width: 0;
+}
+
+.map-current-location-btn svg {
+  flex-shrink: 0;
+}
+
+.current-location-text {
+  font-size: 0.65rem;
+  line-height: 1.1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.current-location-text span {
+  display: block;
 }
 
 .map-current-location-btn:hover:not(:disabled) {
@@ -473,8 +511,13 @@
   backdrop-filter: blur(10px);
 }
 
-.map-clear-btn:hover {
+.map-clear-btn:hover:not(:disabled) {
   background: linear-gradient(135deg, rgba(220, 53, 69, 0.3) 0%, rgba(220, 53, 69, 0.2) 100%);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(220, 53, 69, 0.2);
+}
+
+.map-clear-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
