@@ -2,7 +2,7 @@
 Flask API backend for RideSmart React frontend
 Exposes Python functions as REST API endpoints
 """
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response, stream_with_context
 from flask_cors import CORS
 from src.search_ride import search_ride
 from src.book_ride import book_ride
@@ -13,6 +13,8 @@ from src.destination_config import LOCATIONS, get_location_pair
 from src.users import list_users, get_user, get_auth_token, get_user_id, USERS
 from src.lyft_orchestrator import LyftOrchestrator
 import json
+import queue
+import threading
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for React frontend
@@ -195,13 +197,15 @@ def get_users():
 @app.route('/api/lyft/run', methods=['POST'])
 def run_lyft_orchestrator():
     """
-    Run the Lyft orchestrator to get a free Lyft ride.
+    Run the Lyft orchestrator to get a free Lyft ride (with live streaming logs).
     
     Request body:
         - original_user: str, user key of person who wants the Lyft
         - route_id: str, route ID from destination_config (optional)
         - origin: dict, custom origin (optional, used if route_id not provided)
         - destination: dict, custom destination (optional)
+    
+    Returns Server-Sent Events stream with live logs and final result.
     """
     try:
         data = request.get_json()
@@ -225,16 +229,112 @@ def run_lyft_orchestrator():
             origin = data.get('origin', config.default_origin)
             destination = data.get('destination', config.default_destination)
         
-        # Run the orchestrator
-        orchestrator = LyftOrchestrator(original_user, origin, destination)
-        result = orchestrator.run()
+        # Create a queue for log messages
+        log_queue = queue.Queue()
+        result_container = {'result': None}
         
-        return jsonify({
-            "success": result['success'],
-            "message": result['message'],
-            "lyft_booking": result['lyft_booking'],
-            "log": orchestrator.log
-        })
+        def log_callback(message):
+            """Callback function to send logs to the queue."""
+            log_queue.put(('log', message))
+        
+        def run_orchestrator():
+            """Run the orchestrator in a separate thread."""
+            try:
+                orchestrator = LyftOrchestrator(original_user, origin, destination, log_callback=log_callback)
+                result = orchestrator.run()
+                result_container['result'] = result
+                log_queue.put(('result', result))
+            except Exception as e:
+                log_queue.put(('error', str(e)))
+        
+        # Start orchestrator in a thread
+        thread = threading.Thread(target=run_orchestrator, daemon=True)
+        thread.start()
+        
+        def generate():
+            """Generator function for Server-Sent Events."""
+            while True:
+                try:
+                    # Get message from queue with timeout
+                    item = log_queue.get(timeout=1)
+                    msg_type, content = item
+                    
+                    if msg_type == 'log':
+                        # Send log message
+                        yield f"data: {json.dumps({'type': 'log', 'message': content})}\n\n"
+                    elif msg_type == 'result':
+                        # Send final result
+                        yield f"data: {json.dumps({'type': 'result', 'data': content})}\n\n"
+                        break
+                    elif msg_type == 'error':
+                        # Send error
+                        yield f"data: {json.dumps({'type': 'error', 'message': content})}\n\n"
+                        break
+                except queue.Empty:
+                    # Check if thread is still alive
+                    if not thread.is_alive():
+                        # Thread finished, check for result
+                        if result_container['result']:
+                            yield f"data: {json.dumps({'type': 'result', 'data': result_container['result']})}\n\n"
+                        break
+                    # Send keepalive
+                    yield ": keepalive\n\n"
+        
+        return Response(
+            stream_with_context(generate()),
+            mimetype='text/event-stream',
+            headers={
+                'Cache-Control': 'no-cache',
+                'X-Accel-Buffering': 'no',
+                'Connection': 'keep-alive'
+            }
+        )
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/lyft/cancel-booking', methods=['POST'])
+def cancel_individual_booking():
+    """
+    Manually cancel a specific booking (filler or original user's booking).
+    
+    Request body:
+        - user_id: str, user key of the person whose booking to cancel
+        - ride_id: int, the ride ID to cancel
+    """
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+        
+        user_key = data.get('user_id')
+        ride_id = data.get('ride_id')
+        
+        if not user_key:
+            return jsonify({"error": "Missing user_id"}), 400
+        if not ride_id:
+            return jsonify({"error": "Missing ride_id"}), 400
+        
+        if user_key not in USERS:
+            return jsonify({"error": f"User '{user_key}' not found"}), 400
+        
+        # Cancel the ride
+        auth_token = get_auth_token(user_key)
+        user_id = get_user_id(user_key)
+        
+        response = cancel_ride(ride_id, auth_token=auth_token, user_id=user_id)
+        
+        if response:
+            user_name = USERS[user_key]['name']
+            return jsonify({
+                "success": True,
+                "message": f"Successfully cancelled {user_name}'s booking (ride ID: {ride_id})",
+                "cancellation_response": response
+            })
+        else:
+            return jsonify({
+                "success": False,
+                "message": f"Failed to cancel booking (ride ID: {ride_id})"
+            }), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
