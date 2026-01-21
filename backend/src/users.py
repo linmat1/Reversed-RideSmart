@@ -24,8 +24,15 @@ from dotenv import load_dotenv
 
 # Load environment variables from .env file
 # Look for .env in the backend directory
-env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
-load_dotenv(env_path)
+backend_dir = os.path.dirname(os.path.dirname(__file__))
+env_path = os.path.join(backend_dir, '.env')
+
+# Try to load .env file
+if os.path.exists(env_path):
+    load_dotenv(env_path)
+else:
+    print(f"Warning: .env file not found at {env_path}")
+    print("Please create .env file from .env.example template")
 
 # Dictionary of all available users (loaded from environment variables)
 USERS = {}
@@ -62,6 +69,25 @@ for user_key in user_keys:
             }
         except ValueError:
             print(f"Warning: Invalid user_id for user {user_key}: {user_id_str}")
+    else:
+        # Warn about missing fields
+        missing = []
+        if not name:
+            missing.append('NAME')
+        if not auth_token:
+            missing.append('AUTH_TOKEN')
+        if not user_id_str:
+            missing.append('USER_ID')
+        if missing:
+            print(f"Warning: User {user_key} is missing: {', '.join(missing)}")
+
+# Warn if no users were loaded
+if not USERS:
+    print("ERROR: No users loaded from environment variables!")
+    print("Please check your .env file and ensure it follows the format:")
+    print("  USER_USERNAME_NAME=Display Name")
+    print("  USER_USERNAME_AUTH_TOKEN=your_token")
+    print("  USER_USERNAME_USER_ID=1234567")
 
 # Default user (used if no user is specified)
 # Can be overridden with DEFAULT_USER environment variable
