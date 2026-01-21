@@ -568,6 +568,7 @@ function App() {
               <div className="booked-details">
                 <p><strong>Ride ID:</strong> {bookedRide.prescheduled_ride_id}</p>
                 <p><strong>Proposal UUID:</strong> {bookedRide.proposal_uuid}</p>
+                <p><strong>📱 Check your phone</strong> - the ride details will be sent there</p>
               </div>
             </div>
             

@@ -12,6 +12,7 @@ from src import config
 from src.destination_config import LOCATIONS, get_location_pair
 from src.users import list_users, get_user, get_auth_token, get_user_id, USERS
 from src.lyft_orchestrator import LyftOrchestrator
+from src.logger import log_booking, log_lyft_orchestrator, log_search
 import json
 import queue
 import threading
@@ -63,10 +64,27 @@ def search():
         auth_token = get_auth_token(user_key) if user_key else None
         user_id = get_user_id(user_key) if user_key else None
         
+        # Get user name for logging
+        user_name = None
+        if user_key:
+            user = get_user(user_key)
+            user_name = user.get('name') if user else None
+        
         response = search_ride(origin, destination, auth_token=auth_token, user_id=user_id)
         
         if response is None:
             return jsonify({"error": "Search failed"}), 500
+        
+        # Log the search
+        proposal_count = len(response.get('proposals', []))
+        log_search(
+            user_key=user_key or 'default',
+            user_name=user_name,
+            route_id=data.get('route_id'),
+            origin=origin,
+            destination=destination,
+            proposal_count=proposal_count
+        )
         
         return jsonify(response)
     except Exception as e:
@@ -93,11 +111,46 @@ def book():
         auth_token = get_auth_token(user_key) if user_key else None
         user_id = get_user_id(user_key) if user_key else None
         
+        # Get user name for logging
+        user_name = None
+        if user_key:
+            user = get_user(user_key)
+            user_name = user.get('name') if user else None
+        
         response = book_ride(prescheduled_ride_id, proposal_uuid, origin, destination, 
                             auth_token=auth_token, user_id=user_id)
         
         if response is None:
+            # Log failed booking
+            log_booking(
+                action='book_failed',
+                user_key=user_key or 'default',
+                user_name=user_name,
+                prescheduled_ride_id=prescheduled_ride_id,
+                proposal_uuid=proposal_uuid,
+                origin=origin,
+                destination=destination
+            )
             return jsonify({"error": "Booking failed"}), 500
+        
+        # Extract ride ID from response
+        ride_id = None
+        if isinstance(response, dict):
+            rides = response.get('prescheduled_recurring_series_rides', [])
+            if rides:
+                ride_id = rides[0].get('id')
+        
+        # Log successful booking
+        log_booking(
+            action='book',
+            user_key=user_key or 'default',
+            user_name=user_name,
+            prescheduled_ride_id=prescheduled_ride_id,
+            proposal_uuid=proposal_uuid,
+            ride_id=ride_id,
+            origin=origin,
+            destination=destination
+        )
         
         return jsonify(response)
     except Exception as e:
@@ -120,10 +173,31 @@ def cancel():
         auth_token = get_auth_token(user_key) if user_key else None
         user_id = get_user_id(user_key) if user_key else None
         
+        # Get user name for logging
+        user_name = None
+        if user_key:
+            user = get_user(user_key)
+            user_name = user.get('name') if user else None
+        
         response = cancel_ride(ride_id, auth_token=auth_token, user_id=user_id)
         
         if response is None:
+            # Log failed cancellation
+            log_booking(
+                action='cancel_failed',
+                user_key=user_key or 'default',
+                user_name=user_name,
+                ride_id=ride_id
+            )
             return jsonify({"error": "Cancellation failed"}), 500
+        
+        # Log successful cancellation
+        log_booking(
+            action='cancel',
+            user_key=user_key or 'default',
+            user_name=user_name,
+            ride_id=ride_id
+        )
         
         return jsonify(response)
     except Exception as e:
@@ -240,11 +314,56 @@ def run_lyft_orchestrator():
         def run_orchestrator():
             """Run the orchestrator in a separate thread."""
             try:
+                # Get user name for logging
+                original_user_obj = get_user(original_user)
+                original_user_name = original_user_obj.get('name') if original_user_obj else None
+                
+                # Log orchestrator start
+                route_info = data.get('route_id') or 'custom'
+                log_lyft_orchestrator(
+                    action='start',
+                    original_user_key=original_user,
+                    original_user_name=original_user_name,
+                    route_id=data.get('route_id'),
+                    origin=origin,
+                    destination=destination
+                )
+                
                 orchestrator = LyftOrchestrator(original_user, origin, destination, log_callback=log_callback)
                 result = orchestrator.run()
                 result_container['result'] = result
+                
+                # Log orchestrator completion
+                if result.get('success'):
+                    log_lyft_orchestrator(
+                        action='success',
+                        original_user_key=original_user,
+                        original_user_name=original_user_name,
+                        route_id=data.get('route_id'),
+                        lyft_booking=result.get('lyft_booking') is not None,
+                        filler_bookings_count=len(orchestrator.filler_bookings)
+                    )
+                else:
+                    log_lyft_orchestrator(
+                        action='failed',
+                        original_user_key=original_user,
+                        original_user_name=original_user_name,
+                        route_id=data.get('route_id'),
+                        message=result.get('message'),
+                        filler_bookings_count=len(orchestrator.filler_bookings)
+                    )
+                
                 log_queue.put(('result', result))
             except Exception as e:
+                # Log orchestrator error
+                original_user_obj = get_user(original_user)
+                original_user_name = original_user_obj.get('name') if original_user_obj else None
+                log_lyft_orchestrator(
+                    action='error',
+                    original_user_key=original_user,
+                    original_user_name=original_user_name,
+                    error=str(e)
+                )
                 log_queue.put(('error', str(e)))
         
         # Start orchestrator in a thread

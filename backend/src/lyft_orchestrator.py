@@ -12,6 +12,7 @@ from src.search_ride import search_ride
 from src.book_ride import book_ride
 from src.cancel_ride import cancel_ride
 from src.users import USERS, get_auth_token, get_user_id, list_users
+from src.logger import log_lyft_orchestrator
 
 
 class LyftOrchestrator:
@@ -189,21 +190,59 @@ class LyftOrchestrator:
         
         self._log(f"Cancelling {len(self.filler_bookings)} filler booking(s)...")
         
+        # Log bulk cancellation start
+        log_lyft_orchestrator(
+            action='filler_cancel_all_start',
+            original_user_key=self.original_user_key,
+            filler_bookings_count=len(self.filler_bookings)
+        )
+        
         for booking in self.filler_bookings:
             try:
                 user_key = booking['user_key']
                 ride_id = booking['ride_id']
-                user_name = USERS[user_key]['name']
+                user_name = booking.get('user_name') or USERS.get(user_key, {}).get('name', 'Unknown')
                 
                 self._log(f"  Cancelling {user_name}'s booking (ride ID: {ride_id})...")
                 result = self._cancel_ride(user_key, ride_id)
                 
                 if result:
                     self._log(f"  ✓ Cancelled {user_name}'s booking")
+                    # Log filler cancellation
+                    log_lyft_orchestrator(
+                        action='filler_cancel',
+                        original_user_key=self.original_user_key,
+                        filler_user_key=user_key,
+                        filler_user_name=user_name,
+                        ride_id=ride_id,
+                        success=True
+                    )
                 else:
                     self._log(f"  ✗ Failed to cancel {user_name}'s booking")
+                    # Log failed filler cancellation
+                    log_lyft_orchestrator(
+                        action='filler_cancel',
+                        original_user_key=self.original_user_key,
+                        filler_user_key=user_key,
+                        filler_user_name=user_name,
+                        ride_id=ride_id,
+                        success=False
+                    )
             except Exception as e:
                 self._log(f"  ✗ Exception cancelling {booking.get('user_key', 'unknown')}'s booking: {str(e)}")
+                log_lyft_orchestrator(
+                    action='filler_cancel_error',
+                    original_user_key=self.original_user_key,
+                    filler_user_key=booking.get('user_key', 'unknown'),
+                    error=str(e)
+                )
+        
+        # Log bulk cancellation complete
+        log_lyft_orchestrator(
+            action='filler_cancel_all_complete',
+            original_user_key=self.original_user_key,
+            filler_bookings_count=len(self.filler_bookings)
+        )
         
         self.filler_bookings = []
     
@@ -297,6 +336,16 @@ class LyftOrchestrator:
                     self._log(f"    Pickup: {lyft_details['pickup']}")
                     self._log(f"    Dropoff: {lyft_details['dropoff']}")
                     self._log(f"    Proposal ID: {lyft_details['proposal_id']}")
+                    
+                    # Log Lyft booking attempt
+                    log_lyft_orchestrator(
+                        action='lyft_book_attempt',
+                        original_user_key=self.original_user_key,
+                        original_user_name=original_name,
+                        proposal_id=lyft_details['proposal_id'],
+                        pickup=lyft_details['pickup'],
+                        dropoff=lyft_details['dropoff']
+                    )
                     
                     booking = self._book_ride(self.original_user_key, lyft_proposal)
                     
@@ -416,6 +465,19 @@ class LyftOrchestrator:
                     self._log(f"    Proposal ID: {ride_details['proposal_id']}")
                     self._log(f"    Ride ID: {ride_details['prescheduled_ride_id']}")
                     
+                    # Log to file
+                    log_lyft_orchestrator(
+                        action='filler_book',
+                        original_user_key=self.original_user_key,
+                        filler_user_key=filler_key,
+                        filler_user_name=filler_name,
+                        ride_type='RideSmart',
+                        proposal_id=ride_details['proposal_id'],
+                        prescheduled_ride_id=ride_details['prescheduled_ride_id'],
+                        pickup=ride_details['pickup'],
+                        dropoff=ride_details['dropoff']
+                    )
+                    
                     booking = self._book_ride(filler_key, ridesmart_proposal)
                     
                     if booking:
@@ -433,6 +495,15 @@ class LyftOrchestrator:
                             })
                             self._log(f"  ✓ {filler_name} successfully booked RideSmart!")
                             self._log(f"    Confirmed Ride ID: {ride_id}")
+                            
+                            # Log successful filler booking
+                            log_lyft_orchestrator(
+                                action='filler_book_success',
+                                original_user_key=self.original_user_key,
+                                filler_user_key=filler_key,
+                                filler_user_name=filler_name,
+                                ride_id=ride_id
+                            )
                         else:
                             self._log(f"  ⚠ {filler_name} booked but couldn't extract ride ID")
                     else:

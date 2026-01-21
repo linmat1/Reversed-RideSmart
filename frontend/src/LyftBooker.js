@@ -496,6 +496,7 @@ function LyftBooker({ onBack }) {
             <div className="booking-details">
               <h4>Booking Details</h4>
               <p>Your Lyft has been booked!</p>
+              <p><strong>📱 Check your phone</strong> - the Lyft will be sent there</p>
             </div>
           )}
 
