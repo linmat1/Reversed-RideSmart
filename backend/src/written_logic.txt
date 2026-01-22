@@ -44,3 +44,12 @@ Sometimes, while the lyft orchestrator is running, the booker selector screen ju
 and the lyft orchestrator just stops in its tracks (main problem), leaving booked ridesmarts and people no-show!
 THIS CANNOT HAPPEN, booked ridesmarts MUST be cancelled after attempting to be used as fillers!
 Can you please look very thoroughly into this and fix this problem, and try and test where you can to make sure this does not happen
+
+=====
+
+There seems to be a big issue on mobile. Sometimes when booking, the connection error shows, and
+THE RIDES AREN'T Cancelled! I told you at all costs, whatever happens, in case of error, the server MUST
+cancel all of the rideshare rides.
+
+Please diagnose this thoroughly, and test that you have actually fixed this. It seems to be a mobile issue,
+doesn't seem to have an issue on computer for some reason.

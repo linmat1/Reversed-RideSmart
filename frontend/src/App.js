@@ -3,6 +3,7 @@ import './App.css';
 import MapSelector from './MapSelector';
 import RouteMap from './RouteMap';
 import LyftBooker from './LyftBooker';
+import MaintenancePage from './MaintenancePage';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
@@ -322,6 +323,13 @@ function App() {
       }
     );
   };
+
+  // Check for maintenance mode
+  const maintenanceMode = process.env.REACT_APP_MAINTENANCE_MODE === 'true';
+  
+  if (maintenanceMode) {
+    return <MaintenancePage />;
+  }
 
   // If in Lyft Booker mode, show that component
   if (appMode === 'lyft') {
