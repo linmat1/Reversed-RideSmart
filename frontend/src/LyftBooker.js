@@ -128,10 +128,13 @@ function LyftBooker({ onBack }) {
       const decoder = new TextDecoder();
       let buffer = '';
 
+      let streamClosed = false;
+      
       while (true) {
         const { done, value } = await reader.read();
         
         if (done) {
+          streamClosed = true;
           // Process any remaining buffer
           if (buffer.trim()) {
             const lines = buffer.split('\n');
@@ -145,12 +148,31 @@ function LyftBooker({ onBack }) {
                       message: data.data.message,
                       booking: data.data.lyft_booking
                     });
+                    setRunning(false);
+                  } else if (data.type === 'error') {
+                    setResult({
+                      success: false,
+                      message: `Error: ${data.message}`
+                    });
+                    setLog(prev => [...prev, `ERROR: ${data.message}`]);
+                    setRunning(false);
                   }
                 } catch (e) {
                   console.error('Error parsing final SSE data:', e);
                 }
               }
             }
+          }
+          // If stream closed without result, treat as error
+          // Check if we already have a result set
+          const hasResult = result !== null;
+          if (!hasResult) {
+            setResult({
+              success: false,
+              message: 'Connection closed unexpectedly. All rides have been cancelled on the server.'
+            });
+            setLog(prev => [...prev, 'ERROR: Connection closed unexpectedly']);
+            setRunning(false);
           }
           break;
         }
@@ -233,11 +255,12 @@ function LyftBooker({ onBack }) {
         }
       }
       
-      setRunning(false);
+      // setRunning(false) is already handled in the result/error handlers above
     } catch (err) {
+      // Network error or other exception
       setResult({
         success: false,
-        message: `Error: ${err.message}`
+        message: `Connection error: ${err.message}. The server will cancel all rides automatically.`
       });
       setLog(prev => [...prev, `ERROR: ${err.message}`]);
       setRunning(false);
@@ -346,7 +369,7 @@ function LyftBooker({ onBack }) {
         <p>Get free Lyft rides by filling RideSmart capacity</p>
       </div>
 
-      {!running && !result && (
+      {!running && !result && !log.length && (
         <div className="lyft-setup">
           <div className="setup-section">
             <label>👤 Original Person (who wants the lyft sent to):</label>

@@ -150,7 +150,7 @@ class LyftOrchestrator:
         Book a ride as a specific user.
         
         Returns:
-            dict with booking response, or None if failed
+            dict with booking response if successful, or dict with error info if failed
         """
         try:
             auth_token = get_auth_token(user_key)
@@ -165,10 +165,27 @@ class LyftOrchestrator:
                 user_id=user_id
             )
             
+            # Check if response indicates an error
+            if response and isinstance(response, dict) and response.get('success') is False:
+                # This is an error response from book_ride
+                error_msg = response.get('error', 'Unknown error')
+                status_code = response.get('status_code', 'N/A')
+                return {
+                    'success': False,
+                    'error': error_msg,
+                    'status_code': status_code,
+                    'response': response
+                }
+            
             return response
         except Exception as e:
-            self._log(f"  ✗ Exception booking ride: {str(e)}")
-            return None
+            # Exception during booking
+            error_info = {
+                'success': False,
+                'error': str(e),
+                'status_code': None
+            }
+            return error_info
     
     def _cancel_ride(self, user_key, ride_id):
         """Cancel a ride as a specific user."""
@@ -270,11 +287,12 @@ class LyftOrchestrator:
     
     def _cancel_all_rides(self):
         """
-        Cancel ALL rides (both filler bookings and original user's Lyft booking).
-        This is called in case of any error to ensure no rides are left booked.
+        Cancel ALL filler RideSmart bookings (but NOT the Lyft booking).
+        This is called in case of any error to ensure no filler rides are left booked.
+        The Lyft booking should NEVER be cancelled - that's the whole point!
         """
-        self._log(f"\n=== EMERGENCY CLEANUP: Cancelling ALL rides ===")
-        self._cancel_original_lyft_booking()
+        self._log(f"\n=== EMERGENCY CLEANUP: Cancelling filler RideSmart bookings ===")
+        self._log(f"NOTE: Lyft booking is preserved (that's the goal!)")
         self._cancel_all_filler_bookings()
         self._log(f"=== Cleanup complete ===\n")
     
@@ -287,7 +305,25 @@ class LyftOrchestrator:
                 - success: bool
                 - lyft_booking: booking response if successful
                 - message: status message
+        
+        CRITICAL: This method MUST ensure all booked rides are cancelled on ANY failure.
         """
+        # Track if we've already cleaned up to prevent double cleanup
+        cleanup_done = False
+        
+        def ensure_cleanup():
+            """Ensure cleanup happens even if called multiple times.
+            Only cancels filler RideSmart bookings, NOT the Lyft booking."""
+            nonlocal cleanup_done
+            if not cleanup_done:
+                cleanup_done = True
+                try:
+                    # Only cancel filler bookings, preserve Lyft booking
+                    self._cancel_all_filler_bookings()
+                except Exception as cleanup_error:
+                    # Even cleanup can fail, but we try our best
+                    print(f"CRITICAL: Cleanup itself failed: {cleanup_error}")
+        
         try:
             self.status = "searching"
             self.log = []
@@ -349,7 +385,8 @@ class LyftOrchestrator:
                     
                     booking = self._book_ride(self.original_user_key, lyft_proposal)
                     
-                    if booking:
+                    # Check if booking was successful
+                    if booking and not (isinstance(booking, dict) and booking.get('success') is False):
                         ride_id = None
                         rides = booking.get('prescheduled_recurring_series_rides', [])
                         if rides:
@@ -371,6 +408,28 @@ class LyftOrchestrator:
                             'lyft_booking': booking,
                             'message': f"Lyft booked successfully for {original_name}"
                         }
+                    else:
+                        # Booking failed - extract error details
+                        error_msg = "Unknown error"
+                        if isinstance(booking, dict):
+                            error_msg = booking.get('error', 'Unknown error')
+                            status_code = booking.get('status_code')
+                            if status_code:
+                                error_msg = f"{error_msg} (HTTP {status_code})"
+                        
+                        # Try to extract more specific error from response
+                        if isinstance(booking, dict) and booking.get('response'):
+                            response_data = booking.get('response')
+                            if isinstance(response_data, dict):
+                                detailed_error = (response_data.get('message') or 
+                                                response_data.get('error') or 
+                                                response_data.get('error_message') or
+                                                response_data.get('detail'))
+                                if detailed_error:
+                                    error_msg = detailed_error
+                        
+                        self._log(f"✗ Failed to book Lyft for {original_name}")
+                        self._log(f"  Reason: {error_msg}")
                 
                 self._log(f"✗ Lyft not available for {original_name}")
             
@@ -409,7 +468,8 @@ class LyftOrchestrator:
                         
                         booking = self._book_ride(self.original_user_key, lyft_proposal)
                         
-                        if booking:
+                        # Check if booking was successful
+                        if booking and not (isinstance(booking, dict) and booking.get('success') is False):
                             ride_id = None
                             rides = booking.get('prescheduled_recurring_series_rides', [])
                             if rides:
@@ -437,14 +497,34 @@ class LyftOrchestrator:
                                 'message': f"Lyft booked successfully for {original_name}"
                             }
                         else:
+                            # Booking failed - extract error details
+                            error_msg = "Unknown error"
+                            if isinstance(booking, dict):
+                                error_msg = booking.get('error', 'Unknown error')
+                                status_code = booking.get('status_code')
+                                if status_code:
+                                    error_msg = f"{error_msg} (HTTP {status_code})"
+                            
+                            # Try to extract more specific error from response
+                            if isinstance(booking, dict) and booking.get('response'):
+                                response_data = booking.get('response')
+                                if isinstance(response_data, dict):
+                                    detailed_error = (response_data.get('message') or 
+                                                    response_data.get('error') or 
+                                                    response_data.get('error_message') or
+                                                    response_data.get('detail'))
+                                    if detailed_error:
+                                        error_msg = detailed_error
+                            
                             self._log(f"✗ Failed to book Lyft for {original_name}")
-                            # Error occurred - cancel all rides
-                            self._cancel_all_rides()
+                            self._log(f"  Reason: {error_msg}")
+                            # Error occurred - cancel filler bookings only
+                            ensure_cleanup()
                             self.status = "failed"
                             return {
                                 'success': False,
                                 'lyft_booking': None,
-                                'message': f"Failed to book Lyft for {original_name}"
+                                'message': f"Failed to book Lyft for {original_name}: {error_msg}. All filler bookings have been cancelled."
                             }
                     else:
                         self._log(f"✗ Lyft not available when {original_name} searched")
@@ -454,60 +534,181 @@ class LyftOrchestrator:
                     self.status = "booking"
                     self.current_step = f"Booking RideSmart with {filler_name}"
                     
-                    ridesmart_proposal = result['ridesmart_proposals'][0]
-                    ride_details = self._get_ride_details(ridesmart_proposal)
+                    # Retry logic for high demand errors
+                    max_retries = 3
+                    retry_count = 0
+                    booking_successful = False
                     
-                    # Log detailed ride information
-                    self._log(f"  Booking RideSmart with {filler_name}...")
-                    self._log(f"    Ride Type: {ride_details['type']}")
-                    self._log(f"    Pickup: {ride_details['pickup']}")
-                    self._log(f"    Dropoff: {ride_details['dropoff']}")
-                    self._log(f"    Proposal ID: {ride_details['proposal_id']}")
-                    self._log(f"    Ride ID: {ride_details['prescheduled_ride_id']}")
-                    
-                    # Log to file
-                    log_lyft_orchestrator(
-                        action='filler_book',
-                        original_user_key=self.original_user_key,
-                        filler_user_key=filler_key,
-                        filler_user_name=filler_name,
-                        ride_type='RideSmart',
-                        proposal_id=ride_details['proposal_id'],
-                        prescheduled_ride_id=ride_details['prescheduled_ride_id'],
-                        pickup=ride_details['pickup'],
-                        dropoff=ride_details['dropoff']
-                    )
-                    
-                    booking = self._book_ride(filler_key, ridesmart_proposal)
-                    
-                    if booking:
-                        # Extract ride ID for later cancellation
-                        ride_id = None
-                        rides = booking.get('prescheduled_recurring_series_rides', [])
-                        if rides:
-                            ride_id = rides[0].get('id')
-                        
-                        if ride_id:
-                            self.filler_bookings.append({
-                                'user_key': filler_key,
-                                'ride_id': ride_id,
-                                'user_name': filler_name
-                            })
-                            self._log(f"  ✓ {filler_name} successfully booked RideSmart!")
-                            self._log(f"    Confirmed Ride ID: {ride_id}")
+                    while retry_count <= max_retries and not booking_successful:
+                        if retry_count > 0:
+                            self._log(f"  Retry attempt {retry_count}/{max_retries} for {filler_name}...")
+                            # Wait a bit before retrying (exponential backoff)
+                            wait_time = min(2 * retry_count, 5)  # 2s, 4s, 5s max
+                            time.sleep(wait_time)
                             
-                            # Log successful filler booking
+                            # Re-search for rides with this filler account
+                            self._log(f"  Re-searching for rides with {filler_name}...")
+                            result = self._search_for_rides(filler_key)
+                            
+                            # Check if Lyft became available during retry
+                            if result['has_lyft']:
+                                self._log(f"\n✓ Lyft became available during retry!")
+                                self._log(f"Searching as {original_name} to book Lyft...")
+                                
+                                original_result = self._search_for_rides(self.original_user_key)
+                                
+                                if original_result['has_lyft']:
+                                    self.status = "booking"
+                                    self.current_step = f"Booking Lyft for {original_name}"
+                                    
+                                    lyft_proposal = original_result['lyft_proposal']
+                                    lyft_details = self._get_ride_details(lyft_proposal)
+                                    
+                                    self._log(f"  Booking Lyft for {original_name}...")
+                                    self._log(f"    Pickup: {lyft_details['pickup']}")
+                                    self._log(f"    Dropoff: {lyft_details['dropoff']}")
+                                    self._log(f"    Proposal ID: {lyft_details['proposal_id']}")
+                                    
+                                    booking = self._book_ride(self.original_user_key, lyft_proposal)
+                                    
+                                    # Check if booking was successful
+                                    if booking and not (isinstance(booking, dict) and booking.get('success') is False):
+                                        ride_id = None
+                                        rides = booking.get('prescheduled_recurring_series_rides', [])
+                                        if rides:
+                                            ride_id = rides[0].get('id')
+                                        
+                                        if ride_id:
+                                            self.original_lyft_booking = {
+                                                'user_key': self.original_user_key,
+                                                'ride_id': ride_id,
+                                                'user_name': original_name
+                                            }
+                                        
+                                        self._log(f"✓ SUCCESS! {original_name} booked Lyft!")
+                                        if ride_id:
+                                            self._log(f"  Confirmed Ride ID: {ride_id}")
+                                        
+                                        # Cancel all filler bookings
+                                        self._log(f"\n--- Cleanup: Cancelling filler bookings ---")
+                                        self._cancel_all_filler_bookings()
+                                        
+                                        self.status = "success"
+                                        return {
+                                            'success': True,
+                                            'lyft_booking': booking,
+                                            'message': f"Lyft booked successfully for {original_name}"
+                                        }
+                            
+                            # Check if RideSmart is still available
+                            if result['ridesmart_count'] == 0 or not result.get('ridesmart_proposals'):
+                                self._log(f"  No RideSmart rides available for retry with {filler_name}")
+                                break
+                        
+                        ridesmart_proposal = result['ridesmart_proposals'][0]
+                        ride_details = self._get_ride_details(ridesmart_proposal)
+                        
+                        # Log detailed ride information
+                        if retry_count == 0:
+                            self._log(f"  Booking RideSmart with {filler_name}...")
+                        self._log(f"    Ride Type: {ride_details['type']}")
+                        self._log(f"    Pickup: {ride_details['pickup']}")
+                        self._log(f"    Dropoff: {ride_details['dropoff']}")
+                        self._log(f"    Proposal ID: {ride_details['proposal_id']}")
+                        self._log(f"    Ride ID: {ride_details['prescheduled_ride_id']}")
+                        
+                        # Log to file (only on first attempt)
+                        if retry_count == 0:
                             log_lyft_orchestrator(
-                                action='filler_book_success',
+                                action='filler_book',
                                 original_user_key=self.original_user_key,
                                 filler_user_key=filler_key,
                                 filler_user_name=filler_name,
-                                ride_id=ride_id
+                                ride_type='RideSmart',
+                                proposal_id=ride_details['proposal_id'],
+                                prescheduled_ride_id=ride_details['prescheduled_ride_id'],
+                                pickup=ride_details['pickup'],
+                                dropoff=ride_details['dropoff']
                             )
+                        
+                        booking = self._book_ride(filler_key, ridesmart_proposal)
+                        
+                        # Check if booking was successful
+                        if booking and not (isinstance(booking, dict) and booking.get('success') is False):
+                            # Extract ride ID for later cancellation
+                            ride_id = None
+                            rides = booking.get('prescheduled_recurring_series_rides', [])
+                            if rides:
+                                ride_id = rides[0].get('id')
+                            
+                            if ride_id:
+                                self.filler_bookings.append({
+                                    'user_key': filler_key,
+                                    'ride_id': ride_id,
+                                    'user_name': filler_name
+                                })
+                                self._log(f"  ✓ {filler_name} successfully booked RideSmart!")
+                                self._log(f"    Confirmed Ride ID: {ride_id}")
+                                
+                                # Log successful filler booking
+                                log_lyft_orchestrator(
+                                    action='filler_book_success',
+                                    original_user_key=self.original_user_key,
+                                    filler_user_key=filler_key,
+                                    filler_user_name=filler_name,
+                                    ride_id=ride_id
+                                )
+                                booking_successful = True
+                            else:
+                                self._log(f"  ⚠ {filler_name} booked but couldn't extract ride ID")
+                                booking_successful = True  # Still count as success
                         else:
-                            self._log(f"  ⚠ {filler_name} booked but couldn't extract ride ID")
-                    else:
-                        self._log(f"  ✗ Failed to book RideSmart with {filler_name}")
+                            # Booking failed - extract error details
+                            error_msg = "Unknown error"
+                            if isinstance(booking, dict):
+                                error_msg = booking.get('error', 'Unknown error')
+                                status_code = booking.get('status_code')
+                                if status_code:
+                                    error_msg = f"{error_msg} (HTTP {status_code})"
+                            
+                            # Try to extract more specific error from response
+                            if isinstance(booking, dict) and booking.get('response'):
+                                response_data = booking.get('response')
+                                if isinstance(response_data, dict):
+                                    # Look for common error message fields
+                                    detailed_error = (response_data.get('message') or 
+                                                    response_data.get('error') or 
+                                                    response_data.get('error_message') or
+                                                    response_data.get('detail'))
+                                    if detailed_error:
+                                        error_msg = detailed_error
+                            
+                            self._log(f"  ✗ Failed to book RideSmart with {filler_name}")
+                            self._log(f"    Reason: {error_msg}")
+                            
+                            # Check if this is the high demand error that we should retry
+                            high_demand_error = "We're currently experiencing very high demand" in error_msg or \
+                                              "all our seats are filled" in error_msg.lower() or \
+                                              "high demand" in error_msg.lower()
+                            
+                            if high_demand_error and retry_count < max_retries:
+                                self._log(f"    High demand detected - will retry...")
+                                retry_count += 1
+                                # Continue loop to retry
+                            else:
+                                # Not a retryable error or max retries reached
+                                if retry_count >= max_retries:
+                                    self._log(f"    Max retries ({max_retries}) reached for {filler_name}")
+                                
+                                # Log failed filler booking attempt
+                                log_lyft_orchestrator(
+                                    action='filler_book_failed',
+                                    original_user_key=self.original_user_key,
+                                    filler_user_key=filler_key,
+                                    filler_user_name=filler_name,
+                                    error=error_msg
+                                )
+                                break  # Exit retry loop
                 else:
                     self._log(f"  No RideSmart rides available to book")
             
@@ -531,7 +732,8 @@ class LyftOrchestrator:
                 
                 booking = self._book_ride(self.original_user_key, lyft_proposal)
                 
-                if booking:
+                # Check if booking was successful
+                if booking and not (isinstance(booking, dict) and booking.get('success') is False):
                     ride_id = None
                     rides = booking.get('prescheduled_recurring_series_rides', [])
                     if rides:
@@ -558,6 +760,28 @@ class LyftOrchestrator:
                         'lyft_booking': booking,
                         'message': f"Lyft booked successfully for {original_name}"
                     }
+                else:
+                    # Booking failed - extract error details
+                    error_msg = "Unknown error"
+                    if isinstance(booking, dict):
+                        error_msg = booking.get('error', 'Unknown error')
+                        status_code = booking.get('status_code')
+                        if status_code:
+                            error_msg = f"{error_msg} (HTTP {status_code})"
+                    
+                    # Try to extract more specific error from response
+                    if isinstance(booking, dict) and booking.get('response'):
+                        response_data = booking.get('response')
+                        if isinstance(response_data, dict):
+                            detailed_error = (response_data.get('message') or 
+                                            response_data.get('error') or 
+                                            response_data.get('error_message') or
+                                            response_data.get('detail'))
+                            if detailed_error:
+                                error_msg = detailed_error
+                    
+                    self._log(f"✗ Failed to book Lyft for {original_name}")
+                    self._log(f"  Reason: {error_msg}")
             
             # Failed - clean up filler bookings
             self._log(f"\n✗ FAILED: Could not get Lyft for {original_name}")
@@ -570,17 +794,47 @@ class LyftOrchestrator:
                 'lyft_booking': None,
                 'message': f"Could not get Lyft - not enough filler accounts or RideSmart has too much capacity"
             }
-        except Exception as e:
-            # CRITICAL: Cancel all rides on any error
-            self._log(f"\n⚠️ CRITICAL ERROR: {str(e)}")
-            self._log(f"=== EMERGENCY CLEANUP: Cancelling ALL rides ===")
-            self._cancel_all_rides()
+        except KeyboardInterrupt:
+            # Handle interruption gracefully
+            self._log(f"\n⚠️ INTERRUPTED: Process was interrupted")
+            ensure_cleanup()
+            # Check if we have a Lyft booking to preserve
+            if self.original_lyft_booking:
+                self.status = "success"
+                return {
+                    'success': True,
+                    'lyft_booking': {'prescheduled_recurring_series_rides': [{'id': self.original_lyft_booking['ride_id']}]},
+                    'message': "Process was interrupted, but Lyft booking is preserved. Filler bookings cancelled."
+                }
             self.status = "failed"
             return {
                 'success': False,
                 'lyft_booking': None,
-                'message': f"Error occurred: {str(e)}. All rides have been cancelled."
+                'message': "Process was interrupted. All filler bookings have been cancelled."
             }
+        except Exception as e:
+            # CRITICAL: Cancel filler bookings on any error, but preserve Lyft if it exists
+            self._log(f"\n⚠️ CRITICAL ERROR: {str(e)}")
+            self._log(f"=== EMERGENCY CLEANUP: Cancelling filler RideSmart bookings ===")
+            ensure_cleanup()
+            # Check if we have a Lyft booking to preserve
+            if self.original_lyft_booking:
+                self._log(f"✓ Lyft booking preserved (ride ID: {self.original_lyft_booking['ride_id']})")
+                self.status = "success"
+                return {
+                    'success': True,
+                    'lyft_booking': {'prescheduled_recurring_series_rides': [{'id': self.original_lyft_booking['ride_id']}]},
+                    'message': f"Error occurred, but Lyft booking is preserved. Filler bookings cancelled: {str(e)}"
+                }
+            self.status = "failed"
+            return {
+                'success': False,
+                'lyft_booking': None,
+                'message': f"Error occurred: {str(e)}. All filler bookings have been cancelled."
+            }
+        finally:
+            # FINAL SAFETY NET: Ensure cleanup happens no matter what
+            ensure_cleanup()
     
     def get_status(self):
         """Get current status for UI."""

@@ -38,3 +38,9 @@ also, in case of any errors, the program MUST cancel all rides, booking a ride a
 - also provide functionality for manual canellation for each individual person separately
 
 =============================
+
+I Like the state of the app so far, but there are some errors.
+Sometimes, while the lyft orchestrator is running, the booker selector screen just randomnly pops ups again (one problem),
+and the lyft orchestrator just stops in its tracks (main problem), leaving booked ridesmarts and people no-show!
+THIS CANNOT HAPPEN, booked ridesmarts MUST be cancelled after attempting to be used as fillers!
+Can you please look very thoroughly into this and fix this problem, and try and test where you can to make sure this does not happen

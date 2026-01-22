@@ -311,8 +311,12 @@ def run_lyft_orchestrator():
             """Callback function to send logs to the queue."""
             log_queue.put(('log', message))
         
+        # Store orchestrator instance for emergency cleanup
+        orchestrator_instance = {'orchestrator': None}
+        
         def run_orchestrator():
             """Run the orchestrator in a separate thread."""
+            orchestrator = None
             try:
                 # Get user name for logging
                 original_user_obj = get_user(original_user)
@@ -330,6 +334,7 @@ def run_lyft_orchestrator():
                 )
                 
                 orchestrator = LyftOrchestrator(original_user, origin, destination, log_callback=log_callback)
+                orchestrator_instance['orchestrator'] = orchestrator  # Store for emergency cleanup
                 result = orchestrator.run()
                 result_container['result'] = result
                 
@@ -341,7 +346,7 @@ def run_lyft_orchestrator():
                         original_user_name=original_user_name,
                         route_id=data.get('route_id'),
                         lyft_booking=result.get('lyft_booking') is not None,
-                        filler_bookings_count=len(orchestrator.filler_bookings)
+                        filler_bookings_count=len(orchestrator.filler_bookings) if orchestrator else 0
                     )
                 else:
                     log_lyft_orchestrator(
@@ -350,21 +355,74 @@ def run_lyft_orchestrator():
                         original_user_name=original_user_name,
                         route_id=data.get('route_id'),
                         message=result.get('message'),
-                        filler_bookings_count=len(orchestrator.filler_bookings)
+                        filler_bookings_count=len(orchestrator.filler_bookings) if orchestrator else 0
                     )
                 
                 log_queue.put(('result', result))
+            except KeyboardInterrupt:
+                # Handle interruption - only cancel filler bookings
+                if orchestrator:
+                    try:
+                        orchestrator._cancel_all_filler_bookings()
+                        # Check if Lyft booking exists and preserve it
+                        if orchestrator.original_lyft_booking:
+                            result_container['result'] = {
+                                'success': True,
+                                'lyft_booking': {'prescheduled_recurring_series_rides': [{'id': orchestrator.original_lyft_booking['ride_id']}]},
+                                'message': 'Process was interrupted, but Lyft booking is preserved. Filler bookings cancelled.'
+                            }
+                            log_queue.put(('result', result_container['result']))
+                        else:
+                            log_queue.put(('error', 'Process was interrupted. All filler bookings have been cancelled.'))
+                    except:
+                        pass
             except Exception as e:
-                # Log orchestrator error
-                original_user_obj = get_user(original_user)
-                original_user_name = original_user_obj.get('name') if original_user_obj else None
-                log_lyft_orchestrator(
-                    action='error',
-                    original_user_key=original_user,
-                    original_user_name=original_user_name,
-                    error=str(e)
-                )
-                log_queue.put(('error', str(e)))
+                # CRITICAL: Emergency cleanup - only cancel filler bookings, preserve Lyft
+                if orchestrator:
+                    try:
+                        orchestrator._cancel_all_filler_bookings()
+                        # Check if Lyft booking exists and preserve it
+                        if orchestrator.original_lyft_booking:
+                            result_container['result'] = {
+                                'success': True,
+                                'lyft_booking': {'prescheduled_recurring_series_rides': [{'id': orchestrator.original_lyft_booking['ride_id']}]},
+                                'message': f'Error occurred, but Lyft booking is preserved. Filler bookings cancelled: {str(e)}'
+                            }
+                            log_queue.put(('result', result_container['result']))
+                        else:
+                            # Log orchestrator error
+                            original_user_obj = get_user(original_user)
+                            original_user_name = original_user_obj.get('name') if original_user_obj else None
+                            log_lyft_orchestrator(
+                                action='error',
+                                original_user_key=original_user,
+                                original_user_name=original_user_name,
+                                error=str(e)
+                            )
+                            error_msg = f"Error: {str(e)}. All filler bookings have been cancelled."
+                            log_queue.put(('error', error_msg))
+                    except Exception as cleanup_error:
+                        print(f"CRITICAL: Emergency cleanup failed: {cleanup_error}")
+                        # Still try to preserve Lyft booking info if available
+                        if orchestrator and orchestrator.original_lyft_booking:
+                            result_container['result'] = {
+                                'success': True,
+                                'lyft_booking': {'prescheduled_recurring_series_rides': [{'id': orchestrator.original_lyft_booking['ride_id']}]},
+                                'message': f'Error occurred, but Lyft booking is preserved. Cleanup failed: {str(e)}'
+                            }
+                            log_queue.put(('result', result_container['result']))
+                else:
+                    # Log orchestrator error
+                    original_user_obj = get_user(original_user)
+                    original_user_name = original_user_obj.get('name') if original_user_obj else None
+                    log_lyft_orchestrator(
+                        action='error',
+                        original_user_key=original_user,
+                        original_user_name=original_user_name,
+                        error=str(e)
+                    )
+                    error_msg = f"Error: {str(e)}. All filler bookings have been cancelled."
+                    log_queue.put(('error', error_msg))
         
         # Start orchestrator in a thread
         thread = threading.Thread(target=run_orchestrator, daemon=True)
@@ -372,32 +430,82 @@ def run_lyft_orchestrator():
         
         def generate():
             """Generator function for Server-Sent Events."""
-            while True:
-                try:
-                    # Get message from queue with timeout
-                    item = log_queue.get(timeout=1)
-                    msg_type, content = item
-                    
-                    if msg_type == 'log':
-                        # Send log message
-                        yield f"data: {json.dumps({'type': 'log', 'message': content})}\n\n"
-                    elif msg_type == 'result':
-                        # Send final result
-                        yield f"data: {json.dumps({'type': 'result', 'data': content})}\n\n"
-                        break
-                    elif msg_type == 'error':
-                        # Send error
-                        yield f"data: {json.dumps({'type': 'error', 'message': content})}\n\n"
-                        break
-                except queue.Empty:
-                    # Check if thread is still alive
-                    if not thread.is_alive():
-                        # Thread finished, check for result
-                        if result_container['result']:
-                            yield f"data: {json.dumps({'type': 'result', 'data': result_container['result']})}\n\n"
-                        break
-                    # Send keepalive
-                    yield ": keepalive\n\n"
+            try:
+                while True:
+                    try:
+                        # Get message from queue with timeout
+                        item = log_queue.get(timeout=1)
+                        msg_type, content = item
+                        
+                        if msg_type == 'log':
+                            # Send log message
+                            yield f"data: {json.dumps({'type': 'log', 'message': content})}\n\n"
+                        elif msg_type == 'result':
+                            # Send final result
+                            yield f"data: {json.dumps({'type': 'result', 'data': content})}\n\n"
+                            break
+                        elif msg_type == 'error':
+                            # Send error
+                            yield f"data: {json.dumps({'type': 'error', 'message': content})}\n\n"
+                            break
+                    except queue.Empty:
+                        # Check if thread is still alive
+                        if not thread.is_alive():
+                            # Thread finished, check for result
+                            if result_container['result']:
+                                yield f"data: {json.dumps({'type': 'result', 'data': result_container['result']})}\n\n"
+                            else:
+                                # Thread died without result - emergency cleanup (only filler bookings)
+                                if orchestrator_instance['orchestrator']:
+                                    try:
+                                        orchestrator = orchestrator_instance['orchestrator']
+                                        orchestrator._cancel_all_filler_bookings()
+                                        # Check if Lyft booking exists and preserve it
+                                        if orchestrator.original_lyft_booking:
+                                            result_data = {
+                                                'success': True,
+                                                'lyft_booking': {'prescheduled_recurring_series_rides': [{'id': orchestrator.original_lyft_booking['ride_id']}]},
+                                                'message': 'Thread died unexpectedly, but Lyft booking is preserved. Filler bookings cancelled.'
+                                            }
+                                            yield f"data: {json.dumps({'type': 'result', 'data': result_data})}\n\n"
+                                        else:
+                                            yield f"data: {json.dumps({'type': 'error', 'message': 'Orchestrator thread died unexpectedly. All filler bookings have been cancelled.'})}\n\n"
+                                    except:
+                                        yield f"data: {json.dumps({'type': 'error', 'message': 'Orchestrator thread died unexpectedly. Attempted to cancel filler bookings.'})}\n\n"
+                                else:
+                                    yield f"data: {json.dumps({'type': 'error', 'message': 'Orchestrator thread died unexpectedly.'})}\n\n"
+                            break
+                        # Send keepalive
+                        yield ": keepalive\n\n"
+            except GeneratorExit:
+                # Client disconnected - emergency cleanup (only filler bookings, preserve Lyft)
+                if orchestrator_instance['orchestrator']:
+                    try:
+                        orchestrator_instance['orchestrator']._cancel_all_filler_bookings()
+                        # Lyft booking is preserved automatically since we only cancel filler bookings
+                    except:
+                        pass
+                raise
+            except Exception as e:
+                # Any other error - emergency cleanup (only filler bookings, preserve Lyft)
+                if orchestrator_instance['orchestrator']:
+                    try:
+                        orchestrator = orchestrator_instance['orchestrator']
+                        orchestrator._cancel_all_filler_bookings()
+                        # Check if Lyft booking exists and try to send it
+                        if orchestrator.original_lyft_booking:
+                            result_data = {
+                                'success': True,
+                                'lyft_booking': {'prescheduled_recurring_series_rides': [{'id': orchestrator.original_lyft_booking['ride_id']}]},
+                                'message': f'Stream error, but Lyft booking is preserved. Filler bookings cancelled: {str(e)}'
+                            }
+                            yield f"data: {json.dumps({'type': 'result', 'data': result_data})}\n\n"
+                        else:
+                            yield f"data: {json.dumps({'type': 'error', 'message': f'Stream error: {str(e)}. All filler bookings have been cancelled.'})}\n\n"
+                    except:
+                        yield f"data: {json.dumps({'type': 'error', 'message': f'Stream error: {str(e)}. Attempted to cancel filler bookings.'})}\n\n"
+                else:
+                    yield f"data: {json.dumps({'type': 'error', 'message': f'Stream error: {str(e)}'})}\n\n"
         
         return Response(
             stream_with_context(generate()),

@@ -328,8 +328,15 @@ function App() {
     return (
       <div className="App">
         <header className="App-header">
-          <h1>RideSmarter</h1>
-          <p>Get Free Lyft Rides</p>
+          <div className="header-content">
+            <div className="header-title">
+              <h1>RideSmarter</h1>
+              <p>Get Free Lyft Rides</p>
+            </div>
+            <button className="developer-toggle" onClick={() => {}}>
+              Developer
+            </button>
+          </div>
         </header>
 
         <div className="info-section">
@@ -342,6 +349,14 @@ function App() {
               <div className="info-item">
                 <span className="info-label">Boundaries:</span>
                 <span className="info-value">You must book within RideSmart boundaries, or this app will show errors</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">IMPORTANT:</span>
+                <span className="info-value">Do not leave or refresh site while booking in progress</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">CONTACT:</span>
+                <span className="info-value">+447754666843 on WhatsApp</span>
               </div>
             </div>
           </div>
@@ -370,17 +385,24 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>RideSmart</h1>
-        <p>Search, Book, and Cancel Rides</p>
-        <button 
-          className="lyft-mode-button"
-          onClick={() => {
-            setAppMode('lyft');
-            setShowIndividualBooking(false);
-          }}
-        >
-          🚗 Lyft Booker Mode
-        </button>
+        <div className="header-content">
+          <div className="header-title">
+            <h1>RideSmart</h1>
+            <p>Search, Book, and Cancel Rides</p>
+            <button 
+              className="lyft-mode-button"
+              onClick={() => {
+                setAppMode('lyft');
+                setShowIndividualBooking(false);
+              }}
+            >
+              🚗 Lyft Booker Mode
+            </button>
+          </div>
+          <button className="developer-toggle" onClick={() => {}}>
+            Developer
+          </button>
+        </div>
       </header>
 
       <div className="info-section">
@@ -393,6 +415,14 @@ function App() {
             <div className="info-item">
               <span className="info-label">Boundaries:</span>
               <span className="info-value">You must book within RideSmart boundaries, or this app will show errors</span>
+            </div>
+            <div className="info-item">
+              <span className="info-label">IMPORTANT:</span>
+              <span className="info-value">Do not leave or refresh site while booking in progress</span>
+            </div>
+            <div className="info-item">
+              <span className="info-label">CONTACT:</span>
+              <span className="info-value">+447754666843 on WhatsApp</span>
             </div>
           </div>
         </div>

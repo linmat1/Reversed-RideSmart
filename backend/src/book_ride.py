@@ -112,25 +112,65 @@ def book_ride(prescheduled_ride_id, proposal_uuid, origin, destination, auth_tok
         # Make POST request with JSON data
         response = requests.post(url, json=payload, headers=headers)
         
-        # Check if request was successful
-        response.raise_for_status()
-        
         # Print response status and content
         print(f"Status Code: {response.status_code}\n")
         
-        # Try to pretty print JSON response
+        # Try to parse JSON response
         try:
             response_json = response.json()
             print("Response (pretty printed):")
             print(json.dumps(response_json, indent=2))
-            return response_json
+            
+            # Check if request was successful
+            if response.status_code == 200:
+                return response_json
+            else:
+                # Return error information
+                error_message = response_json.get('message') or response_json.get('error') or f"HTTP {response.status_code}"
+                return {
+                    'success': False,
+                    'error': error_message,
+                    'status_code': response.status_code,
+                    'response': response_json
+                }
         except ValueError:
-            # If response is not JSON, print as text
-            print("Response (text):")
-            print(response.text)
-            return response.text
+            # If response is not JSON, check status code
+            if response.status_code == 200:
+                print("Response (text):")
+                print(response.text)
+                return response.text
+            else:
+                error_message = response.text or f"HTTP {response.status_code}"
+                return {
+                    'success': False,
+                    'error': error_message,
+                    'status_code': response.status_code,
+                    'response': response.text
+                }
         
+    except requests.exceptions.HTTPError as e:
+        # HTTP error (4xx, 5xx)
+        error_info = {
+            'success': False,
+            'error': str(e),
+            'status_code': e.response.status_code if e.response else None
+        }
+        try:
+            if e.response:
+                error_info['response'] = e.response.json()
+                error_info['error'] = e.response.json().get('message') or e.response.json().get('error') or str(e)
+        except:
+            if e.response:
+                error_info['response'] = e.response.text
+        print(f"HTTP Error making request: {error_info}")
+        return error_info
     except requests.exceptions.RequestException as e:
-        print(f"Error making request: {e}")
-        return None
+        # Network or other request error
+        error_info = {
+            'success': False,
+            'error': str(e),
+            'status_code': None
+        }
+        print(f"Error making request: {error_info}")
+        return error_info
 
