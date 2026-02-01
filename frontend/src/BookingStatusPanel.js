@@ -13,9 +13,9 @@ function BookingStatusPanel() {
   const [connected, setConnected] = useState(false);
   const [collapsed, setCollapsed] = useState(() => {
     try {
-      return localStorage.getItem('bookingStatusCollapsed') === 'true';
+      return localStorage.getItem('bookingStatusCollapsed') !== 'false';
     } catch {
-      return false;
+      return true;
     }
   });
   const [error, setError] = useState(null);
@@ -146,7 +146,7 @@ function BookingStatusPanel() {
   };
 
   return (
-    <div className="booking-status-panel" aria-label="Booking status panel">
+    <div className={`booking-status-panel ${collapsed ? 'collapsed' : ''}`} aria-label="Booking status panel">
       <div
         className="booking-status-header"
         onClick={() => setCollapsed(c => !c)}
@@ -160,7 +160,7 @@ function BookingStatusPanel() {
           <span>Bookings</span>
           <span className="booking-status-conn">
             <span className={`booking-dot ${connected ? 'connected' : ''}`} />
-            {connected ? 'live' : 'polling'}
+            <span className="booking-status-conn-text">{connected ? 'live' : 'polling'}</span>
           </span>
         </div>
         <div className="booking-status-actions" onClick={(e) => e.stopPropagation()}>

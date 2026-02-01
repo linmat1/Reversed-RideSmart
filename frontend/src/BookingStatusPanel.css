@@ -15,6 +15,47 @@
   font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
 }
 
+.booking-status-panel.collapsed {
+  width: 40px;
+  height: 40px;
+  max-width: none;
+  border-radius: 50%;
+}
+
+.booking-status-panel.collapsed .booking-status-header {
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.booking-status-panel.collapsed .booking-status-title > span:first-child,
+.booking-status-panel.collapsed .booking-status-conn-text,
+.booking-status-panel.collapsed .booking-status-actions {
+  display: none;
+}
+
+.booking-status-panel.collapsed .booking-status-title {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.booking-status-panel.collapsed .booking-status-conn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.booking-status-panel.collapsed .booking-dot {
+  width: 10px;
+  height: 10px;
+  margin: 0;
+}
+
 .booking-status-header {
   display: flex;
   align-items: center;

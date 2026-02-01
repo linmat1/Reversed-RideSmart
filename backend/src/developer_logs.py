@@ -171,23 +171,36 @@ class DeveloperLogStore:
         Mark the booking with this ride_id (or prescheduled_ride_id) as cancelled.
         MUST only be called after the external cancel API (cancel_ride) has returned
         success (non-None). "Cancelled" in the UI must mean server-confirmed cancellation.
-        Returns True if found and updated.
+        Returns True if found and updated in memory; DB is always updated when using Postgres
+        so all clients/tabs/devices see "Cancelled" on next snapshot.
         """
+        now = _now_ts()
+        # When using Postgres, always persist cancellation first so every instance's
+        # next snapshot() (from DB) shows "Cancelled" even if this instance has no in-memory entry.
+        if _use_postgres():
+            try:
+                update_ride_cancelled(ride_id, now)
+            except Exception as ex:
+                print(f"Developer logs: failed to persist cancellation: {ex}")
         with self._lock:
-            now = _now_ts()
+            found = False
             for e in self._ride_entries:
                 if (e.ride_id is not None and e.ride_id == ride_id) or (
                     e.prescheduled_ride_id is not None and e.prescheduled_ride_id == ride_id
                 ):
+                    e.cancelled = True
+                    e.cancelled_at = now
+                    found = True
+                    break
+            if found:
+                # Only persist when not Postgres (Postgres already updated above)
+                if not _use_postgres():
                     try:
                         update_ride_cancelled(ride_id, now)
                     except Exception as ex:
                         print(f"Developer logs: failed to persist cancellation: {ex}")
-                    e.cancelled = True
-                    e.cancelled_at = now
-                    self._broadcast_locked()
-                    return True
-            return False
+                self._broadcast_locked()
+            return found
 
     def get_ride_log(self) -> List[Dict[str, Any]]:
         with self._lock:
