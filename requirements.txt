@@ -1,0 +1,2 @@
+# Vercel: install backend dependencies when building from repo root
+-r backend/requirements.txt
