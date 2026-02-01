@@ -6,6 +6,7 @@ Used when POSTGRES_URL or DATABASE_URL is set (e.g. Vercel + Neon/Postgres).
 from __future__ import annotations
 
 import os
+from urllib.parse import parse_qsl, urlparse, urlunparse
 from typing import Any, Dict, List
 
 try:
@@ -15,12 +16,28 @@ except ImportError:
     psycopg2 = None
     RealDictCursor = None
 
+# Query params psycopg2 accepts in a URI (others, e.g. Supabase "supa", cause invalid dsn).
+_PSYCOPG2_URI_PARAMS = frozenset(
+    {"sslmode", "sslcert", "sslkey", "sslrootcert", "connect_timeout"}
+)
+
 
 def _get_url() -> str:
     url = os.environ.get("POSTGRES_URL") or os.environ.get("DATABASE_URL")
     if not url:
         raise ValueError("POSTGRES_URL or DATABASE_URL not set")
-    return url
+    # Strip unsupported query params (e.g. Supabase adds "supa") so psycopg2.connect() doesn't fail.
+    parsed = urlparse(url)
+    if not parsed.query:
+        return url
+    kept = [(k, v) for k, v in parse_qsl(parsed.query) if k.lower() in _PSYCOPG2_URI_PARAMS]
+    new_query = "&".join(f"{k}={v}" for k, v in kept) if kept else ""
+    if not new_query:
+        new_query = "sslmode=require"  # Supabase needs SSL when we stripped unknown params
+    elif "sslmode" not in new_query.lower():
+        new_query = "sslmode=require&" + new_query
+    clean = urlunparse((parsed.scheme, parsed.netloc, parsed.path, parsed.params, new_query, parsed.fragment))
+    return clean
 
 
 def _conn():
