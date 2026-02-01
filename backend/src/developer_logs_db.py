@@ -188,3 +188,39 @@ def _row_to_access_entry(row: sqlite3.Row) -> Dict[str, Any]:
         "path": row["path"],
         "created_at": row["created_at"],
     }
+
+
+# --- Use Postgres when POSTGRES_URL or DATABASE_URL is set (e.g. Vercel + Neon) ---
+_postgres_url = os.environ.get("POSTGRES_URL") or os.environ.get("DATABASE_URL")
+if _postgres_url:
+    try:
+        from src.developer_logs_postgres import (
+            init_schema as _pg_init_schema,
+            insert_ride as _pg_insert_ride,
+            update_ride_cancelled as _pg_update_ride_cancelled,
+            insert_access as _pg_insert_access,
+            load_ride_entries as _pg_load_ride_entries,
+            load_access_entries as _pg_load_access_entries,
+        )
+
+        def init_schema(db_path: Optional[Path] = None) -> None:
+            _pg_init_schema()
+
+        def insert_ride(entry: Dict[str, Any], db_path: Optional[Path] = None) -> None:
+            _pg_insert_ride(entry)
+
+        def update_ride_cancelled(
+            ride_id: int, cancelled_at: float, db_path: Optional[Path] = None
+        ) -> bool:
+            return _pg_update_ride_cancelled(ride_id, cancelled_at)
+
+        def insert_access(entry: Dict[str, Any], db_path: Optional[Path] = None) -> None:
+            _pg_insert_access(entry)
+
+        def load_ride_entries(db_path: Optional[Path] = None) -> List[Dict[str, Any]]:
+            return _pg_load_ride_entries()
+
+        def load_access_entries(db_path: Optional[Path] = None) -> List[Dict[str, Any]]:
+            return _pg_load_access_entries()
+    except Exception as e:
+        print(f"Developer logs: Postgres not available ({e}), using SQLite")

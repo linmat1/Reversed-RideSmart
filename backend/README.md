@@ -22,6 +22,19 @@ backend/
 1. In the Vercel project **Settings → Build and Deployment → Root Directory**, set **Root Directory** to `backend` (so Vercel uses this folder as the app root).
 2. Vercel will then find the Flask entrypoint at `app.py` (which exposes the app from `api.py`) and the build should succeed.
 
+## Database (developer logs)
+
+Developer logs (ride status log + user access log) are stored in SQLite by default. On Vercel the filesystem is read-only, so logs are ephemeral unless you use a hosted database.
+
+**To persist developer logs on Vercel:**
+
+1. In the Vercel dashboard, open your **backend** project.
+2. Go to **Storage** (or **Integrations** / **Marketplace**) and create a **Postgres** database (e.g. Neon or another Postgres provider). Connect it to the backend project.
+3. Vercel will add a `POSTGRES_URL` or `DATABASE_URL` environment variable to the project automatically.
+4. Redeploy the backend. The app will use Postgres for developer logs when that variable is set; otherwise it uses SQLite (or `/tmp` on Vercel, which is ephemeral).
+
+No code changes are required: the backend checks for `POSTGRES_URL` or `DATABASE_URL` and uses Postgres when present.
+
 ## Setup
 
 1. Install Python dependencies:
