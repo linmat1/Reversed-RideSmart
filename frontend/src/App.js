@@ -4,6 +4,8 @@ import MapSelector from './MapSelector';
 import RouteMap from './RouteMap';
 import LyftBooker from './LyftBooker';
 import MaintenancePage from './MaintenancePage';
+import BookingStatusPanel from './BookingStatusPanel';
+import DeveloperPanel from './DeveloperPanel';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
@@ -31,8 +33,23 @@ function App() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [gettingLocation, setGettingLocation] = useState(false);
   const [centerOnOrigin, setCenterOnOrigin] = useState(false); // Only center when using current location
+  const [developerClickCount, setDeveloperClickCount] = useState(0);
+  const [showDeveloperPanel, setShowDeveloperPanel] = useState(false);
+
+  const handleDeveloperClick = () => {
+    const next = developerClickCount + 1;
+    if (next >= 5) {
+      setShowDeveloperPanel(true);
+      setDeveloperClickCount(0);
+    } else {
+      setDeveloperClickCount(next);
+    }
+  };
 
   useEffect(() => {
+    // Record website access for developer user log (IP, time, user-agent)
+    fetch(`${API_BASE}/api/developer/access`, { method: 'POST' }).catch(() => {});
+
     // Fetch available users on component mount
     const fetchUsers = async () => {
       try {
@@ -173,6 +190,10 @@ function App() {
         };
       }
 
+      // Determine ride type for better server-side status tracking
+      const proposalStr = JSON.stringify(proposal).toLowerCase();
+      const rideType = proposalStr.includes('lyft') ? 'Lyft' : 'RideSmart';
+
       const response = await fetch(`${API_BASE}/api/book`, {
         method: 'POST',
         headers: {
@@ -184,6 +205,7 @@ function App() {
           origin: origin,
           destination: destination,
           user_id: selectedUser,
+          ride_type: rideType,
         }),
       });
 
@@ -324,24 +346,37 @@ function App() {
     );
   };
 
+  // Developer panel (5 clicks on "Developer")
+  if (showDeveloperPanel) {
+    return (
+      <DeveloperPanel onClose={() => setShowDeveloperPanel(false)} />
+    );
+  }
+
   // Check for maintenance mode
   const maintenanceMode = process.env.REACT_APP_MAINTENANCE_MODE === 'true';
   
   if (maintenanceMode) {
-    return <MaintenancePage />;
+    return (
+      <>
+        <BookingStatusPanel />
+        <MaintenancePage />
+      </>
+    );
   }
 
   // If in Lyft Booker mode, show that component
   if (appMode === 'lyft') {
     return (
       <div className="App">
+        <BookingStatusPanel />
         <header className="App-header">
           <div className="header-content">
             <div className="header-title">
               <h1>RideSmarter</h1>
               <p>Get Free Lyft Rides</p>
             </div>
-            <button className="developer-toggle" onClick={() => {}}>
+            <button className="developer-toggle" onClick={handleDeveloperClick} type="button">
               Developer
             </button>
           </div>
@@ -392,6 +427,7 @@ function App() {
 
   return (
     <div className="App">
+      <BookingStatusPanel />
       <header className="App-header">
         <div className="header-content">
           <div className="header-title">
@@ -407,7 +443,7 @@ function App() {
               🚗 Lyft Booker Mode
             </button>
           </div>
-          <button className="developer-toggle" onClick={() => {}}>
+          <button className="developer-toggle" onClick={handleDeveloperClick} type="button">
             Developer
           </button>
         </div>

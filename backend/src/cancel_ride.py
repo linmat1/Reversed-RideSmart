@@ -1,5 +1,6 @@
 import requests
 import json
+import time
 try:
     from src import config
 except ImportError:
@@ -71,10 +72,23 @@ def cancel_ride(ride_id, auth_token=None, user_id=None):
     
     try:
         # Make POST request with JSON data
-        response = requests.post(url, json=payload, headers=headers)
-        
-        # Check if request was successful
-        response.raise_for_status()
+        # IMPORTANT: always use a timeout in production, especially on Render/mobile.
+        # Transient disconnects are common; a hanging cancel call defeats cleanup.
+        max_attempts = 3
+        last_error = None
+        for attempt in range(1, max_attempts + 1):
+            try:
+                response = requests.post(url, json=payload, headers=headers, timeout=(5, 20))
+                # Check if request was successful
+                response.raise_for_status()
+                break
+            except requests.exceptions.RequestException as e:
+                last_error = e
+                # Small backoff and retry
+                if attempt < max_attempts:
+                    time.sleep(min(0.5 * attempt, 2))
+                else:
+                    raise
         
         # Print response status and content
         print(f"Status Code: {response.status_code}\n")

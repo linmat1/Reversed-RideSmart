@@ -1,5 +1,6 @@
 import requests
 import json
+import time
 try:
     from src import config
 except ImportError:
@@ -119,8 +120,17 @@ def search_ride(origin=None, destination=None, auth_token=None, user_id=None):
     }
     
     try:
-        # Make POST request with JSON data
-        response = requests.post(url, json=payload, headers=headers)
+        # Make POST request with JSON data (always with a timeout + small retries).
+        max_attempts = 3
+        for attempt in range(1, max_attempts + 1):
+            try:
+                response = requests.post(url, json=payload, headers=headers, timeout=(5, 20))
+                break
+            except requests.exceptions.RequestException as e:
+                if attempt < max_attempts:
+                    time.sleep(min(0.5 * attempt, 2))
+                    continue
+                raise
         
         # Check if request was successful
         response.raise_for_status()

@@ -1,5 +1,6 @@
 import requests
 import json
+import time
 try:
     from src import config
 except ImportError:
@@ -109,8 +110,20 @@ def book_ride(prescheduled_ride_id, proposal_uuid, origin, destination, auth_tok
     }
     
     try:
-        # Make POST request with JSON data
-        response = requests.post(url, json=payload, headers=headers)
+        # Make POST request with JSON data (always with a timeout + small retries).
+        # Render/mobile connections can drop; we prefer a controlled error over a hang.
+        max_attempts = 3
+        last_exc = None
+        for attempt in range(1, max_attempts + 1):
+            try:
+                response = requests.post(url, json=payload, headers=headers, timeout=(5, 30))
+                break
+            except requests.exceptions.RequestException as e:
+                last_exc = e
+                if attempt < max_attempts:
+                    time.sleep(min(0.5 * attempt, 2))
+                else:
+                    raise
         
         # Print response status and content
         print(f"Status Code: {response.status_code}\n")

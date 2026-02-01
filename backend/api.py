@@ -13,12 +13,21 @@ from src.destination_config import LOCATIONS, get_location_pair
 from src.users import list_users, get_user, get_auth_token, get_user_id, USERS
 from src.lyft_orchestrator import LyftOrchestrator
 from src.logger import log_booking, log_lyft_orchestrator, log_search
+from src.booking_state import booking_state
+from src.developer_logs import developer_logs
 import json
 import queue
 import threading
+import time
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for React frontend
+
+# Initialize server-owned booking state with known users (safe if USERS is empty).
+try:
+    booking_state.init_users(USERS)
+except Exception as e:
+    print(f"Warning: could not init booking state users: {e}")
 
 @app.route('/')
 def index():
@@ -28,15 +37,116 @@ def index():
         "message": "RideSmart API is running",
         "endpoints": [
             "GET  /api/config",
-            "GET  /api/routes", 
+            "GET  /api/routes",
             "GET  /api/users",
             "POST /api/search",
             "POST /api/book",
             "POST /api/cancel",
+            "GET  /api/status",
+            "GET  /api/status/stream",
             "POST /api/lyft/run",
-            "POST /api/lyft/check"
+            "POST /api/lyft/check",
+            "GET  /api/developer/stream",
+            "GET  /api/developer/snapshot",
+            "POST /api/developer/access"
         ]
     })
+
+
+# --- Developer logs (real-time ride log + user access log) ---
+@app.route('/api/developer/stream', methods=['GET'])
+def developer_stream():
+    """Server-Sent Events stream of developer logs (ride log + user access log)."""
+    subscriber_q = developer_logs.subscribe()
+
+    def generate():
+        try:
+            while True:
+                try:
+                    payload = subscriber_q.get(timeout=10)
+                    yield f"data: {payload}\n\n"
+                except queue.Empty:
+                    yield ": keepalive\n\n"
+        except GeneratorExit:
+            developer_logs.unsubscribe(subscriber_q)
+            raise
+        except Exception:
+            developer_logs.unsubscribe(subscriber_q)
+            raise
+
+    return Response(
+        stream_with_context(generate()),
+        mimetype='text/event-stream',
+        headers={
+            'Cache-Control': 'no-cache',
+            'X-Accel-Buffering': 'no',
+            'Connection': 'keep-alive'
+        }
+    )
+
+
+@app.route('/api/developer/snapshot', methods=['GET'])
+def developer_snapshot():
+    """One-off snapshot of developer logs."""
+    try:
+        return jsonify(developer_logs.snapshot())
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/developer/access', methods=['POST', 'GET'])
+def developer_access():
+    """Record a website access (IP, time, user-agent). Called by frontend on load."""
+    try:
+        ip = request.remote_addr or ""
+        user_agent = request.headers.get("User-Agent") or ""
+        path = request.args.get("path") or request.path or "/"
+        developer_logs.append_access(ip=ip, user_agent=user_agent, path=path)
+        return jsonify({"ok": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/status', methods=['GET'])
+def get_status():
+    """Get server-owned booking status snapshot (all users)."""
+    try:
+        return jsonify(booking_state.snapshot())
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/status/stream', methods=['GET'])
+def stream_status():
+    """Server-Sent Events stream of booking status snapshots."""
+    subscriber_q = booking_state.subscribe()
+
+    def generate():
+        try:
+            while True:
+                try:
+                    payload = subscriber_q.get(timeout=10)
+                    yield f"data: {payload}\n\n"
+                except queue.Empty:
+                    # keepalive (prevents some proxies from closing idle connections)
+                    yield ": keepalive\n\n"
+        except GeneratorExit:
+            # Client disconnected
+            booking_state.unsubscribe(subscriber_q)
+            raise
+        except Exception:
+            booking_state.unsubscribe(subscriber_q)
+            raise
+
+    return Response(
+        stream_with_context(generate()),
+        mimetype='text/event-stream',
+        headers={
+            'Cache-Control': 'no-cache',
+            'X-Accel-Buffering': 'no',
+            'Connection': 'keep-alive'
+        }
+    )
 
 @app.route('/api/search', methods=['POST'])
 def search():
@@ -73,6 +183,8 @@ def search():
         response = search_ride(origin, destination, auth_token=auth_token, user_id=user_id)
         
         if response is None:
+            if user_key:
+                booking_state.set_status(user_key, "error", "search failed")
             return jsonify({"error": "Search failed"}), 500
         
         # Log the search
@@ -85,9 +197,18 @@ def search():
             destination=destination,
             proposal_count=proposal_count
         )
-        
+        if user_key:
+            booking_state.set_status(user_key, "idle")
         return jsonify(response)
     except Exception as e:
+        # Don't fail status updates on errors, but try.
+        try:
+            data = request.get_json(silent=True) or {}
+            user_key = data.get('user_id')
+            if user_key:
+                booking_state.set_status(user_key, "error", str(e))
+        except Exception:
+            pass
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/book', methods=['POST'])
@@ -110,12 +231,14 @@ def book():
         user_key = data.get('user_id')
         auth_token = get_auth_token(user_key) if user_key else None
         user_id = get_user_id(user_key) if user_key else None
+        ride_type = data.get('ride_type')  # optional, helps status panel
         
         # Get user name for logging
         user_name = None
         if user_key:
             user = get_user(user_key)
             user_name = user.get('name') if user else None
+            booking_state.set_status(user_key, "booking", "booking ride...")
         
         response = book_ride(prescheduled_ride_id, proposal_uuid, origin, destination, 
                             auth_token=auth_token, user_id=user_id)
@@ -131,6 +254,8 @@ def book():
                 origin=origin,
                 destination=destination
             )
+            if user_key:
+                booking_state.set_status(user_key, "error", "booking failed")
             return jsonify({"error": "Booking failed"}), 500
         
         # Extract ride ID from response
@@ -139,6 +264,20 @@ def book():
             rides = response.get('prescheduled_recurring_series_rides', [])
             if rides:
                 ride_id = rides[0].get('id')
+
+        if user_key:
+            # Prefer the confirmed ride id from booking response, but fall back to the
+            # prescheduled_ride_id (the one shown in the UI/proposal) so we can still cancel.
+            tracked_ride_id = ride_id or prescheduled_ride_id
+            if tracked_ride_id:
+                booking_state.upsert_active_ride(
+                    user_key,
+                    ride_id=int(tracked_ride_id),
+                    ride_type=ride_type or "unknown",
+                    source="individual",
+                )
+            else:
+                booking_state.set_status(user_key, "booked", "booked (ride id unknown)")
         
         # Log successful booking
         log_booking(
@@ -151,9 +290,28 @@ def book():
             origin=origin,
             destination=destination
         )
-        
+        # Developer ride log (individual booking)
+        try:
+            developer_logs.append_booking(
+                user_key=user_key or 'default',
+                user_name=user_name or user_key or 'unknown',
+                ride_id=int(ride_id) if ride_id is not None else None,
+                prescheduled_ride_id=int(prescheduled_ride_id) if prescheduled_ride_id is not None else None,
+                ride_type=ride_type or "RideSmart",
+                source="individual",
+            )
+        except Exception:
+            pass
+
         return jsonify(response)
     except Exception as e:
+        try:
+            data = request.get_json(silent=True) or {}
+            user_key = data.get('user_id')
+            if user_key:
+                booking_state.set_status(user_key, "error", str(e))
+        except Exception:
+            pass
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/cancel', methods=['POST'])
@@ -178,29 +336,45 @@ def cancel():
         if user_key:
             user = get_user(user_key)
             user_name = user.get('name') if user else None
+            booking_state.set_status(user_key, "cancelling", f"cancelling ride {ride_id}...")
         
         response = cancel_ride(ride_id, auth_token=auth_token, user_id=user_id)
         
         if response is None:
-            # Log failed cancellation
+            # External server did not confirm cancellation - do NOT mark as cancelled in developer log
             log_booking(
                 action='cancel_failed',
                 user_key=user_key or 'default',
                 user_name=user_name,
                 ride_id=ride_id
             )
+            if user_key:
+                booking_state.set_status(user_key, "error", "cancellation failed")
             return jsonify({"error": "Cancellation failed"}), 500
         
-        # Log successful cancellation
+        # Only here: external server confirmed cancellation (cancel_ride returned response)
         log_booking(
             action='cancel',
             user_key=user_key or 'default',
             user_name=user_name,
             ride_id=ride_id
         )
-        
+        if user_key:
+            booking_state.remove_active_ride(user_key, int(ride_id))
+        try:
+            # Developer log: show "Cancelled" only when external server confirmed
+            developer_logs.mark_cancelled(int(ride_id))
+        except Exception:
+            pass
         return jsonify(response)
     except Exception as e:
+        try:
+            data = request.get_json(silent=True) or {}
+            user_key = data.get('user_id')
+            if user_key:
+                booking_state.set_status(user_key, "error", str(e))
+        except Exception:
+            pass
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/config', methods=['GET'])
@@ -335,6 +509,10 @@ def run_lyft_orchestrator():
                 
                 orchestrator = LyftOrchestrator(original_user, origin, destination, log_callback=log_callback)
                 orchestrator_instance['orchestrator'] = orchestrator  # Store for emergency cleanup
+                try:
+                    booking_state.set_status(original_user, "orchestrating", "running lyft orchestrator...")
+                except Exception:
+                    pass
                 result = orchestrator.run()
                 result_container['result'] = result
                 
@@ -423,6 +601,16 @@ def run_lyft_orchestrator():
                     )
                     error_msg = f"Error: {str(e)}. All filler bookings have been cancelled."
                     log_queue.put(('error', error_msg))
+            finally:
+                # If orchestrator finishes and original user has no active rides tracked here,
+                # leave their status as-is; otherwise set to idle.
+                try:
+                    snap = booking_state.snapshot()
+                    u = next((x for x in snap.get("users", []) if x.get("user_key") == original_user), None)
+                    if u and not u.get("active_rides"):
+                        booking_state.set_status(original_user, "idle")
+                except Exception:
+                    pass
         
         # Start orchestrator in a thread
         thread = threading.Thread(target=run_orchestrator, daemon=True)
@@ -481,6 +669,7 @@ def run_lyft_orchestrator():
                 # Client disconnected - emergency cleanup (only filler bookings, preserve Lyft)
                 if orchestrator_instance['orchestrator']:
                     try:
+                        orchestrator_instance['orchestrator'].request_stop("client disconnected")
                         orchestrator_instance['orchestrator']._cancel_all_filler_bookings()
                         # Lyft booking is preserved automatically since we only cancel filler bookings
                     except:
@@ -491,6 +680,7 @@ def run_lyft_orchestrator():
                 if orchestrator_instance['orchestrator']:
                     try:
                         orchestrator = orchestrator_instance['orchestrator']
+                        orchestrator.request_stop(f"stream error: {str(e)}")
                         orchestrator._cancel_all_filler_bookings()
                         # Check if Lyft booking exists and try to send it
                         if orchestrator.original_lyft_booking:
@@ -547,17 +737,34 @@ def cancel_individual_booking():
         # Cancel the ride
         auth_token = get_auth_token(user_key)
         user_id = get_user_id(user_key)
+        try:
+            booking_state.set_status(user_key, "cancelling", f"cancelling ride {ride_id}...")
+        except Exception:
+            pass
         
         response = cancel_ride(ride_id, auth_token=auth_token, user_id=user_id)
         
         if response:
+            # External server confirmed cancellation - update developer log so "Cancelled" shows
             user_name = USERS[user_key]['name']
+            try:
+                booking_state.remove_active_ride(user_key, int(ride_id))
+            except Exception:
+                pass
+            try:
+                developer_logs.mark_cancelled(int(ride_id))
+            except Exception:
+                pass
             return jsonify({
                 "success": True,
                 "message": f"Successfully cancelled {user_name}'s booking (ride ID: {ride_id})",
                 "cancellation_response": response
             })
         else:
+            try:
+                booking_state.set_status(user_key, "error", "cancellation failed")
+            except Exception:
+                pass
             return jsonify({
                 "success": False,
                 "message": f"Failed to cancel booking (ride ID: {ride_id})"

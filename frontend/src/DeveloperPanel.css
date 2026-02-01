@@ -1,0 +1,221 @@
+.developer-panel-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.developer-panel {
+  background: #1a1a2e;
+  color: #eaeaea;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  max-width: 900px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.developer-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #2d2d44;
+  flex-shrink: 0;
+}
+
+.developer-panel-header h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.developer-panel-live {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.developer-panel-live.connected {
+  color: #4ade80;
+}
+
+.developer-panel-close {
+  margin-left: auto;
+  padding: 0.4rem 0.8rem;
+  background: #2d2d44;
+  color: #eaeaea;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.developer-panel-close:hover {
+  background: #3d3d54;
+}
+
+.developer-panel-error {
+  padding: 0.5rem 1.25rem;
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  font-size: 0.9rem;
+}
+
+.developer-panel-tabs {
+  display: flex;
+  gap: 0;
+  padding: 0 1rem;
+  border-bottom: 1px solid #2d2d44;
+  flex-shrink: 0;
+}
+
+.developer-tab {
+  padding: 0.75rem 1rem;
+  background: transparent;
+  color: #888;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.developer-tab:hover {
+  color: #ccc;
+}
+
+.developer-tab.active {
+  color: #7c3aed;
+  border-bottom-color: #7c3aed;
+}
+
+.developer-panel-body {
+  padding: 1rem 1.25rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.developer-ride-log-desc,
+.developer-user-log-desc {
+  margin: 0 0 1rem;
+  font-size: 0.85rem;
+  color: #aaa;
+}
+
+.developer-empty {
+  color: #666;
+  font-style: italic;
+  padding: 1rem 0;
+}
+
+.developer-ride-list,
+.developer-access-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.developer-ride-entry {
+  border: 1px solid #2d2d44;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  background: #16162a;
+}
+
+.developer-ride-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.4rem;
+}
+
+.developer-ride-type {
+  font-weight: 600;
+  color: #a78bfa;
+}
+
+.developer-ride-source {
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.developer-ride-cancelled {
+  font-size: 0.8rem;
+  color: #f87171;
+  font-weight: 500;
+}
+
+.developer-cancel-btn {
+  margin-left: auto;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.8rem;
+  background: #7c3aed;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.developer-cancel-btn:hover:not(:disabled) {
+  background: #6d28d9;
+}
+
+.developer-cancel-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.developer-ride-meta {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1rem;
+}
+
+.developer-ride-lyft-for {
+  font-size: 0.85rem;
+  color: #c4b5fd;
+  margin-top: 0.35rem;
+}
+
+.developer-access-entry {
+  display: grid;
+  grid-template-columns: 140px 160px 1fr;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #2d2d44;
+  font-size: 0.85rem;
+  align-items: start;
+}
+
+.developer-access-ip {
+  font-family: ui-monospace, monospace;
+  color: #a78bfa;
+}
+
+.developer-access-time {
+  color: #94a3b8;
+}
+
+.developer-access-ua {
+  color: #888;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.developer-access-path {
+  grid-column: 1 / -1;
+  font-size: 0.8rem;
+  color: #666;
+}
