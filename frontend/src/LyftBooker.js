@@ -128,13 +128,10 @@ function LyftBooker({ onBack }) {
       const decoder = new TextDecoder();
       let buffer = '';
 
-      let streamClosed = false;
-      
       while (true) {
         const { done, value } = await reader.read();
         
         if (done) {
-          streamClosed = true;
           // Process any remaining buffer
           if (buffer.trim()) {
             const lines = buffer.split('\n');
