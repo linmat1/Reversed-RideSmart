@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import './BookingStatusPanel.css';
-
-const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5001';
+import { getApiBase } from './config';
 
 function formatStatus(status) {
   if (!status) return 'idle';
@@ -9,6 +8,7 @@ function formatStatus(status) {
 }
 
 function BookingStatusPanel() {
+  const API_BASE = getApiBase();
   const [snapshot, setSnapshot] = useState(null);
   const [connected, setConnected] = useState(false);
   const [collapsed, setCollapsed] = useState(() => {

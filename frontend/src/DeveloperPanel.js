@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './DeveloperPanel.css';
-
-const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5001';
+import { getApiBase } from './config';
 
 function DeveloperPanel({ onClose }) {
+  const API_BASE = getApiBase();
   const [activeTab, setActiveTab] = useState('rides');
   const [snapshot, setSnapshot] = useState({ ride_log: [], access_log: [] });
   const [connected, setConnected] = useState(false);
@@ -46,7 +46,7 @@ function DeveloperPanel({ onClose }) {
         eventSourceRef.current = null;
       }
     };
-  }, []);
+  }, [API_BASE]);
 
   const cancelRide = async (userKey, rideId) => {
     const key = `${userKey}-${rideId}`;

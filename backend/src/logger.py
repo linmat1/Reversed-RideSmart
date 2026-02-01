@@ -12,13 +12,20 @@ from pathlib import Path
 BACKEND_DIR = Path(__file__).parent.parent
 LOGS_DIR = BACKEND_DIR / 'logs'
 
-# Ensure logs directory exists
-LOGS_DIR.mkdir(exist_ok=True)
+# Ensure logs directory exists (on Vercel filesystem is read-only; use /tmp then)
+try:
+    LOGS_DIR.mkdir(parents=True, exist_ok=True)
+except OSError:
+    LOGS_DIR = Path("/tmp/ridesmart_logs")
+    try:
+        LOGS_DIR.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        LOGS_DIR = None  # logging will no-op
 
-# Log file paths
-BOOKING_LOG_FILE = LOGS_DIR / 'bookings.log'
-LYFT_ORCHESTRATOR_LOG_FILE = LOGS_DIR / 'lyft_orchestrator.log'
-ACTIONS_LOG_FILE = LOGS_DIR / 'actions.log'  # Combined log of all actions
+# Log file paths (None if unwritable)
+BOOKING_LOG_FILE = LOGS_DIR / 'bookings.log' if LOGS_DIR else None
+LYFT_ORCHESTRATOR_LOG_FILE = LOGS_DIR / 'lyft_orchestrator.log' if LOGS_DIR else None
+ACTIONS_LOG_FILE = LOGS_DIR / 'actions.log' if LOGS_DIR else None
 
 
 def _get_timestamp():
@@ -31,9 +38,11 @@ def _write_log(log_file, log_entry):
     Write a log entry to a file.
     
     Args:
-        log_file: Path to the log file
+        log_file: Path to the log file (or None if logging disabled, e.g. on Vercel)
         log_entry: dict with log data
     """
+    if log_file is None:
+        return
     try:
         with open(log_file, 'a', encoding='utf-8') as f:
             f.write(json.dumps(log_entry, ensure_ascii=False) + '\n')

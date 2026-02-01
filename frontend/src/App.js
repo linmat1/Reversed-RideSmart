@@ -6,10 +6,10 @@ import LyftBooker from './LyftBooker';
 import MaintenancePage from './MaintenancePage';
 import BookingStatusPanel from './BookingStatusPanel';
 import DeveloperPanel from './DeveloperPanel';
-
-const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5001';
+import { getApiBase, isApiMissing } from './config';
 
 function App() {
+  const API_BASE = getApiBase();
   const [appMode, setAppMode] = useState('lyft'); // 'normal' or 'lyft' - default to 'lyft'
   const [showIndividualBooking, setShowIndividualBooking] = useState(false); // Track if individual booking is shown
   const [proposals, setProposals] = useState([]);
@@ -85,7 +85,7 @@ function App() {
       }
     };
     fetchRoutes();
-  }, []);
+  }, [API_BASE]);
 
   const searchRides = async () => {
     // Validate based on search mode
@@ -345,6 +345,18 @@ function App() {
       }
     );
   };
+
+  // Backend URL not set in production (avoids "scan for local devices" prompt)
+  if (isApiMissing()) {
+    return (
+      <div className="App" style={{ padding: '2rem', textAlign: 'center', maxWidth: '480px', margin: '0 auto' }}>
+        <h1>RideSmart</h1>
+        <p style={{ color: '#f87171', marginTop: '1rem' }}>
+          Backend URL not configured. Set <strong>REACT_APP_API_URL</strong> in your frontend project settings (e.g. Vercel Environment Variables) to your backend URL, then redeploy.
+        </p>
+      </div>
+    );
+  }
 
   // Developer panel (5 clicks on "Developer")
   if (showDeveloperPanel) {

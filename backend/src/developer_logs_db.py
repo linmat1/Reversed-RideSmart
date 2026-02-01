@@ -11,10 +11,18 @@ import threading
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-# Default DB path: backend/data/developer_logs.db
+# Default DB path: backend/data/developer_logs.db (or /tmp on Vercel - read-only filesystem)
 _BACKEND_DIR = Path(__file__).resolve().parent.parent
 _DATA_DIR = _BACKEND_DIR / "data"
 _DEFAULT_DB_PATH = _DATA_DIR / "developer_logs.db"
+
+# On Vercel, deployment filesystem is read-only; use /tmp so the app doesn't crash.
+def _resolve_db_path() -> Path:
+    if os.environ.get("DEVELOPER_LOGS_DB"):
+        return Path(os.environ["DEVELOPER_LOGS_DB"])
+    if os.environ.get("VERCEL"):
+        return Path("/tmp/developer_logs.db")
+    return _DEFAULT_DB_PATH
 
 # Module-level connection is not thread-safe; use a lock or per-thread connection.
 # SQLite allows one writer at a time; we use a single connection with a lock for simplicity.
@@ -24,8 +32,7 @@ _lock = threading.Lock()
 
 def _get_connection(db_path: Optional[Path] = None) -> sqlite3.Connection:
     global _connection
-    path = db_path or os.environ.get("DEVELOPER_LOGS_DB") or str(_DEFAULT_DB_PATH)
-    path = Path(path)
+    path = Path(db_path) if db_path is not None else _resolve_db_path()
     with _lock:
         if _connection is None:
             path.parent.mkdir(parents=True, exist_ok=True)

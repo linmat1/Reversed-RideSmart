@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './LyftBooker.css';
 import MapSelector from './MapSelector';
-
-const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5001';
+import { getApiBase } from './config';
 
 function LyftBooker({ onBack }) {
+  const API_BASE = getApiBase();
   const [users, setUsers] = useState([]);
   const [routes, setRoutes] = useState([]);
   const [originalUser, setOriginalUser] = useState('');
@@ -59,7 +59,7 @@ function LyftBooker({ onBack }) {
       }
     };
     fetchData();
-  }, []);
+  }, [API_BASE]);
 
   const runOrchestrator = async () => {
     // Validate based on search mode
