@@ -2,6 +2,20 @@ import React, { useEffect, useRef, useState } from 'react';
 import './DeveloperPanel.css';
 import { getApiBase } from './config';
 
+/** Never replace a non-empty log with an empty one (avoids log disappearing when backend returns partial data). */
+function mergeSnapshot(prev, next) {
+  if (!next || typeof next !== 'object') return prev;
+  const prevRides = prev?.ride_log ?? [];
+  const prevAccess = prev?.access_log ?? [];
+  const nextRides = Array.isArray(next.ride_log) ? next.ride_log : [];
+  const nextAccess = Array.isArray(next.access_log) ? next.access_log : [];
+  return {
+    ...next,
+    ride_log: nextRides.length > 0 ? nextRides : prevRides.length > 0 ? prevRides : nextRides,
+    access_log: nextAccess.length > 0 ? nextAccess : prevAccess.length > 0 ? prevAccess : nextAccess,
+  };
+}
+
 function DeveloperPanel({ onClose }) {
   const API_BASE = getApiBase();
   const [activeTab, setActiveTab] = useState('rides');
@@ -25,7 +39,8 @@ function DeveloperPanel({ onClose }) {
       try {
         const payload = JSON.parse(evt.data);
         if (payload?.type === 'snapshot' && payload?.data) {
-          setSnapshot(payload.data);
+          const next = payload.data;
+          setSnapshot((prev) => mergeSnapshot(prev, next));
         }
       } catch {
         // ignore
@@ -56,7 +71,7 @@ function DeveloperPanel({ onClose }) {
         const res = await fetch(`${API_BASE}/api/developer/snapshot`);
         if (res.ok) {
           const data = await res.json();
-          if (data.ride_log || data.access_log) setSnapshot(data);
+          setSnapshot((prev) => mergeSnapshot(prev, data));
         }
       } catch {
         // ignore
