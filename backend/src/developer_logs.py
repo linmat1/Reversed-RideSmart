@@ -13,6 +13,8 @@ import time
 from dataclasses import dataclass, asdict, field
 from typing import Any, Dict, List, Optional
 
+import os
+
 from src.developer_logs_db import (
     init_schema,
     insert_ride,
@@ -21,6 +23,11 @@ from src.developer_logs_db import (
     load_ride_entries,
     load_access_entries,
 )
+
+
+def _use_postgres() -> bool:
+    """True when Postgres is configured (all instances share same DB)."""
+    return bool(os.environ.get("POSTGRES_URL") or os.environ.get("DATABASE_URL"))
 
 
 def _now_ts() -> float:
@@ -207,6 +214,18 @@ class DeveloperLogStore:
 
     # --- Snapshot for SSE ---
     def snapshot(self) -> Dict[str, Any]:
+        # When using Postgres, read from DB every time so all instances/tabs see the same data.
+        if _use_postgres():
+            try:
+                ride_dicts = load_ride_entries()
+                access_dicts = load_access_entries()
+                return {
+                    "ts": _now_ts(),
+                    "ride_log": list(reversed(ride_dicts)),
+                    "access_log": list(reversed(access_dicts)),
+                }
+            except Exception as e:
+                print(f"Developer logs: snapshot from DB failed: {e}")
         with self._lock:
             return {
                 "ts": _now_ts(),
@@ -219,7 +238,9 @@ class DeveloperLogStore:
         q: queue.Queue[str] = queue.Queue()
         with self._lock:
             self._subscribers.append(q)
-            q.put(json.dumps({"type": "snapshot", "data": self._snapshot_locked()}))
+            # When using Postgres, initial snapshot from DB so new client sees shared state
+            data = self._snapshot_from_db_if_postgres() or self._snapshot_locked()
+            q.put(json.dumps({"type": "snapshot", "data": data}))
         return q
 
     def unsubscribe(self, q: queue.Queue[str]) -> None:
@@ -229,8 +250,25 @@ class DeveloperLogStore:
     def _encode_snapshot(self) -> str:
         return json.dumps({"type": "snapshot", "data": self.snapshot()})
 
+    def _snapshot_from_db_if_postgres(self) -> Optional[Dict[str, Any]]:
+        """When using Postgres, return snapshot from DB; else None."""
+        if not _use_postgres():
+            return None
+        try:
+            ride_dicts = load_ride_entries()
+            access_dicts = load_access_entries()
+            return {
+                "ts": _now_ts(),
+                "ride_log": list(reversed(ride_dicts)),
+                "access_log": list(reversed(access_dicts)),
+            }
+        except Exception as e:
+            print(f"Developer logs: snapshot from DB failed: {e}")
+            return None
+
     def _broadcast_locked(self) -> None:
-        payload = json.dumps({"type": "snapshot", "data": self._snapshot_locked()})
+        data = self._snapshot_from_db_if_postgres() or self._snapshot_locked()
+        payload = json.dumps({"type": "snapshot", "data": data})
         dead: List[queue.Queue[str]] = []
         for q in self._subscribers:
             try:

@@ -11,6 +11,7 @@ function DeveloperPanel({ onClose }) {
   const [error, setError] = useState(null);
   const eventSourceRef = useRef(null);
 
+  // SSE for live updates (when this tab hits the same instance that got the write)
   useEffect(() => {
     const es = new EventSource(`${API_BASE}/api/developer/stream`);
     eventSourceRef.current = es;
@@ -46,6 +47,24 @@ function DeveloperPanel({ onClose }) {
         eventSourceRef.current = null;
       }
     };
+  }, [API_BASE]);
+
+  // Poll snapshot every 5s so all tabs/incognito see same data (backend reads from DB when Postgres is set)
+  useEffect(() => {
+    const fetchSnapshot = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/developer/snapshot`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.ride_log || data.access_log) setSnapshot(data);
+        }
+      } catch {
+        // ignore
+      }
+    };
+    fetchSnapshot();
+    const interval = setInterval(fetchSnapshot, 5000);
+    return () => clearInterval(interval);
   }, [API_BASE]);
 
   const cancelRide = async (userKey, rideId) => {
