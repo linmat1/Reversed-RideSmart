@@ -1,20 +1,36 @@
 """
 Developer logs: ride status log and user access log.
-Stored in memory, broadcast in real time to all clients via SSE.
+Persisted to SQLite (backend/data/developer_logs.db), broadcast in real time via SSE.
 """
 
 from __future__ import annotations
 
 import json
 import queue
+import re
 import threading
 import time
 from dataclasses import dataclass, asdict, field
 from typing import Any, Dict, List, Optional
 
+from src.developer_logs_db import (
+    init_schema,
+    insert_ride,
+    update_ride_cancelled,
+    insert_access,
+    load_ride_entries,
+    load_access_entries,
+)
+
 
 def _now_ts() -> float:
     return time.time()
+
+
+def _parse_counter_from_id(entry_id: str, prefix: str) -> int:
+    """Extract numeric counter from id like ride_3_1234567890 or access_5_1234567890."""
+    m = re.match(rf"^{re.escape(prefix)}_(\d+)_", entry_id)
+    return int(m.group(1)) if m else 0
 
 
 @dataclass
@@ -45,7 +61,7 @@ class UserAccessEntry:
 
 
 class DeveloperLogStore:
-    """In-memory store for developer ride log and user access log with SSE broadcast."""
+    """Developer ride log and user access log: persisted to SQLite, broadcast via SSE."""
 
     def __init__(self) -> None:
         self._lock = threading.Lock()
@@ -54,6 +70,52 @@ class DeveloperLogStore:
         self._ride_id_counter = 0
         self._access_id_counter = 0
         self._subscribers: List[queue.Queue[str]] = []
+        self._load_from_db()
+
+    def _load_from_db(self) -> None:
+        """Load ride and access entries from DB and set id counters."""
+        try:
+            init_schema()
+            ride_dicts = load_ride_entries()
+            access_dicts = load_access_entries()
+        except Exception as e:
+            print(f"Developer logs: failed to load from DB: {e}")
+            return
+        for d in ride_dicts:
+            self._ride_entries.append(
+                RideLogEntry(
+                    id=d["id"],
+                    user_key=d["user_key"],
+                    user_name=d["user_name"],
+                    ride_id=d.get("ride_id"),
+                    prescheduled_ride_id=d.get("prescheduled_ride_id"),
+                    ride_type=d["ride_type"],
+                    source=d["source"],
+                    lyft_for_user_key=d.get("lyft_for_user_key"),
+                    lyft_for_user_name=d.get("lyft_for_user_name"),
+                    cancelled=bool(d.get("cancelled", False)),
+                    cancelled_at=d.get("cancelled_at"),
+                    created_at=d["created_at"],
+                )
+            )
+        for d in access_dicts:
+            self._access_entries.append(
+                UserAccessEntry(
+                    id=d["id"],
+                    ip=d["ip"],
+                    user_agent=d["user_agent"],
+                    path=d["path"],
+                    created_at=d["created_at"],
+                )
+            )
+        if self._ride_entries:
+            self._ride_id_counter = max(
+                _parse_counter_from_id(e.id, "ride") for e in self._ride_entries
+            )
+        if self._access_entries:
+            self._access_id_counter = max(
+                _parse_counter_from_id(e.id, "access") for e in self._access_entries
+            )
 
     def _next_ride_id(self) -> str:
         self._ride_id_counter += 1
@@ -87,6 +149,10 @@ class DeveloperLogStore:
                 lyft_for_user_key=lyft_for_user_key,
                 lyft_for_user_name=lyft_for_user_name,
             )
+            try:
+                insert_ride(asdict(entry))
+            except Exception as e:
+                print(f"Developer logs: failed to persist ride: {e}")
             self._ride_entries.append(entry)
             self._broadcast_locked()
             return entry
@@ -104,6 +170,10 @@ class DeveloperLogStore:
                 if (e.ride_id is not None and e.ride_id == ride_id) or (
                     e.prescheduled_ride_id is not None and e.prescheduled_ride_id == ride_id
                 ):
+                    try:
+                        update_ride_cancelled(ride_id, now)
+                    except Exception as ex:
+                        print(f"Developer logs: failed to persist cancellation: {ex}")
                     e.cancelled = True
                     e.cancelled_at = now
                     self._broadcast_locked()
@@ -123,6 +193,10 @@ class DeveloperLogStore:
                 user_agent=user_agent or "",
                 path=path,
             )
+            try:
+                insert_access(asdict(entry))
+            except Exception as e:
+                print(f"Developer logs: failed to persist access: {e}")
             self._access_entries.append(entry)
             self._broadcast_locked()
             return entry

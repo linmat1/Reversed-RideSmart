@@ -30,3 +30,7 @@ Thumbs.db
 *.log
 logs/
 backend/logs/
+
+# Developer logs DB (SQLite)
+*.db
+backend/data/

@@ -17,6 +17,11 @@ backend/
 └── requirements.txt       # Python dependencies
 ```
 
+## Deploying to Vercel
+
+1. In the Vercel project **Settings → Build and Deployment → Root Directory**, set **Root Directory** to `backend` (so Vercel uses this folder as the app root).
+2. Vercel will then find the Flask entrypoint at `app.py` (which exposes the app from `api.py`) and the build should succeed.
+
 ## Setup
 
 1. Install Python dependencies:
