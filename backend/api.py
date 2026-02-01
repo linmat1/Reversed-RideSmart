@@ -15,6 +15,7 @@ from src.lyft_orchestrator import LyftOrchestrator
 from src.logger import log_booking, log_lyft_orchestrator, log_search
 from src.booking_state import booking_state
 from src.developer_logs import developer_logs
+from src.developer_logs_db import get_storage_info
 import json
 import queue
 import threading
@@ -48,6 +49,7 @@ def index():
             "POST /api/lyft/check",
             "GET  /api/developer/stream",
             "GET  /api/developer/snapshot",
+            "GET  /api/developer/storage",
             "POST /api/developer/access"
         ]
     })
@@ -103,6 +105,15 @@ def developer_access():
         path = request.args.get("path") or request.path or "/"
         developer_logs.append_access(ip=ip, user_agent=user_agent, path=path)
         return jsonify({"ok": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/developer/storage', methods=['GET'])
+def developer_storage():
+    """Return which DB is used for developer logs (postgres = persists; sqlite on Vercel does not)."""
+    try:
+        return jsonify(get_storage_info())
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

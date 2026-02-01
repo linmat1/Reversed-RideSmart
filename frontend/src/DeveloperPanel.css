@@ -46,6 +46,12 @@
   color: #4ade80;
 }
 
+.developer-panel-storage {
+  font-size: 0.7rem;
+  color: #888;
+  margin-left: 0.5rem;
+}
+
 .developer-panel-close {
   margin-left: auto;
   padding: 0.4rem 0.8rem;

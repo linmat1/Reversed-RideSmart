@@ -23,7 +23,20 @@ function DeveloperPanel({ onClose }) {
   const [connected, setConnected] = useState(false);
   const [cancellingRideIds, setCancellingRideIds] = useState(() => new Set());
   const [error, setError] = useState(null);
+  const [storageInfo, setStorageInfo] = useState(null);
   const eventSourceRef = useRef(null);
+
+  // Show which DB backend uses (postgres = persists; sqlite on Vercel does not)
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${API_BASE}/api/developer/storage`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled && data) setStorageInfo(data);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [API_BASE]);
 
   // SSE for live updates (when this tab hits the same instance that got the write)
   useEffect(() => {
@@ -128,6 +141,11 @@ function DeveloperPanel({ onClose }) {
           <span className={`developer-panel-live ${connected ? 'connected' : ''}`}>
             {connected ? 'live' : 'reconnecting…'}
           </span>
+          {storageInfo && (
+            <span className="developer-panel-storage" title={storageInfo.note || ''}>
+              Storage: {storageInfo.storage === 'postgres' ? 'Postgres (persists)' : `SQLite${storageInfo.path ? ` — not persisting on serverless` : ''}`}
+            </span>
+          )}
           <button type="button" className="developer-panel-close" onClick={onClose}>
             Close
           </button>

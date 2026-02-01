@@ -10,6 +10,7 @@ import queue
 import re
 import threading
 import time
+import traceback
 from dataclasses import dataclass, asdict, field
 from typing import Any, Dict, List, Optional
 
@@ -160,6 +161,7 @@ class DeveloperLogStore:
                 insert_ride(asdict(entry))
             except Exception as e:
                 print(f"Developer logs: failed to persist ride: {e}")
+                traceback.print_exc()
             self._ride_entries.append(entry)
             self._broadcast_locked()
             return entry
@@ -204,6 +206,7 @@ class DeveloperLogStore:
                 insert_access(asdict(entry))
             except Exception as e:
                 print(f"Developer logs: failed to persist access: {e}")
+                traceback.print_exc()
             self._access_entries.append(entry)
             self._broadcast_locked()
             return entry

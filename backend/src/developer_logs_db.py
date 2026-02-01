@@ -190,8 +190,11 @@ def _row_to_access_entry(row: sqlite3.Row) -> Dict[str, Any]:
     }
 
 
-# --- Use Postgres when POSTGRES_URL or DATABASE_URL is set (e.g. Vercel + Neon) ---
+# --- Use Postgres when POSTGRES_URL or DATABASE_URL is set (e.g. Vercel + Neon/Supabase) ---
 _postgres_url = os.environ.get("POSTGRES_URL") or os.environ.get("DATABASE_URL")
+_storage = "sqlite"
+_storage_path: Optional[Path] = _resolve_db_path()
+
 if _postgres_url:
     try:
         from src.developer_logs_postgres import (
@@ -202,6 +205,9 @@ if _postgres_url:
             load_ride_entries as _pg_load_ride_entries,
             load_access_entries as _pg_load_access_entries,
         )
+
+        _storage = "postgres"
+        _storage_path = None
 
         def init_schema(db_path: Optional[Path] = None) -> None:
             _pg_init_schema()
@@ -224,3 +230,17 @@ if _postgres_url:
             return _pg_load_access_entries()
     except Exception as e:
         print(f"Developer logs: Postgres not available ({e}), using SQLite")
+
+# Log which storage is active so you can verify persistence (Supabase needs DATABASE_URL set).
+def get_storage_info() -> Dict[str, Any]:
+    out: Dict[str, Any] = {"storage": _storage}
+    if _storage == "sqlite" and _storage_path:
+        out["path"] = str(_storage_path)
+        out["note"] = "On Vercel, SQLite uses /tmp and does not persist across invocations. Set DATABASE_URL for Supabase/Postgres."
+    return out
+
+
+if _storage == "postgres":
+    print("Developer logs: using postgres (data persists)")
+else:
+    print(f"Developer logs: using sqlite at {_storage_path} (on Vercel this does not persist; set DATABASE_URL for Supabase)")
