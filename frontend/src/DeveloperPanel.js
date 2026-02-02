@@ -9,17 +9,19 @@ function mergeSnapshot(prev, next) {
   const prevAccess = prev?.access_log ?? [];
   const nextRides = Array.isArray(next.ride_log) ? next.ride_log : [];
   const nextAccess = Array.isArray(next.access_log) ? next.access_log : [];
+  const nextOrchestrator = Array.isArray(next.orchestrator_log) ? next.orchestrator_log : (prev?.orchestrator_log ?? []);
   return {
     ...next,
     ride_log: nextRides.length > 0 ? nextRides : prevRides.length > 0 ? prevRides : nextRides,
     access_log: nextAccess.length > 0 ? nextAccess : prevAccess.length > 0 ? prevAccess : nextAccess,
+    orchestrator_log: nextOrchestrator,
   };
 }
 
 function DeveloperPanel({ onClose }) {
   const API_BASE = getApiBase();
   const [activeTab, setActiveTab] = useState('rides');
-  const [snapshot, setSnapshot] = useState({ ride_log: [], access_log: [] });
+  const [snapshot, setSnapshot] = useState({ ride_log: [], access_log: [], orchestrator_log: [] });
   const [connected, setConnected] = useState(false);
   const [cancellingRideIds, setCancellingRideIds] = useState(() => new Set());
   const [error, setError] = useState(null);
@@ -122,6 +124,7 @@ function DeveloperPanel({ onClose }) {
 
   const rideLog = snapshot.ride_log || [];
   const accessLog = snapshot.access_log || [];
+  const orchestratorLog = snapshot.orchestrator_log || [];
 
   const formatTs = (ts) => {
     if (!ts) return '—';
@@ -169,6 +172,13 @@ function DeveloperPanel({ onClose }) {
             onClick={() => setActiveTab('users')}
           >
             User log
+          </button>
+          <button
+            type="button"
+            className={`developer-tab ${activeTab === 'orchestrator' ? 'active' : ''}`}
+            onClick={() => setActiveTab('orchestrator')}
+          >
+            User-facing logs
           </button>
         </div>
 
@@ -252,6 +262,21 @@ function DeveloperPanel({ onClose }) {
                     </li>
                   ))}
                 </ul>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'orchestrator' && (
+            <div className="developer-orchestrator-log">
+              <p className="developer-orchestrator-log-desc">
+                Same log shown to the user when they run the Lyft orchestrator (latest run).
+              </p>
+              {orchestratorLog.length === 0 ? (
+                <div className="developer-empty">No orchestrator log yet. Run the Lyft orchestrator to see it here.</div>
+              ) : (
+                <pre className="developer-orchestrator-log-content">
+                  {orchestratorLog.join('\n')}
+                </pre>
               )}
             </div>
           )}

@@ -70,6 +70,15 @@ def init_schema(db_path: Optional[Path] = None) -> None:
                 created_at REAL NOT NULL
             )
         """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS orchestrator_log (
+                run_started_at REAL NOT NULL,
+                line_index INTEGER NOT NULL,
+                message TEXT NOT NULL,
+                created_at REAL NOT NULL,
+                PRIMARY KEY (run_started_at, line_index)
+            )
+        """)
         conn.commit()
 
 
@@ -163,6 +172,38 @@ def load_access_entries(db_path: Optional[Path] = None) -> List[Dict[str, Any]]:
     return [_row_to_access_entry(r) for r in rows]
 
 
+def insert_orchestrator_line(
+    run_started_at: float, line_index: int, message: str, db_path: Optional[Path] = None
+) -> None:
+    """Append one line to the orchestrator log for a run (persisted for reference)."""
+    import time
+    conn = _get_connection(db_path)
+    with _lock:
+        conn.execute(
+            """
+            INSERT INTO orchestrator_log (run_started_at, line_index, message, created_at)
+            VALUES (?, ?, ?, ?)
+            """,
+            (run_started_at, line_index, message, time.time()),
+        )
+        conn.commit()
+
+
+def load_orchestrator_log_latest(db_path: Optional[Path] = None) -> List[str]:
+    """Load the latest run's orchestrator log (messages in order). Returns [] if no runs."""
+    conn = _get_connection(db_path)
+    with _lock:
+        cur = conn.execute(
+            """
+            SELECT message FROM orchestrator_log
+            WHERE run_started_at = (SELECT MAX(run_started_at) FROM orchestrator_log)
+            ORDER BY line_index ASC
+            """
+        )
+        rows = cur.fetchall()
+    return [r[0] for r in rows]
+
+
 def _row_to_ride_entry(row: sqlite3.Row) -> Dict[str, Any]:
     return {
         "id": row["id"],
@@ -204,6 +245,8 @@ if _postgres_url:
             insert_access as _pg_insert_access,
             load_ride_entries as _pg_load_ride_entries,
             load_access_entries as _pg_load_access_entries,
+            insert_orchestrator_line as _pg_insert_orchestrator_line,
+            load_orchestrator_log_latest as _pg_load_orchestrator_log_latest,
         )
 
         _storage = "postgres"
@@ -228,6 +271,14 @@ if _postgres_url:
 
         def load_access_entries(db_path: Optional[Path] = None) -> List[Dict[str, Any]]:
             return _pg_load_access_entries()
+
+        def insert_orchestrator_line(
+            run_started_at: float, line_index: int, message: str, db_path: Optional[Path] = None
+        ) -> None:
+            _pg_insert_orchestrator_line(run_started_at, line_index, message)
+
+        def load_orchestrator_log_latest(db_path: Optional[Path] = None) -> List[str]:
+            return _pg_load_orchestrator_log_latest()
     except Exception as e:
         print(f"Developer logs: Postgres not available ({e}), using SQLite")
 

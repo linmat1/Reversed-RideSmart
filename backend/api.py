@@ -17,6 +17,7 @@ from src.booking_state import booking_state
 from src.developer_logs import developer_logs
 from src.developer_logs_db import get_storage_info
 import json
+import os
 import queue
 import threading
 import time
@@ -50,7 +51,8 @@ def index():
             "GET  /api/developer/stream",
             "GET  /api/developer/snapshot",
             "GET  /api/developer/storage",
-            "POST /api/developer/access"
+            "POST /api/developer/access",
+            "GET  /api/cron/cancel-stale-fillers (cron: every minute)"
         ]
     })
 
@@ -493,11 +495,15 @@ def run_lyft_orchestrator():
         result_container = {'result': None}
         
         def log_callback(message):
-            """Callback function to send logs to the queue."""
+            """Callback: send to Lyft Booker UI and to developer orchestrator log (same log in Developer tab)."""
+            developer_logs.append_orchestrator_log(message)
             log_queue.put(('log', message))
         
         # Store orchestrator instance for emergency cleanup
         orchestrator_instance = {'orchestrator': None}
+        
+        # Clear orchestrator log so Developer tab shows only this run
+        developer_logs.clear_orchestrator_log()
         
         def run_orchestrator():
             """Run the orchestrator in a separate thread."""
@@ -782,6 +788,54 @@ def cancel_individual_booking():
             }), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+# Cron: cancel filler bookings older than 3.5 minutes (safety net for mobile timeouts / disconnect)
+STALE_FILLER_SECONDS = 3.5 * 60  # 210 seconds
+
+
+@app.route('/api/cron/cancel-stale-fillers', methods=['GET', 'POST'])
+def cron_cancel_stale_fillers():
+    """
+    Cancel all filler RideSmart bookings older than 3.5 minutes.
+    Call every minute (e.g. Vercel Cron). Optional: set CRON_SECRET and pass ?secret=... or header X-Cron-Secret.
+    """
+    secret = request.args.get('secret') or request.headers.get('X-Cron-Secret')
+    if os.environ.get('CRON_SECRET') and secret != os.environ.get('CRON_SECRET'):
+        return jsonify({"error": "Unauthorized"}), 401
+    try:
+        snap = developer_logs.snapshot()
+        ride_log = snap.get('ride_log') or []
+        now = time.time()
+        stale = [
+            r for r in ride_log
+            if r.get('source') == 'orchestrator'
+            and r.get('lyft_for_user_key')
+            and (r.get('ride_type') or 'RideSmart') == 'RideSmart'
+            and not r.get('cancelled')
+            and (float(r.get('created_at') or 0) < now - STALE_FILLER_SECONDS)
+        ]
+        cancelled_count = 0
+        for r in stale:
+            user_key = r.get('user_key')
+            ride_id = r.get('ride_id') or r.get('prescheduled_ride_id')
+            if not user_key or ride_id is None:
+                continue
+            if user_key not in USERS:
+                continue
+            try:
+                auth_token = get_auth_token(user_key)
+                user_id = get_user_id(user_key)
+                resp = cancel_ride(int(ride_id), auth_token=auth_token, user_id=user_id)
+                if resp is not None:
+                    developer_logs.mark_cancelled(int(ride_id))
+                    cancelled_count += 1
+            except Exception:
+                pass
+        return jsonify({"ok": True, "cancelled": cancelled_count, "checked": len(stale)})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 @app.route('/api/lyft/check', methods=['POST'])
 def check_lyft_availability():

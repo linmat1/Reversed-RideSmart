@@ -23,6 +23,8 @@ from src.developer_logs_db import (
     insert_access,
     load_ride_entries,
     load_access_entries,
+    insert_orchestrator_line,
+    load_orchestrator_log_latest,
 )
 
 
@@ -75,6 +77,8 @@ class DeveloperLogStore:
         self._lock = threading.Lock()
         self._ride_entries: List[RideLogEntry] = []
         self._access_entries: List[UserAccessEntry] = []
+        self._orchestrator_log: List[str] = []  # User-facing Lyft orchestrator log (latest run)
+        self._current_run_started_at: Optional[float] = None  # For persisting orchestrator log to DB
         self._ride_id_counter = 0
         self._access_id_counter = 0
         self._subscribers: List[queue.Queue[str]] = []
@@ -124,6 +128,11 @@ class DeveloperLogStore:
             self._access_id_counter = max(
                 _parse_counter_from_id(e.id, "access") for e in self._access_entries
             )
+        # Load latest orchestrator run from DB so Developer tab shows it after restart
+        try:
+            self._orchestrator_log = load_orchestrator_log_latest()
+        except Exception as e:
+            print(f"Developer logs: failed to load orchestrator log from DB: {e}")
 
     def _next_ride_id(self) -> str:
         self._ride_id_counter += 1
@@ -228,6 +237,32 @@ class DeveloperLogStore:
         with self._lock:
             return [asdict(e) for e in reversed(self._access_entries)]
 
+    # --- Orchestrator (user-facing) log (persisted to DB for reference) ---
+    def clear_orchestrator_log(self) -> None:
+        """Clear the orchestrator log and start a new run (call when a new run starts)."""
+        with self._lock:
+            self._current_run_started_at = _now_ts()
+            self._orchestrator_log.clear()
+            self._broadcast_locked()
+
+    def append_orchestrator_log(self, message: str) -> None:
+        """Append a line to the user-facing orchestrator log, persist to DB, and broadcast."""
+        with self._lock:
+            idx = len(self._orchestrator_log)
+            self._orchestrator_log.append(message)
+            if self._current_run_started_at is not None:
+                try:
+                    insert_orchestrator_line(
+                        self._current_run_started_at, idx, message
+                    )
+                except Exception as e:
+                    print(f"Developer logs: failed to persist orchestrator line: {e}")
+            self._broadcast_locked()
+
+    def get_orchestrator_log(self) -> List[str]:
+        with self._lock:
+            return list(self._orchestrator_log)
+
     # --- Snapshot for SSE ---
     def snapshot(self) -> Dict[str, Any]:
         # When using Postgres, read from DB every time so all instances/tabs see the same data.
@@ -235,11 +270,14 @@ class DeveloperLogStore:
             try:
                 ride_dicts = load_ride_entries()
                 access_dicts = load_access_entries()
-                return {
-                    "ts": _now_ts(),
-                    "ride_log": list(reversed(ride_dicts)),
-                    "access_log": list(reversed(access_dicts)),
-                }
+                orchestrator_lines = load_orchestrator_log_latest()
+                with self._lock:
+                    return {
+                        "ts": _now_ts(),
+                        "ride_log": list(reversed(ride_dicts)),
+                        "access_log": list(reversed(access_dicts)),
+                        "orchestrator_log": orchestrator_lines,
+                    }
             except Exception as e:
                 print(f"Developer logs: snapshot from DB failed: {e}")
         with self._lock:
@@ -247,6 +285,7 @@ class DeveloperLogStore:
                 "ts": _now_ts(),
                 "ride_log": [asdict(e) for e in reversed(self._ride_entries)],
                 "access_log": [asdict(e) for e in reversed(self._access_entries)],
+                "orchestrator_log": list(self._orchestrator_log),
             }
 
     # --- SSE subscribe / broadcast ---
@@ -273,11 +312,14 @@ class DeveloperLogStore:
         try:
             ride_dicts = load_ride_entries()
             access_dicts = load_access_entries()
-            return {
-                "ts": _now_ts(),
-                "ride_log": list(reversed(ride_dicts)),
-                "access_log": list(reversed(access_dicts)),
-            }
+            orchestrator_lines = load_orchestrator_log_latest()
+            with self._lock:
+                return {
+                    "ts": _now_ts(),
+                    "ride_log": list(reversed(ride_dicts)),
+                    "access_log": list(reversed(access_dicts)),
+                    "orchestrator_log": orchestrator_lines,
+                }
         except Exception as e:
             print(f"Developer logs: snapshot from DB failed: {e}")
             return None
@@ -299,6 +341,7 @@ class DeveloperLogStore:
             "ts": _now_ts(),
             "ride_log": [asdict(e) for e in reversed(self._ride_entries)],
             "access_log": [asdict(e) for e in reversed(self._access_entries)],
+            "orchestrator_log": list(self._orchestrator_log),
         }
 
 

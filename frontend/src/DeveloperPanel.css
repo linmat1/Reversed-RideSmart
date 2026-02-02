@@ -108,10 +108,33 @@
 }
 
 .developer-ride-log-desc,
-.developer-user-log-desc {
+.developer-user-log-desc,
+.developer-orchestrator-log-desc {
   margin: 0 0 1rem;
   font-size: 0.85rem;
   color: #aaa;
+}
+
+.developer-orchestrator-log {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.developer-orchestrator-log-content {
+  margin: 0;
+  padding: 1rem;
+  background: #0f0f1a;
+  color: #e2e8f0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  border: 1px solid #2d2d44;
+  border-radius: 8px;
+  overflow: auto;
+  max-height: 50vh;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .developer-empty {

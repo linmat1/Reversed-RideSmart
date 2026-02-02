@@ -75,6 +75,15 @@ def init_schema() -> None:
                     created_at DOUBLE PRECISION NOT NULL
                 )
             """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS orchestrator_log (
+                    run_started_at DOUBLE PRECISION NOT NULL,
+                    line_index INTEGER NOT NULL,
+                    message TEXT NOT NULL,
+                    created_at DOUBLE PRECISION NOT NULL,
+                    PRIMARY KEY (run_started_at, line_index)
+                )
+            """)
         conn.commit()
 
 
@@ -156,6 +165,34 @@ def load_access_entries() -> List[Dict[str, Any]]:
             cur.execute("SELECT * FROM access_log ORDER BY created_at ASC")
             rows = cur.fetchall()
     return [_row_to_access(r) for r in rows]
+
+
+def insert_orchestrator_line(run_started_at: float, line_index: int, message: str) -> None:
+    import time
+    with _conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO orchestrator_log (run_started_at, line_index, message, created_at)
+                VALUES (%s, %s, %s, %s)
+                """,
+                (run_started_at, line_index, message, time.time()),
+            )
+        conn.commit()
+
+
+def load_orchestrator_log_latest() -> List[str]:
+    with _conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT message FROM orchestrator_log
+                WHERE run_started_at = (SELECT MAX(run_started_at) FROM orchestrator_log)
+                ORDER BY line_index ASC
+                """
+            )
+            rows = cur.fetchall()
+    return [r[0] for r in rows]
 
 
 def _row_to_ride(row: Dict[str, Any]) -> Dict[str, Any]:
