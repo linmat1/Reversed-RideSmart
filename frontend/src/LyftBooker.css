@@ -101,6 +101,13 @@
   padding: 8px;
 }
 
+.lyft-user-readonly {
+  display: inline-block;
+  padding: 8px 12px;
+  font-weight: 600;
+  color: #333;
+}
+
 .setup-info {
   background: #e8f4f8;
   border-radius: 8px;
