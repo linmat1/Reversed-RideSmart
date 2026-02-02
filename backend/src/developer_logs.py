@@ -264,22 +264,38 @@ class DeveloperLogStore:
             return list(self._orchestrator_log)
 
     # --- Snapshot for SSE ---
+    def _snapshot_from_postgres(self) -> Optional[Dict[str, Any]]:
+        """Load from Postgres; if any load fails, use fallback so one bad table doesn't empty the whole snapshot."""
+        if not _use_postgres():
+            return None
+        ride_dicts: List[Dict[str, Any]] = []
+        access_dicts: List[Dict[str, Any]] = []
+        orchestrator_lines: List[str] = []
+        try:
+            ride_dicts = load_ride_entries()
+        except Exception as e:
+            print(f"Developer logs: load_ride_entries failed: {e}")
+        try:
+            access_dicts = load_access_entries()
+        except Exception as e:
+            print(f"Developer logs: load_access_entries failed: {e}")
+        try:
+            orchestrator_lines = load_orchestrator_log_latest()
+        except Exception as e:
+            print(f"Developer logs: load_orchestrator_log_latest failed: {e}")
+        with self._lock:
+            return {
+                "ts": _now_ts(),
+                "ride_log": list(reversed(ride_dicts)),
+                "access_log": list(reversed(access_dicts)),
+                "orchestrator_log": orchestrator_lines,
+            }
+
     def snapshot(self) -> Dict[str, Any]:
         # When using Postgres, read from DB every time so all instances/tabs see the same data.
-        if _use_postgres():
-            try:
-                ride_dicts = load_ride_entries()
-                access_dicts = load_access_entries()
-                orchestrator_lines = load_orchestrator_log_latest()
-                with self._lock:
-                    return {
-                        "ts": _now_ts(),
-                        "ride_log": list(reversed(ride_dicts)),
-                        "access_log": list(reversed(access_dicts)),
-                        "orchestrator_log": orchestrator_lines,
-                    }
-            except Exception as e:
-                print(f"Developer logs: snapshot from DB failed: {e}")
+        data = self._snapshot_from_postgres()
+        if data is not None:
+            return data
         with self._lock:
             return {
                 "ts": _now_ts(),
@@ -307,22 +323,7 @@ class DeveloperLogStore:
 
     def _snapshot_from_db_if_postgres(self) -> Optional[Dict[str, Any]]:
         """When using Postgres, return snapshot from DB; else None."""
-        if not _use_postgres():
-            return None
-        try:
-            ride_dicts = load_ride_entries()
-            access_dicts = load_access_entries()
-            orchestrator_lines = load_orchestrator_log_latest()
-            with self._lock:
-                return {
-                    "ts": _now_ts(),
-                    "ride_log": list(reversed(ride_dicts)),
-                    "access_log": list(reversed(access_dicts)),
-                    "orchestrator_log": orchestrator_lines,
-                }
-        except Exception as e:
-            print(f"Developer logs: snapshot from DB failed: {e}")
-            return None
+        return self._snapshot_from_postgres()
 
     def _broadcast_locked(self) -> None:
         data = self._snapshot_from_db_if_postgres() or self._snapshot_locked()
