@@ -31,7 +31,7 @@ function DeveloperPanel({ onClose }) {
   // Show which DB backend uses (postgres = persists; sqlite on Vercel does not)
   useEffect(() => {
     let cancelled = false;
-    fetch(`${API_BASE}/api/developer/storage`)
+    fetch(`${API_BASE}/api/developer/storage`, { credentials: 'include' })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (!cancelled && data) setStorageInfo(data);
@@ -83,7 +83,7 @@ function DeveloperPanel({ onClose }) {
   useEffect(() => {
     const fetchSnapshot = async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/developer/snapshot`);
+        const res = await fetch(`${API_BASE}/api/developer/snapshot`, { credentials: 'include' });
         if (res.ok) {
           const data = await res.json();
           setSnapshot((prev) => mergeSnapshot(prev, data));
@@ -105,6 +105,7 @@ function DeveloperPanel({ onClose }) {
       const res = await fetch(`${API_BASE}/api/lyft/cancel-booking`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ user_id: userKey, ride_id: rideId }),
       });
       const data = await res.json().catch(() => ({}));

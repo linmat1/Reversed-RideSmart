@@ -2,7 +2,7 @@
 Flask API backend for RideSmart React frontend
 Exposes Python functions as REST API endpoints
 """
-from flask import Flask, jsonify, request, Response, stream_with_context
+from flask import Flask, jsonify, request, Response, session, stream_with_context
 from flask_cors import CORS
 from src.search_ride import search_ride
 from src.book_ride import book_ride
@@ -10,7 +10,7 @@ from src.cancel_ride import cancel_ride
 from src.get_route import get_route
 from src import config
 from src.destination_config import LOCATIONS, get_location_pair
-from src.users import list_users, get_user, get_auth_token, get_user_id, USERS
+from src.users import list_users, get_user, get_auth_token, get_user_id, USERS, verify_password, user_has_password
 from src.lyft_orchestrator import LyftOrchestrator
 from src.logger import log_booking, log_lyft_orchestrator, log_search
 from src.booking_state import booking_state
@@ -23,13 +23,103 @@ import threading
 import time
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for React frontend
+app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', 'dev-secret-change-in-production')
+# Allow credentials so session cookies work with frontend
+# With credentials, browser requires a specific origin (not *). Default for dev.
+_cors_origins = os.environ.get('CORS_ORIGINS', 'http://localhost:3000').strip().split(',')
+CORS(app, supports_credentials=True, origins=[o.strip() for o in _cors_origins if o.strip()])
 
 # Initialize server-owned booking state with known users (safe if USERS is empty).
 try:
     booking_state.init_users(USERS)
 except Exception as e:
     print(f"Warning: could not init booking state users: {e}")
+
+
+def login_required():
+    """True if any user has a password (login is enforced)."""
+    return any(user_has_password(k) for k in USERS)
+
+
+def get_current_user_key():
+    """
+    Return the authenticated user key for this request.
+    - If login is required and session has a valid user_id, return it.
+    - If login is required and no valid session, return None.
+    - If login is not required, return user_id from request body or DEFAULT_USER.
+    """
+    if login_required():
+        session_user = session.get('user_id')
+        if session_user and session_user in USERS:
+            return session_user
+        return None
+    data = request.get_json(silent=True) or {}
+    return data.get('user_id') or os.environ.get('DEFAULT_USER', 'matthew')
+
+
+@app.route('/api/auth/login', methods=['POST'])
+def auth_login():
+    """Log in with user_id (username) and password. No sign-up; admin provides passwords."""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+        user_key = (data.get('user_id') or '').strip().lower()
+        password = data.get('password') or ''
+        if not user_key:
+            return jsonify({"error": "user_id required"}), 400
+        if not password:
+            return jsonify({"error": "password required"}), 400
+        if user_key not in USERS:
+            return jsonify({"error": "Invalid user or password"}), 401
+        if not verify_password(user_key, password):
+            return jsonify({"error": "Invalid user or password"}), 401
+        session['user_id'] = user_key
+        user = get_user(user_key)
+        return jsonify({
+            "user": {"id": user_key, "name": user["name"]},
+            "message": "Logged in"
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/auth/logout', methods=['POST'])
+def auth_logout():
+    """Log out the current user."""
+    try:
+        session.pop('user_id', None)
+        return jsonify({"message": "Logged out"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/auth/me', methods=['GET'])
+def auth_me():
+    """Return the current user if logged in; 401 if login required but not logged in."""
+    if not login_required():
+        # No passwords configured: return first user as "current" for compatibility
+        first_key = next(iter(USERS), None)
+        if first_key:
+            u = get_user(first_key)
+            return jsonify({"user": {"id": first_key, "name": u["name"]}})
+        return jsonify({"error": "No users configured"}), 500
+    user_key = session.get('user_id')
+    if not user_key or user_key not in USERS:
+        return jsonify({"error": "Not logged in"}), 401
+    user = get_user(user_key)
+    return jsonify({"user": {"id": user_key, "name": user["name"]}})
+
+
+def require_user():
+    """Return (user_key, None) for the current request user, or (None, error_response) if unauthorized."""
+    user_key = get_current_user_key()
+    if user_key:
+        return user_key, None
+    if login_required():
+        return None, (jsonify({"error": "Not logged in"}), 401)
+    return None, (jsonify({"error": "user_id required"}), 400)
+
 
 @app.route('/')
 def index():
@@ -38,6 +128,9 @@ def index():
         "status": "ok",
         "message": "RideSmart API is running",
         "endpoints": [
+            "POST /api/auth/login",
+            "POST /api/auth/logout",
+            "GET  /api/auth/me",
             "GET  /api/config",
             "GET  /api/routes",
             "GET  /api/users",
@@ -122,8 +215,12 @@ def developer_storage():
 
 @app.route('/api/status', methods=['GET'])
 def get_status():
-    """Get server-owned booking status snapshot (all users)."""
+    """Get server-owned booking status snapshot (all users). Requires login if passwords are set."""
     try:
+        if login_required():
+            user_key, err = require_user()
+            if err:
+                return err
         return jsonify(booking_state.snapshot())
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -131,7 +228,11 @@ def get_status():
 
 @app.route('/api/status/stream', methods=['GET'])
 def stream_status():
-    """Server-Sent Events stream of booking status snapshots."""
+    """Server-Sent Events stream of booking status snapshots. Requires login if passwords are set."""
+    if login_required():
+        user_key, err = require_user()
+        if err:
+            return err
     subscriber_q = booking_state.subscribe()
 
     def generate():
@@ -165,10 +266,14 @@ def stream_status():
 def search():
     """Search for available rides"""
     try:
+        user_key, err = require_user()
+        if err:
+            return err
+
         # Use default origin/destination from config
         origin = config.default_origin
         destination = config.default_destination
-        
+
         # Allow custom origin/destination from request body if provided
         data = request.get_json() or {}
         if 'route_id' in data:
@@ -181,77 +286,71 @@ def search():
             origin = data['origin']
         if 'destination' in data and 'route_id' not in data:
             destination = data['destination']
-        
-        # Get user credentials if specified
-        user_key = data.get('user_id')
-        auth_token = get_auth_token(user_key) if user_key else None
-        user_id = get_user_id(user_key) if user_key else None
+
+        # User from session / require_user
+        auth_token = get_auth_token(user_key)
+        user_id = get_user_id(user_key)
         
         # Get user name for logging
-        user_name = None
-        if user_key:
-            user = get_user(user_key)
-            user_name = user.get('name') if user else None
-        
+        user = get_user(user_key)
+        user_name = user.get('name') if user else None
+
         response = search_ride(origin, destination, auth_token=auth_token, user_id=user_id)
-        
+
         if response is None:
-            if user_key:
-                booking_state.set_status(user_key, "error", "search failed")
+            booking_state.set_status(user_key, "error", "search failed")
             return jsonify({"error": "Search failed"}), 500
         
         # Log the search
         proposal_count = len(response.get('proposals', []))
         log_search(
-            user_key=user_key or 'default',
+            user_key=user_key,
             user_name=user_name,
             route_id=data.get('route_id'),
             origin=origin,
             destination=destination,
             proposal_count=proposal_count
         )
-        if user_key:
-            booking_state.set_status(user_key, "idle")
+        booking_state.set_status(user_key, "idle")
         return jsonify(response)
     except Exception as e:
         # Don't fail status updates on errors, but try.
         try:
-            data = request.get_json(silent=True) or {}
-            user_key = data.get('user_id')
+            user_key = get_current_user_key()
             if user_key:
                 booking_state.set_status(user_key, "error", str(e))
         except Exception:
             pass
         return jsonify({"error": str(e)}), 500
 
+
 @app.route('/api/book', methods=['POST'])
 def book():
     """Book a ride"""
     try:
+        user_key, err = require_user()
+        if err:
+            return err
+
         data = request.get_json()
         if not data:
             return jsonify({"error": "No data provided"}), 400
-        
+
         prescheduled_ride_id = data.get('prescheduled_ride_id')
         proposal_uuid = data.get('proposal_uuid')
         origin = data.get('origin', config.default_origin)
         destination = data.get('destination', config.default_destination)
-        
+
         if not prescheduled_ride_id or not proposal_uuid:
             return jsonify({"error": "Missing required fields"}), 400
-        
-        # Get user credentials if specified
-        user_key = data.get('user_id')
-        auth_token = get_auth_token(user_key) if user_key else None
-        user_id = get_user_id(user_key) if user_key else None
+
+        auth_token = get_auth_token(user_key)
+        user_id = get_user_id(user_key)
         ride_type = data.get('ride_type')  # optional, helps status panel
-        
-        # Get user name for logging
-        user_name = None
-        if user_key:
-            user = get_user(user_key)
-            user_name = user.get('name') if user else None
-            booking_state.set_status(user_key, "booking", "booking ride...")
+
+        user = get_user(user_key)
+        user_name = user.get('name') if user else None
+        booking_state.set_status(user_key, "booking", "booking ride...")
         
         response = book_ride(prescheduled_ride_id, proposal_uuid, origin, destination, 
                             auth_token=auth_token, user_id=user_id)
@@ -260,15 +359,14 @@ def book():
             # Log failed booking
             log_booking(
                 action='book_failed',
-                user_key=user_key or 'default',
+                user_key=user_key,
                 user_name=user_name,
                 prescheduled_ride_id=prescheduled_ride_id,
                 proposal_uuid=proposal_uuid,
                 origin=origin,
                 destination=destination
             )
-            if user_key:
-                booking_state.set_status(user_key, "error", "booking failed")
+            booking_state.set_status(user_key, "error", "booking failed")
             return jsonify({"error": "Booking failed"}), 500
         
         # Extract ride ID from response
@@ -278,24 +376,23 @@ def book():
             if rides:
                 ride_id = rides[0].get('id')
 
-        if user_key:
-            # Prefer the confirmed ride id from booking response, but fall back to the
-            # prescheduled_ride_id (the one shown in the UI/proposal) so we can still cancel.
-            tracked_ride_id = ride_id or prescheduled_ride_id
-            if tracked_ride_id:
-                booking_state.upsert_active_ride(
-                    user_key,
-                    ride_id=int(tracked_ride_id),
-                    ride_type=ride_type or "unknown",
-                    source="individual",
-                )
-            else:
-                booking_state.set_status(user_key, "booked", "booked (ride id unknown)")
+        # Prefer the confirmed ride id from booking response, but fall back to the
+        # prescheduled_ride_id (the one shown in the UI/proposal) so we can still cancel.
+        tracked_ride_id = ride_id or prescheduled_ride_id
+        if tracked_ride_id:
+            booking_state.upsert_active_ride(
+                user_key,
+                ride_id=int(tracked_ride_id),
+                ride_type=ride_type or "unknown",
+                source="individual",
+            )
+        else:
+            booking_state.set_status(user_key, "booked", "booked (ride id unknown)")
         
         # Log successful booking
         log_booking(
             action='book',
-            user_key=user_key or 'default',
+            user_key=user_key,
             user_name=user_name,
             prescheduled_ride_id=prescheduled_ride_id,
             proposal_uuid=proposal_uuid,
@@ -306,7 +403,7 @@ def book():
         # Developer ride log (individual booking)
         try:
             developer_logs.append_booking(
-                user_key=user_key or 'default',
+                user_key=user_key,
                 user_name=user_name or user_key or 'unknown',
                 ride_id=int(ride_id) if ride_id is not None else None,
                 prescheduled_ride_id=int(prescheduled_ride_id) if prescheduled_ride_id is not None else None,
@@ -319,61 +416,58 @@ def book():
         return jsonify(response)
     except Exception as e:
         try:
-            data = request.get_json(silent=True) or {}
-            user_key = data.get('user_id')
+            user_key = get_current_user_key()
             if user_key:
                 booking_state.set_status(user_key, "error", str(e))
         except Exception:
             pass
         return jsonify({"error": str(e)}), 500
 
+
 @app.route('/api/cancel', methods=['POST'])
 def cancel():
     """Cancel a ride"""
     try:
+        user_key, err = require_user()
+        if err:
+            return err
+
         data = request.get_json()
         if not data:
             return jsonify({"error": "No data provided"}), 400
-        
+
         ride_id = data.get('ride_id')
         if not ride_id:
             return jsonify({"error": "Missing ride_id"}), 400
-        
-        # Get user credentials if specified
-        user_key = data.get('user_id')
-        auth_token = get_auth_token(user_key) if user_key else None
-        user_id = get_user_id(user_key) if user_key else None
-        
-        # Get user name for logging
-        user_name = None
-        if user_key:
-            user = get_user(user_key)
-            user_name = user.get('name') if user else None
-            booking_state.set_status(user_key, "cancelling", f"cancelling ride {ride_id}...")
+
+        auth_token = get_auth_token(user_key)
+        user_id = get_user_id(user_key)
+
+        user = get_user(user_key)
+        user_name = user.get('name') if user else None
+        booking_state.set_status(user_key, "cancelling", f"cancelling ride {ride_id}...")
         
         response = cancel_ride(ride_id, auth_token=auth_token, user_id=user_id)
-        
+
         if response is None:
             # External server did not confirm cancellation - do NOT mark as cancelled in developer log
             log_booking(
                 action='cancel_failed',
-                user_key=user_key or 'default',
+                user_key=user_key,
                 user_name=user_name,
                 ride_id=ride_id
             )
-            if user_key:
-                booking_state.set_status(user_key, "error", "cancellation failed")
+            booking_state.set_status(user_key, "error", "cancellation failed")
             return jsonify({"error": "Cancellation failed"}), 500
-        
+
         # Only here: external server confirmed cancellation (cancel_ride returned response)
         log_booking(
             action='cancel',
-            user_key=user_key or 'default',
+            user_key=user_key,
             user_name=user_name,
             ride_id=ride_id
         )
-        if user_key:
-            booking_state.remove_active_ride(user_key, int(ride_id))
+        booking_state.remove_active_ride(user_key, int(ride_id))
         try:
             # Developer log: show "Cancelled" only when external server confirmed
             developer_logs.mark_cancelled(int(ride_id))
@@ -382,13 +476,13 @@ def cancel():
         return jsonify(response)
     except Exception as e:
         try:
-            data = request.get_json(silent=True) or {}
-            user_key = data.get('user_id')
+            user_key = get_current_user_key()
             if user_key:
                 booking_state.set_status(user_key, "error", str(e))
         except Exception:
             pass
         return jsonify({"error": str(e)}), 500
+
 
 @app.route('/api/config', methods=['GET'])
 def get_config():
@@ -469,16 +563,13 @@ def run_lyft_orchestrator():
     Returns Server-Sent Events stream with live logs and final result.
     """
     try:
-        data = request.get_json()
-        if not data:
-            return jsonify({"error": "No data provided"}), 400
-        
-        original_user = data.get('original_user')
-        if not original_user:
-            return jsonify({"error": "Missing original_user"}), 400
-        
-        if original_user not in USERS:
-            return jsonify({"error": f"User '{original_user}' not found"}), 400
+        user_key, err = require_user()
+        if err:
+            return err
+        # Use logged-in user as the person who gets the Lyft (no impersonation)
+        original_user = user_key
+
+        data = request.get_json() or {}
         
         # Get origin/destination
         if 'route_id' in data:
@@ -730,26 +821,26 @@ def run_lyft_orchestrator():
 def cancel_individual_booking():
     """
     Manually cancel a specific booking (filler or original user's booking).
-    
-    Request body:
-        - user_id: str, user key of the person whose booking to cancel
-        - ride_id: int, the ride ID to cancel
+    Logged-in user can only cancel their own bookings unless user_id matches session.
+    Request body: ride_id (user_id is the logged-in user).
     """
     try:
+        user_key, err = require_user()
+        if err:
+            return err
+
         data = request.get_json()
         if not data:
             return jsonify({"error": "No data provided"}), 400
-        
-        user_key = data.get('user_id')
+
         ride_id = data.get('ride_id')
-        
-        if not user_key:
-            return jsonify({"error": "Missing user_id"}), 400
         if not ride_id:
             return jsonify({"error": "Missing ride_id"}), 400
-        
-        if user_key not in USERS:
-            return jsonify({"error": f"User '{user_key}' not found"}), 400
+
+        # Optional: allow cancelling another user's booking only if body user_id matches session (same user)
+        body_user = data.get('user_id')
+        if body_user and body_user != user_key:
+            return jsonify({"error": "Cannot cancel another user's booking"}), 403
         
         # Cancel the ride
         auth_token = get_auth_token(user_key)
@@ -841,18 +932,17 @@ def cron_cancel_stale_fillers():
 def check_lyft_availability():
     """
     Quick check if Lyft is available for a route (without booking anything).
-    
-    Request body:
-        - user_id: str, user key to search as
-        - route_id: str, route ID (optional)
-        - origin/destination: custom locations (optional)
+    Uses logged-in user. Request body: route_id (optional), origin/destination (optional).
     """
     try:
+        user_key, err = require_user()
+        if err:
+            return err
+
         data = request.get_json() or {}
-        
-        user_key = data.get('user_id')
-        auth_token = get_auth_token(user_key) if user_key else None
-        user_id = get_user_id(user_key) if user_key else None
+
+        auth_token = get_auth_token(user_key)
+        user_id = get_user_id(user_key)
         
         # Get origin/destination
         if 'route_id' in data:

@@ -6,10 +6,16 @@ import LyftBooker from './LyftBooker';
 import MaintenancePage from './MaintenancePage';
 import BookingStatusPanel from './BookingStatusPanel';
 import DeveloperPanel from './DeveloperPanel';
+import LoginPage from './LoginPage';
 import { getApiBase, isApiMissing } from './config';
+
+const fetchOpts = { credentials: 'include' };
 
 function App() {
   const API_BASE = getApiBase();
+  const [authChecked, setAuthChecked] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null); // { id, name } when logged in
+  const [loginRequired, setLoginRequired] = useState(false);
   const [appMode, setAppMode] = useState('lyft'); // 'normal' or 'lyft' - default to 'lyft'
   const [showIndividualBooking, setShowIndividualBooking] = useState(false); // Track if individual booking is shown
   const [proposals, setProposals] = useState([]);
@@ -30,7 +36,7 @@ function App() {
   const [routeData, setRouteData] = useState(null);
   const [loadingRoute, setLoadingRoute] = useState(false);
   const [users, setUsers] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null); // kept in sync with currentUser when login required
   const [gettingLocation, setGettingLocation] = useState(false);
   const [centerOnOrigin, setCenterOnOrigin] = useState(false); // Only center when using current location
   const [developerClickCount, setDeveloperClickCount] = useState(0);
@@ -46,18 +52,45 @@ function App() {
     }
   };
 
+  // Auth check: if login is required and not logged in, show LoginPage
   useEffect(() => {
-    // Record website access for developer user log (IP, time, user-agent)
-    fetch(`${API_BASE}/api/developer/access`, { method: 'POST' }).catch(() => {});
+    const checkAuth = async () => {
+      if (!API_BASE) {
+        setAuthChecked(true);
+        return;
+      }
+      try {
+        const response = await fetch(`${API_BASE}/api/auth/me`, fetchOpts);
+        const data = await response.json().catch(() => ({}));
+        if (response.ok && data.user) {
+          setCurrentUser(data.user);
+          setSelectedUser(data.user.id);
+          setLoginRequired(false);
+        } else {
+          setLoginRequired(true);
+        }
+      } catch {
+        setLoginRequired(true);
+      } finally {
+        setAuthChecked(true);
+      }
+    };
+    checkAuth();
+  }, [API_BASE]);
 
-    // Fetch available users on component mount
+  useEffect(() => {
+    if (!API_BASE || !authChecked) return;
+    // Record website access for developer user log (IP, time, user-agent)
+    fetch(`${API_BASE}/api/developer/access`, { method: 'POST', ...fetchOpts }).catch(() => {});
+
+    // Fetch available users on component mount (for individual booking dropdown when no login)
     const fetchUsers = async () => {
       try {
-        const response = await fetch(`${API_BASE}/api/users`);
+        const response = await fetch(`${API_BASE}/api/users`, fetchOpts);
         if (response.ok) {
           const data = await response.json();
           setUsers(data.users || []);
-          if (data.users && data.users.length > 0) {
+          if (!loginRequired && data.users && data.users.length > 0 && !selectedUser) {
             setSelectedUser(data.users[0].id);
           }
         }
@@ -70,7 +103,7 @@ function App() {
     // Fetch available routes on component mount
     const fetchRoutes = async () => {
       try {
-        const response = await fetch(`${API_BASE}/api/routes`);
+        const response = await fetch(`${API_BASE}/api/routes`, fetchOpts);
         if (response.ok) {
           const data = await response.json();
           setRoutes(data.routes || []);
@@ -85,7 +118,7 @@ function App() {
       }
     };
     fetchRoutes();
-  }, [API_BASE]);
+  }, [API_BASE, authChecked, loginRequired]);
 
   const searchRides = async () => {
     // Validate based on search mode
@@ -133,9 +166,8 @@ function App() {
 
       const response = await fetch(`${API_BASE}/api/search`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(requestBody),
       });
 
@@ -196,9 +228,8 @@ function App() {
 
       const response = await fetch(`${API_BASE}/api/book`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           prescheduled_ride_id: proposal.prescheduled_ride_id,
           proposal_uuid: proposal.proposal_uuid,
@@ -236,12 +267,9 @@ function App() {
     try {
       const response = await fetch(`${API_BASE}/api/route/get`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          route_identifier: routeIdentifier,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ route_identifier: routeIdentifier }),
       });
 
       if (response.ok) {
@@ -262,13 +290,9 @@ function App() {
     try {
       const response = await fetch(`${API_BASE}/api/cancel`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ride_id: rideId,
-          user_id: selectedUser,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ ride_id: rideId, user_id: selectedUser }),
       });
 
       if (!response.ok) {
@@ -358,6 +382,36 @@ function App() {
     );
   }
 
+  // Wait for auth check before showing app or login
+  if (!authChecked && API_BASE) {
+    return (
+      <div className="App" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' }}>
+        <p style={{ color: 'rgba(255,255,255,0.8)' }}>Loading...</p>
+      </div>
+    );
+  }
+
+  // Login required: show login page until user signs in
+  if (authChecked && loginRequired && !currentUser) {
+    return (
+      <LoginPage
+        onLogin={(user) => {
+          setCurrentUser(user);
+          setSelectedUser(user.id);
+          setLoginRequired(false);
+        }}
+      />
+    );
+  }
+
+  const handleLogout = async () => {
+    try {
+      await fetch(`${API_BASE}/api/auth/logout`, { method: 'POST', credentials: 'include' });
+    } catch (e) {}
+    setCurrentUser(null);
+    setLoginRequired(true);
+  };
+
   // Developer panel (5 clicks on "Developer")
   if (showDeveloperPanel) {
     return (
@@ -388,9 +442,17 @@ function App() {
               <h1>RideSmarter</h1>
               <p>Get Free Lyft Rides</p>
             </div>
-            <button className="developer-toggle" onClick={handleDeveloperClick} type="button">
-              Developer
-            </button>
+            <div className="header-actions">
+              {currentUser && (
+                <span className="header-user">
+                  {currentUser.name}
+                  <button type="button" className="logout-button" onClick={handleLogout}>Log out</button>
+                </span>
+              )}
+              <button className="developer-toggle" onClick={handleDeveloperClick} type="button">
+                Developer
+              </button>
+            </div>
           </div>
         </header>
 
@@ -432,7 +494,7 @@ function App() {
           </p>
         </div>
 
-        <LyftBooker onBack={() => setAppMode('normal')} />
+        <LyftBooker onBack={() => setAppMode('normal')} currentUser={currentUser} />
       </div>
     );
   }
@@ -455,9 +517,17 @@ function App() {
               🚗 Lyft Booker Mode
             </button>
           </div>
-          <button className="developer-toggle" onClick={handleDeveloperClick} type="button">
-            Developer
-          </button>
+          <div className="header-actions">
+            {currentUser && (
+              <span className="header-user">
+                {currentUser.name}
+                <button type="button" className="logout-button" onClick={handleLogout}>Log out</button>
+              </span>
+            )}
+            <button className="developer-toggle" onClick={handleDeveloperClick} type="button">
+              Developer
+            </button>
+          </div>
         </div>
       </header>
 
@@ -529,8 +599,12 @@ function App() {
               </div>
             ) : (
               <>
-                {/* User Selector */}
-                {users.length > 0 && (
+                {/* User: fixed when logged in, dropdown when no login */}
+                {loginRequired && currentUser ? (
+                  <div className="user-selector">
+                    <span className="user-label">👤 Booking as: <strong>{currentUser.name}</strong></span>
+                  </div>
+                ) : users.length > 0 && (
                   <div className="user-selector">
                     <label htmlFor="user-select" className="user-label">
                       👤 Booking as:
