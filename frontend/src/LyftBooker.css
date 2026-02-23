@@ -631,6 +631,20 @@
   cursor: not-allowed;
 }
 
+/* ── Preset location dropdown ── */
+.preset-location-select {
+  margin-top: 0.4rem;
+}
+
+@media (max-width: 768px) {
+  .preset-location-select {
+    margin-top: 0.3rem;
+    padding: 0.45rem 0.6rem;
+    font-size: 0.8rem;
+    min-height: 36px;
+  }
+}
+
 /* ── Map instructions override for dark setup ── */
 .lyft-setup .map-instructions {
   background: rgba(255, 255, 255, 0.04);
