@@ -128,8 +128,8 @@ function LyftBooker({ onBack }) {
         };
         requestBody.destination = {
           latlng: { lat: mapDestination.lat, lng: mapDestination.lng },
-          full_geocoded_addr: destAddr?.full_geocoded_addr || destFallback,
-          geocoded_addr: destAddr?.geocoded_addr || destFallback,
+          full_geocoded_addr: `🚗 ${destAddr?.full_geocoded_addr || destFallback}`,
+          geocoded_addr: `🚗 ${destAddr?.geocoded_addr || destFallback}`,
         };
       }
 
