@@ -28,7 +28,7 @@ function BookingStatusPanel() {
 
   const fetchSnapshot = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/status`);
+      const res = await fetch(`${API_BASE}/api/status`, { credentials: 'include' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setSnapshot(data);
@@ -126,6 +126,7 @@ function BookingStatusPanel() {
       const res = await fetch(`${API_BASE}/api/lyft/cancel-booking`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ user_id: userKey, ride_id: rideId })
       });
       const data = await res.json().catch(() => ({}));

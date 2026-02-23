@@ -3,11 +3,13 @@ import './LyftBooker.css';
 import MapSelector from './MapSelector';
 import { getApiBase } from './config';
 
-function LyftBooker({ onBack }) {
+const fetchOpts = { credentials: 'include' };
+
+function LyftBooker({ onBack, currentUser }) {
   const API_BASE = getApiBase();
   const [users, setUsers] = useState([]);
   const [routes, setRoutes] = useState([]);
-  const [originalUser, setOriginalUser] = useState('');
+  const [originalUser, setOriginalUser] = useState(currentUser?.id || '');
   const [selectedRoute, setSelectedRoute] = useState('');
   const [searchMode, setSearchMode] = useState('map'); // 'route' or 'map' - default to 'map'
   const [mapOrigin, setMapOrigin] = useState(null);
@@ -30,19 +32,28 @@ function LyftBooker({ onBack }) {
     }
   }, [log]);
 
+  // When currentUser is provided (logged in), use them as original user
+  useEffect(() => {
+    if (currentUser?.id) {
+      setOriginalUser(currentUser.id);
+    }
+  }, [currentUser?.id]);
+
   // Fetch users and routes on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [usersRes, routesRes] = await Promise.all([
-          fetch(`${API_BASE}/api/users`),
-          fetch(`${API_BASE}/api/routes`)
+          fetch(`${API_BASE}/api/users`, fetchOpts),
+          fetch(`${API_BASE}/api/routes`, fetchOpts)
         ]);
 
         if (usersRes.ok) {
           const usersData = await usersRes.json();
           setUsers(usersData.users || []);
-          // Don't set default user - user must select
+          if (!currentUser && usersData.users?.length > 0 && !originalUser) {
+            setOriginalUser(usersData.users[0].id);
+          }
         }
 
         if (routesRes.ok) {
@@ -113,6 +124,7 @@ function LyftBooker({ onBack }) {
       const response = await fetch(`${API_BASE}/api/lyft/run`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(requestBody)
       });
 
@@ -327,6 +339,7 @@ function LyftBooker({ onBack }) {
       }
 
       const response = await fetch(`${API_BASE}/api/lyft/cancel-booking`, {
+        credentials: 'include',
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -370,16 +383,20 @@ function LyftBooker({ onBack }) {
         <div className="lyft-setup">
           <div className="setup-section">
             <label>👤 Original Person (who wants the lyft sent to):</label>
-            <select 
-              value={originalUser} 
-              onChange={(e) => setOriginalUser(e.target.value)}
-              className="lyft-select"
-            >
-              <option value="">-- Select a person --</option>
-              {users.map(user => (
-                <option key={user.id} value={user.id}>{user.name}</option>
-              ))}
-            </select>
+            {currentUser ? (
+              <span className="lyft-user-readonly">{currentUser.name}</span>
+            ) : (
+              <select
+                value={originalUser}
+                onChange={(e) => setOriginalUser(e.target.value)}
+                className="lyft-select"
+              >
+                <option value="">-- Select a person --</option>
+                {users.map(user => (
+                  <option key={user.id} value={user.id}>{user.name}</option>
+                ))}
+              </select>
+            )}
           </div>
 
           <div className="setup-section">

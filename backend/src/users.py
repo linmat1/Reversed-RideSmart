@@ -6,21 +6,21 @@ Each user needs:
 - name: Display name for the frontend
 - auth_token: The authentication token from the RideSmart app
 - user_id: The user ID (found in the auth token or API responses)
+- password or password_hash: For login (admin-provided). Set USER_X_PASSWORD=plaintext
+  or USER_X_PASSWORD_HASH=scrypt:... (generate with: python -c "from werkzeug.security import generate_password_hash; print(generate_password_hash('your_password'))")
 
 Environment variables format:
 USER_MATTHEW_NAME=Matthew
 USER_MATTHEW_AUTH_TOKEN=your_token_here
 USER_MATTHEW_USER_ID=3922267
-
-USER_TOMASLV_NAME=Tomas
-USER_TOMASLV_AUTH_TOKEN=your_token_here
-USER_TOMASLV_USER_ID=14435
+USER_MATTHEW_PASSWORD=admin_set_password
 
 etc.
 """
 
 import os
 from dotenv import load_dotenv
+from werkzeug.security import check_password_hash, generate_password_hash
 
 # Load environment variables from .env file
 # Look for .env in the backend directory
@@ -54,19 +54,29 @@ for user_key in user_keys:
     name_key = f'USER_{user_key.upper()}_NAME'
     token_key = f'USER_{user_key.upper()}_AUTH_TOKEN'
     id_key = f'USER_{user_key.upper()}_USER_ID'
-    
+    password_key = f'USER_{user_key.upper()}_PASSWORD'
+    password_hash_key = f'USER_{user_key.upper()}_PASSWORD_HASH'
+
     name = os.getenv(name_key)
     auth_token = os.getenv(token_key)
     user_id_str = os.getenv(id_key)
-    
+    plain_password = os.getenv(password_key)
+    stored_hash = os.getenv(password_hash_key)
+
     if name and auth_token and user_id_str:
         try:
             user_id = int(user_id_str)
-            USERS[user_key] = {
+            entry = {
                 "name": name,
                 "auth_token": auth_token,
                 "user_id": user_id
             }
+            # Login password: prefer PASSWORD_HASH; else hash PASSWORD on load
+            if stored_hash:
+                entry["password_hash"] = stored_hash
+            elif plain_password:
+                entry["password_hash"] = generate_password_hash(plain_password)
+            USERS[user_key] = entry
         except ValueError:
             print(f"Warning: Invalid user_id for user {user_key}: {user_id_str}")
     else:
@@ -127,8 +137,28 @@ def get_user_id(user_key=None):
 
 
 def list_users():
-    """List all available users for the frontend."""
+    """List all available users for the frontend (for login dropdown)."""
     return [
         {"id": key, "name": user["name"]}
         for key, user in USERS.items()
     ]
+
+
+def verify_password(user_key, password):
+    """
+    Verify that the given password matches the admin-set password for this user.
+    Returns True if the user exists, has a password set, and the password matches.
+    """
+    user = USERS.get(user_key)
+    if not user:
+        return False
+    stored_hash = user.get("password_hash")
+    if not stored_hash:
+        return False
+    return check_password_hash(stored_hash, password)
+
+
+def user_has_password(user_key):
+    """Return True if this user has a login password configured."""
+    user = USERS.get(user_key)
+    return bool(user and user.get("password_hash"))
