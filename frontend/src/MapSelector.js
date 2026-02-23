@@ -90,7 +90,7 @@ function MapSelector({ origin, destination, onOriginSelect, onDestinationSelect,
       <MapContainer
         center={defaultCenter}
         zoom={defaultZoom}
-        style={{ height: 'clamp(260px, 50vh, 420px)', width: '100%', borderRadius: '12px' }}
+        style={{ width: '100%', borderRadius: '12px' }}
         className="map-container"
       >
         <TileLayer

@@ -502,7 +502,7 @@ function LyftBooker({ onBack }) {
                   </div>
                 </div>
               </div>
-              <div className="setup-section">
+              <div className="setup-section setup-section-map">
                 <MapSelector
                   origin={mapOrigin}
                   destination={mapDestination}

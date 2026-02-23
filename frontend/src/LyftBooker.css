@@ -7,6 +7,17 @@
   box-sizing: border-box;
 }
 
+@media (max-width: 768px) {
+  .lyft-booker {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0 0.75rem 0;
+    max-width: 100%;
+  }
+}
+
 /* ── Header ── */
 .lyft-header {
   text-align: center;
@@ -37,7 +48,18 @@
   overflow: hidden;
 }
 
-@media (min-width: 640px) {
+@media (max-width: 768px) {
+  .lyft-setup {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0;
+    padding: 0.25rem 0 0;
+  }
+}
+
+@media (min-width: 769px) {
   .lyft-setup {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -64,6 +86,25 @@
   font-size: 0.9rem;
 }
 
+@media (max-width: 768px) {
+  .setup-section {
+    margin-bottom: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  .setup-section label {
+    margin-bottom: 0.3rem;
+    font-size: 0.82rem;
+  }
+
+  .setup-section.setup-section-map {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
 .lyft-select {
   width: 100%;
   padding: 0.7rem 0.75rem;
@@ -88,6 +129,14 @@
   box-shadow: 0 0 0 2px rgba(255, 0, 191, 0.15);
 }
 
+@media (max-width: 768px) {
+  .lyft-select {
+    padding: 0.55rem 0.65rem;
+    font-size: 0.85rem;
+    min-height: 40px;
+  }
+}
+
 .lyft-select option {
   background: #1a1a2e;
   color: #ffffff;
@@ -100,6 +149,12 @@
   border-radius: 10px;
   padding: 0.85rem 1rem;
   margin: 1rem 0;
+}
+
+@media (max-width: 768px) {
+  .setup-info {
+    display: none;
+  }
 }
 
 .setup-info h3 {
@@ -151,6 +206,17 @@
   transition: transform 0.2s, box-shadow 0.2s;
   box-shadow: 0 4px 16px rgba(255, 0, 191, 0.25);
   min-height: 48px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .start-button {
+    padding: 0.65rem;
+    font-size: 0.95rem;
+    min-height: 44px;
+    border-radius: 12px;
+    margin-top: 0.25rem;
+  }
 }
 
 .start-button:hover:not(:disabled) {
@@ -389,6 +455,32 @@
   gap: 0.5rem;
   justify-content: center;
   margin: 0.5rem 0;
+}
+
+@media (max-width: 768px) {
+  .lyft-setup .search-mode-toggle {
+    margin: 0.25rem 0;
+  }
+
+  .lyft-setup .mode-toggle-btn {
+    min-height: 38px;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.82rem;
+  }
+
+  .lyft-setup .map-buttons {
+    gap: 0.35rem;
+  }
+
+  .lyft-setup .map-select-btn,
+  .lyft-setup .map-current-location-btn,
+  .lyft-setup .map-clear-btn {
+    min-height: 38px;
+  }
+
+  .lyft-setup .map-controls {
+    margin-bottom: 0.35rem;
+  }
 }
 
 .lyft-setup .mode-toggle-btn {

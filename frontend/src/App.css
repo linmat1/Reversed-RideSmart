@@ -31,6 +31,15 @@
   animation: fadeIn 0.5s ease-out;
 }
 
+@media (max-width: 768px) {
+  .App {
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
+}
+
 /* ── Header ── */
 .App-header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
@@ -40,6 +49,22 @@
   padding: 1.25rem 1rem;
   box-shadow: 0 4px 24px rgba(102, 126, 234, 0.25);
   position: relative;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .App-header {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .App-header h1 {
+    font-size: 1.35rem;
+    margin-bottom: 0;
+  }
+
+  .App-header p {
+    font-size: 0.75rem;
+  }
 }
 
 .header-content {
