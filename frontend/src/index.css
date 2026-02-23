@@ -56,12 +56,12 @@ img {
   body {
     height: 100vh;
     height: 100dvh;
-    overflow: hidden;
   }
 
   #root {
     height: 100vh;
     height: 100dvh;
-    overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
 }
