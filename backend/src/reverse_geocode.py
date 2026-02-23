@@ -93,16 +93,3 @@ def get_street_address(lat: float, lng: float) -> str | None:
     parts = [p for p in (house, road) if p]
     return " ".join(parts) if parts else None
 
-
-if __name__ == "__main__":
-    # I-House at UChicago
-    result = reverse_geocode(41.7878692, -87.5908127)
-    if result:
-        print(f"Full:  {result['full_address']}")
-        print(f"Short: {result['short_address']}")
-    else:
-        print("Geocoding failed.")
-
-    print()
-    street = get_street_address(41.787964, -87.590929)
-    print(f"Street: {street}")
