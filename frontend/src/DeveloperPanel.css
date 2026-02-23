@@ -151,7 +151,8 @@
 }
 
 .developer-ride-log-desc,
-.developer-user-log-desc {
+.developer-user-log-desc,
+.developer-request-log-desc {
   margin: 0 0 0.75rem;
   font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.4);
@@ -283,5 +284,127 @@
 
   .developer-access-path {
     grid-column: 1 / -1;
+  }
+}
+
+/* --- Request log --- */
+.developer-request-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.developer-request-entry {
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  margin-bottom: 0.4rem;
+  background: rgba(255, 255, 255, 0.02);
+  overflow: hidden;
+}
+
+.developer-request-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  background: transparent;
+  border: none;
+  color: #eaeaea;
+  cursor: pointer;
+  font-size: 0.85rem;
+  text-align: left;
+  transition: background 0.15s ease;
+}
+
+.developer-request-summary:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.developer-request-status {
+  flex-shrink: 0;
+  font-size: 0.9rem;
+  width: 1.4rem;
+  text-align: center;
+}
+
+.developer-request-status.success { color: #4ade80; }
+.developer-request-status.failed  { color: #f87171; }
+.developer-request-status.running { color: #facc15; }
+
+.developer-request-user {
+  font-weight: 600;
+  color: #a78bfa;
+  white-space: nowrap;
+}
+
+.developer-request-route {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.8rem;
+}
+
+.developer-request-time {
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.developer-request-chevron {
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 0.7rem;
+  width: 1rem;
+  text-align: center;
+}
+
+.developer-request-detail {
+  padding: 0 0.75rem 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.developer-request-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 0.75rem;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin: 0.5rem 0;
+}
+
+.developer-request-logtext {
+  margin: 0.5rem 0 0;
+  padding: 0.6rem 0.75rem;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.7);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 360px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.developer-request-detail .leaflet-container {
+  margin-top: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+@media (max-width: 640px) {
+  .developer-request-summary {
+    flex-wrap: wrap;
+  }
+
+  .developer-request-route {
+    width: 100%;
+    order: 10;
   }
 }

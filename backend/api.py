@@ -517,9 +517,43 @@ def run_lyft_orchestrator():
         # Create a queue for log messages
         log_queue = queue.Queue()
         result_container = {'result': None}
-        
+
+        # Create request log entry for this orchestrator run
+        original_user_obj_pre = get_user(original_user)
+        original_user_name_pre = original_user_obj_pre.get('name') if original_user_obj_pre else original_user
+        origin_latlng = origin.get('latlng', origin) if isinstance(origin, dict) else {}
+        dest_latlng = destination.get('latlng', destination) if isinstance(destination, dict) else {}
+        origin_lat = origin_latlng.get('lat') if isinstance(origin_latlng, dict) else None
+        origin_lng = origin_latlng.get('lng') if isinstance(origin_latlng, dict) else None
+        dest_lat = dest_latlng.get('lat') if isinstance(dest_latlng, dict) else None
+        dest_lng = dest_latlng.get('lng') if isinstance(dest_latlng, dict) else None
+        origin_addr = origin.get('geocoded_addr') or origin.get('full_geocoded_addr', '') if isinstance(origin, dict) else ''
+        dest_addr = destination.get('geocoded_addr') or destination.get('full_geocoded_addr', '') if isinstance(destination, dict) else ''
+        try:
+            request_entry = developer_logs.append_request(
+                user_key=original_user,
+                user_name=original_user_name_pre,
+                origin_lat=origin_lat,
+                origin_lng=origin_lng,
+                dest_lat=dest_lat,
+                dest_lng=dest_lng,
+                origin_addr=origin_addr,
+                dest_addr=dest_addr,
+            )
+            request_entry_id = request_entry.id
+        except Exception:
+            request_entry_id = None
+
+        log_lines = []
+
         def log_callback(message):
-            """Callback function to send logs to the queue."""
+            """Callback function to send logs to the queue and accumulate for request log."""
+            log_lines.append(message)
+            if request_entry_id:
+                try:
+                    developer_logs.update_request_entry(request_entry_id, log_text="\n".join(log_lines))
+                except Exception:
+                    pass
             log_queue.put(('log', message))
         
         # Store orchestrator instance for emergency cleanup
@@ -573,6 +607,19 @@ def run_lyft_orchestrator():
                         filler_bookings_count=len(orchestrator.filler_bookings) if orchestrator else 0
                     )
                 
+                # Finalize request log entry
+                if request_entry_id:
+                    try:
+                        developer_logs.update_request_entry(
+                            request_entry_id,
+                            log_text="\n".join(log_lines),
+                            status="success" if result.get("success") else "failed",
+                            success=result.get("success", False),
+                            finished_at=time.time(),
+                        )
+                    except Exception:
+                        pass
+
                 log_queue.put(('result', result))
             except KeyboardInterrupt:
                 # Handle interruption - only cancel filler bookings
@@ -639,6 +686,20 @@ def run_lyft_orchestrator():
                     error_msg = f"Error: {str(e)}. All filler bookings have been cancelled."
                     log_queue.put(('error', error_msg))
             finally:
+                # Ensure request log entry is finalized even on error/interrupt
+                if request_entry_id:
+                    try:
+                        final_result = result_container.get('result') if isinstance(result_container, dict) else None
+                        final_success = final_result.get('success', False) if isinstance(final_result, dict) else False
+                        developer_logs.update_request_entry(
+                            request_entry_id,
+                            log_text="\n".join(log_lines),
+                            status="success" if final_success else "failed",
+                            success=final_success,
+                            finished_at=time.time(),
+                        )
+                    except Exception:
+                        pass
                 # If orchestrator finishes and original user has no active rides tracked here,
                 # leave their status as-is; otherwise set to idle.
                 try:

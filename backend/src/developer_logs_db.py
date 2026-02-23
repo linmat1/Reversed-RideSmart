@@ -70,6 +70,24 @@ def init_schema(db_path: Optional[Path] = None) -> None:
                 created_at REAL NOT NULL
             )
         """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS request_log (
+                id TEXT PRIMARY KEY,
+                user_key TEXT NOT NULL,
+                user_name TEXT NOT NULL,
+                origin_lat REAL,
+                origin_lng REAL,
+                dest_lat REAL,
+                dest_lng REAL,
+                origin_addr TEXT,
+                dest_addr TEXT,
+                success INTEGER NOT NULL DEFAULT 0,
+                status TEXT NOT NULL DEFAULT 'running',
+                log_text TEXT NOT NULL DEFAULT '',
+                created_at REAL NOT NULL,
+                finished_at REAL
+            )
+        """)
         conn.commit()
 
 
@@ -141,6 +159,70 @@ def insert_access(entry: Dict[str, Any], db_path: Optional[Path] = None) -> None
         conn.commit()
 
 
+def insert_request(entry: Dict[str, Any], db_path: Optional[Path] = None) -> None:
+    """Insert a request log entry."""
+    conn = _get_connection(db_path)
+    with _lock:
+        conn.execute(
+            """
+            INSERT INTO request_log (
+                id, user_key, user_name, origin_lat, origin_lng,
+                dest_lat, dest_lng, origin_addr, dest_addr,
+                success, status, log_text, created_at, finished_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                entry["id"],
+                entry["user_key"],
+                entry["user_name"],
+                entry.get("origin_lat"),
+                entry.get("origin_lng"),
+                entry.get("dest_lat"),
+                entry.get("dest_lng"),
+                entry.get("origin_addr", ""),
+                entry.get("dest_addr", ""),
+                1 if entry.get("success") else 0,
+                entry.get("status", "running"),
+                entry.get("log_text", ""),
+                entry["created_at"],
+                entry.get("finished_at"),
+            ),
+        )
+        conn.commit()
+
+
+def update_request(entry_id: str, updates: Dict[str, Any], db_path: Optional[Path] = None) -> None:
+    """Update a request log entry (log_text, status, success, finished_at)."""
+    conn = _get_connection(db_path)
+    allowed = {"log_text", "status", "success", "finished_at"}
+    sets = []
+    vals = []
+    for k, v in updates.items():
+        if k not in allowed:
+            continue
+        if k == "success":
+            sets.append("success = ?")
+            vals.append(1 if v else 0)
+        else:
+            sets.append(f"{k} = ?")
+            vals.append(v)
+    if not sets:
+        return
+    vals.append(entry_id)
+    with _lock:
+        conn.execute(f"UPDATE request_log SET {', '.join(sets)} WHERE id = ?", vals)
+        conn.commit()
+
+
+def load_request_entries(db_path: Optional[Path] = None) -> List[Dict[str, Any]]:
+    """Load all request log entries, oldest first."""
+    conn = _get_connection(db_path)
+    with _lock:
+        cur = conn.execute("SELECT * FROM request_log ORDER BY created_at ASC")
+        rows = cur.fetchall()
+    return [_row_to_request_entry(r) for r in rows]
+
+
 def load_ride_entries(db_path: Optional[Path] = None) -> List[Dict[str, Any]]:
     """Load all ride log entries, oldest first (so reversed() in memory gives newest first)."""
     conn = _get_connection(db_path)
@@ -190,6 +272,25 @@ def _row_to_access_entry(row: sqlite3.Row) -> Dict[str, Any]:
     }
 
 
+def _row_to_request_entry(row: sqlite3.Row) -> Dict[str, Any]:
+    return {
+        "id": row["id"],
+        "user_key": row["user_key"],
+        "user_name": row["user_name"],
+        "origin_lat": row["origin_lat"],
+        "origin_lng": row["origin_lng"],
+        "dest_lat": row["dest_lat"],
+        "dest_lng": row["dest_lng"],
+        "origin_addr": row["origin_addr"],
+        "dest_addr": row["dest_addr"],
+        "success": bool(row["success"]),
+        "status": row["status"],
+        "log_text": row["log_text"],
+        "created_at": row["created_at"],
+        "finished_at": row["finished_at"],
+    }
+
+
 # --- Use Postgres when POSTGRES_URL or DATABASE_URL is set (e.g. Vercel + Neon/Supabase) ---
 _postgres_url = os.environ.get("POSTGRES_URL") or os.environ.get("DATABASE_URL")
 _storage = "sqlite"
@@ -204,6 +305,9 @@ if _postgres_url:
             insert_access as _pg_insert_access,
             load_ride_entries as _pg_load_ride_entries,
             load_access_entries as _pg_load_access_entries,
+            insert_request as _pg_insert_request,
+            update_request as _pg_update_request,
+            load_request_entries as _pg_load_request_entries,
         )
 
         _storage = "postgres"
@@ -228,6 +332,15 @@ if _postgres_url:
 
         def load_access_entries(db_path: Optional[Path] = None) -> List[Dict[str, Any]]:
             return _pg_load_access_entries()
+
+        def insert_request(entry: Dict[str, Any], db_path: Optional[Path] = None) -> None:
+            _pg_insert_request(entry)
+
+        def update_request(entry_id: str, updates: Dict[str, Any], db_path: Optional[Path] = None) -> None:
+            _pg_update_request(entry_id, updates)
+
+        def load_request_entries(db_path: Optional[Path] = None) -> List[Dict[str, Any]]:
+            return _pg_load_request_entries()
     except Exception as e:
         print(f"Developer logs: Postgres not available ({e}), using SQLite")
 

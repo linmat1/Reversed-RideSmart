@@ -75,6 +75,24 @@ def init_schema() -> None:
                     created_at DOUBLE PRECISION NOT NULL
                 )
             """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS request_log (
+                    id TEXT PRIMARY KEY,
+                    user_key TEXT NOT NULL,
+                    user_name TEXT NOT NULL,
+                    origin_lat DOUBLE PRECISION,
+                    origin_lng DOUBLE PRECISION,
+                    dest_lat DOUBLE PRECISION,
+                    dest_lng DOUBLE PRECISION,
+                    origin_addr TEXT,
+                    dest_addr TEXT,
+                    success SMALLINT NOT NULL DEFAULT 0,
+                    status TEXT NOT NULL DEFAULT 'running',
+                    log_text TEXT NOT NULL DEFAULT '',
+                    created_at DOUBLE PRECISION NOT NULL,
+                    finished_at DOUBLE PRECISION
+                )
+            """)
         conn.commit()
 
 
@@ -158,6 +176,67 @@ def load_access_entries() -> List[Dict[str, Any]]:
     return [_row_to_access(r) for r in rows]
 
 
+def insert_request(entry: Dict[str, Any]) -> None:
+    with _conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO request_log (
+                    id, user_key, user_name, origin_lat, origin_lng,
+                    dest_lat, dest_lng, origin_addr, dest_addr,
+                    success, status, log_text, created_at, finished_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    entry["id"],
+                    entry["user_key"],
+                    entry["user_name"],
+                    entry.get("origin_lat"),
+                    entry.get("origin_lng"),
+                    entry.get("dest_lat"),
+                    entry.get("dest_lng"),
+                    entry.get("origin_addr", ""),
+                    entry.get("dest_addr", ""),
+                    1 if entry.get("success") else 0,
+                    entry.get("status", "running"),
+                    entry.get("log_text", ""),
+                    entry["created_at"],
+                    entry.get("finished_at"),
+                ),
+            )
+        conn.commit()
+
+
+def update_request(entry_id: str, updates: Dict[str, Any]) -> None:
+    allowed = {"log_text", "status", "success", "finished_at"}
+    sets = []
+    vals = []
+    for k, v in updates.items():
+        if k not in allowed:
+            continue
+        if k == "success":
+            sets.append("success = %s")
+            vals.append(1 if v else 0)
+        else:
+            sets.append(f"{k} = %s")
+            vals.append(v)
+    if not sets:
+        return
+    vals.append(entry_id)
+    with _conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(f"UPDATE request_log SET {', '.join(sets)} WHERE id = %s", vals)
+        conn.commit()
+
+
+def load_request_entries() -> List[Dict[str, Any]]:
+    with _conn() as conn:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("SELECT * FROM request_log ORDER BY created_at ASC")
+            rows = cur.fetchall()
+    return [_row_to_request(r) for r in rows]
+
+
 def _row_to_ride(row: Dict[str, Any]) -> Dict[str, Any]:
     return {
         "id": row["id"],
@@ -182,4 +261,23 @@ def _row_to_access(row: Dict[str, Any]) -> Dict[str, Any]:
         "user_agent": row["user_agent"],
         "path": row["path"],
         "created_at": float(row["created_at"]),
+    }
+
+
+def _row_to_request(row: Dict[str, Any]) -> Dict[str, Any]:
+    return {
+        "id": row["id"],
+        "user_key": row["user_key"],
+        "user_name": row["user_name"],
+        "origin_lat": float(row["origin_lat"]) if row["origin_lat"] is not None else None,
+        "origin_lng": float(row["origin_lng"]) if row["origin_lng"] is not None else None,
+        "dest_lat": float(row["dest_lat"]) if row["dest_lat"] is not None else None,
+        "dest_lng": float(row["dest_lng"]) if row["dest_lng"] is not None else None,
+        "origin_addr": row["origin_addr"],
+        "dest_addr": row["dest_addr"],
+        "success": bool(row["success"]),
+        "status": row["status"],
+        "log_text": row["log_text"],
+        "created_at": float(row["created_at"]),
+        "finished_at": float(row["finished_at"]) if row["finished_at"] is not None else None,
     }

@@ -8,6 +8,8 @@ This module handles the logic for getting a Lyft ride by:
 """
 
 import time
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from src.search_ride import search_ride
 from src.book_ride import book_ride
 from src.cancel_ride import cancel_ride
@@ -46,8 +48,8 @@ class LyftOrchestrator:
         self.stop_reason = None
         
     def _log(self, message):
-        """Add a log message with timestamp and optionally send to callback."""
-        timestamp = time.strftime("%H:%M:%S")
+        """Add a log message with timestamp (Chicago time) and optionally send to callback."""
+        timestamp = datetime.now(ZoneInfo("America/Chicago")).strftime("%H:%M:%S")
         entry = f"[{timestamp}] {message}"
         self.log.append(entry)
         print(entry)

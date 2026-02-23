@@ -1,25 +1,80 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+import L from 'leaflet';
 import './DeveloperPanel.css';
 import { getApiBase } from './config';
+
+const reqOriginIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+  iconSize: [20, 33],
+  iconAnchor: [10, 33],
+  shadowSize: [33, 33],
+});
+
+const reqDestIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+  iconSize: [20, 33],
+  iconAnchor: [10, 33],
+  shadowSize: [33, 33],
+});
 
 /** Never replace a non-empty log with an empty one (avoids log disappearing when backend returns partial data). */
 function mergeSnapshot(prev, next) {
   if (!next || typeof next !== 'object') return prev;
   const prevRides = prev?.ride_log ?? [];
   const prevAccess = prev?.access_log ?? [];
+  const prevRequests = prev?.request_log ?? [];
   const nextRides = Array.isArray(next.ride_log) ? next.ride_log : [];
   const nextAccess = Array.isArray(next.access_log) ? next.access_log : [];
+  const nextRequests = Array.isArray(next.request_log) ? next.request_log : [];
   return {
     ...next,
     ride_log: nextRides.length > 0 ? nextRides : prevRides.length > 0 ? prevRides : nextRides,
     access_log: nextAccess.length > 0 ? nextAccess : prevAccess.length > 0 ? prevAccess : nextAccess,
+    request_log: nextRequests.length > 0 ? nextRequests : prevRequests.length > 0 ? prevRequests : nextRequests,
   };
+}
+
+function RequestMiniMap({ entry }) {
+  const mapRef = useRef(null);
+  const hasCoords = entry.origin_lat != null && entry.dest_lat != null;
+  if (!hasCoords) return null;
+
+  const origin = [entry.origin_lat, entry.origin_lng];
+  const dest = [entry.dest_lat, entry.dest_lng];
+  const center = [(origin[0] + dest[0]) / 2, (origin[1] + dest[1]) / 2];
+
+  return (
+    <MapContainer
+      center={center}
+      zoom={13}
+      style={{ width: '100%', height: '160px', borderRadius: '8px' }}
+      scrollWheelZoom={false}
+      dragging={false}
+      zoomControl={false}
+      attributionControl={false}
+      ref={mapRef}
+      whenReady={() => {
+        if (mapRef.current) {
+          const bounds = L.latLngBounds(origin, dest);
+          mapRef.current.fitBounds(bounds, { padding: [30, 30], maxZoom: 15 });
+        }
+      }}
+    >
+      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+      <Marker position={origin} icon={reqOriginIcon} />
+      <Marker position={dest} icon={reqDestIcon} />
+    </MapContainer>
+  );
 }
 
 function DeveloperPanel({ onClose, onIndividualBooking }) {
   const API_BASE = getApiBase();
-  const [activeTab, setActiveTab] = useState('rides');
-  const [snapshot, setSnapshot] = useState({ ride_log: [], access_log: [] });
+  const [activeTab, setActiveTab] = useState('requests');
+  const [snapshot, setSnapshot] = useState({ ride_log: [], access_log: [], request_log: [] });
+  const [expandedRequest, setExpandedRequest] = useState(null);
   const [connected, setConnected] = useState(false);
   const [cancellingRideIds, setCancellingRideIds] = useState(() => new Set());
   const [error, setError] = useState(null);
@@ -122,6 +177,7 @@ function DeveloperPanel({ onClose, onIndividualBooking }) {
 
   const rideLog = snapshot.ride_log || [];
   const accessLog = snapshot.access_log || [];
+  const requestLog = snapshot.request_log || [];
 
   const formatTs = (ts) => {
     if (!ts) return '—';
@@ -161,6 +217,13 @@ function DeveloperPanel({ onClose, onIndividualBooking }) {
         )}
 
         <div className="developer-panel-tabs">
+          <button
+            type="button"
+            className={`developer-tab ${activeTab === 'requests' ? 'active' : ''}`}
+            onClick={() => setActiveTab('requests')}
+          >
+            Request log
+          </button>
           <button
             type="button"
             className={`developer-tab ${activeTab === 'rides' ? 'active' : ''}`}
@@ -256,6 +319,61 @@ function DeveloperPanel({ onClose, onIndividualBooking }) {
                       )}
                     </li>
                   ))}
+                </ul>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'requests' && (
+            <div className="developer-request-log">
+              <p className="developer-request-log-desc">
+                Logs for each time the Lyft orchestrator runs. Click an entry to expand its live log.
+              </p>
+              {requestLog.length === 0 ? (
+                <div className="developer-empty">No request log entries yet.</div>
+              ) : (
+                <ul className="developer-request-list">
+                  {requestLog.map((entry) => {
+                    const isExpanded = expandedRequest === entry.id;
+                    const statusClass =
+                      entry.status === 'success' ? 'success' :
+                      entry.status === 'failed' ? 'failed' : 'running';
+                    return (
+                      <li key={entry.id} className="developer-request-entry">
+                        <button
+                          type="button"
+                          className="developer-request-summary"
+                          onClick={() => setExpandedRequest(isExpanded ? null : entry.id)}
+                        >
+                          <span className={`developer-request-status ${statusClass}`}>
+                            {entry.status === 'success' ? '✓' : entry.status === 'failed' ? '✗' : '⏳'}
+                          </span>
+                          <span className="developer-request-user">{entry.user_name}</span>
+                          <span className="developer-request-route">
+                            {entry.origin_addr || '?'} → {entry.dest_addr || '?'}
+                          </span>
+                          <span className="developer-request-time">{formatTs(entry.created_at)}</span>
+                          <span className="developer-request-chevron">{isExpanded ? '▾' : '▸'}</span>
+                        </button>
+                        {isExpanded && (
+                          <div className="developer-request-detail">
+                            <RequestMiniMap entry={entry} />
+                            <div className="developer-request-meta">
+                              <span>User: {entry.user_name} ({entry.user_key})</span>
+                              <span>Status: {entry.status}</span>
+                              <span>Started: {formatTs(entry.created_at)}</span>
+                              {entry.finished_at && <span>Finished: {formatTs(entry.finished_at)}</span>}
+                            </div>
+                            {entry.log_text ? (
+                              <pre className="developer-request-logtext">{entry.log_text}</pre>
+                            ) : (
+                              <div className="developer-empty">No log output yet.</div>
+                            )}
+                          </div>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </div>
