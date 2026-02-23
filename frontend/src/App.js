@@ -37,6 +37,7 @@ function App() {
   const [destAddr, setDestAddr] = useState(null);
   const [developerClickCount, setDeveloperClickCount] = useState(0);
   const [showDeveloperPanel, setShowDeveloperPanel] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
 
   const handleDeveloperClick = () => {
     const next = developerClickCount + 1;
@@ -381,7 +382,14 @@ function App() {
   // Developer panel (5 clicks on "Developer")
   if (showDeveloperPanel) {
     return (
-      <DeveloperPanel onClose={() => setShowDeveloperPanel(false)} />
+      <DeveloperPanel
+        onClose={() => setShowDeveloperPanel(false)}
+        onIndividualBooking={() => {
+          setShowDeveloperPanel(false);
+          setAppMode('normal');
+          setShowIndividualBooking(true);
+        }}
+      />
     );
   }
 
@@ -404,9 +412,39 @@ function App() {
         <BookingStatusPanel />
         <header className="App-header">
           <div className="header-content">
+            <div className="info-toggle-wrapper">
+              <button className="info-toggle-btn" onClick={() => setShowInfo(prev => !prev)} type="button">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="1.5"/>
+                  <path d="M10 9v5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  <circle cx="10" cy="6.5" r="1" fill="currentColor"/>
+                </svg>
+                Info
+              </button>
+              {showInfo && (
+                <div className="info-dropdown">
+                  <p className="info-tagline">Get Free Lyft Rides</p>
+                  <div className="info-item">
+                    <span className="info-label">Service Hours:</span>
+                    <span className="info-value">5:00 PM – 4:00 AM</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Boundaries:</span>
+                    <span className="info-value">You must book within RideSmart boundaries, or this app will show errors</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">IMPORTANT:</span>
+                    <span className="info-value">Do not leave or refresh site while booking in progress</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">CONTACT:</span>
+                    <span className="info-value">+447754666843 on WhatsApp</span>
+                  </div>
+                </div>
+              )}
+            </div>
             <div className="header-title">
               <h1>RideSmarter</h1>
-              <p>Get Free Lyft Rides</p>
             </div>
             <button className="developer-toggle" onClick={handleDeveloperClick} type="button">
               Developer
@@ -414,43 +452,7 @@ function App() {
           </div>
         </header>
 
-        <div className="info-section">
-          <div className="info-card">
-            <div className="info-content">
-              <div className="info-item">
-                <span className="info-label">Service Hours:</span>
-                <span className="info-value">5:00 PM – 4:00 AM</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Boundaries:</span>
-                <span className="info-value">You must book within RideSmart boundaries, or this app will show errors</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">IMPORTANT:</span>
-                <span className="info-value">Do not leave or refresh site while booking in progress</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">CONTACT:</span>
-                <span className="info-value">+447754666843 on WhatsApp</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="mode-switch-section">
-          <button 
-            className="individual-booking-button"
-            onClick={() => {
-              setAppMode('normal');
-              setShowIndividualBooking(true);
-            }}
-          >
-            📱 Individual Booking
-          </button>
-          <p className="individual-booking-subtext">
-            Book normal RideSmart rides to your phone (no Lyft)
-          </p>
-        </div>
+        
 
         <LyftBooker onBack={() => setAppMode('normal')} />
       </div>
@@ -462,6 +464,36 @@ function App() {
       <BookingStatusPanel />
       <header className="App-header">
         <div className="header-content">
+          <div className="info-toggle-wrapper">
+            <button className="info-toggle-btn" onClick={() => setShowInfo(prev => !prev)} type="button">
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="1.5"/>
+                <path d="M10 9v5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                <circle cx="10" cy="6.5" r="1" fill="currentColor"/>
+              </svg>
+              Info
+            </button>
+            {showInfo && (
+              <div className="info-dropdown">
+                <div className="info-item">
+                  <span className="info-label">Service Hours:</span>
+                  <span className="info-value">5:00 PM – 4:00 AM on weekdays</span>
+                </div>
+                <div className="info-item">
+                  <span className="info-label">Boundaries:</span>
+                  <span className="info-value">You must book within RideSmart boundaries, or this app will show errors</span>
+                </div>
+                <div className="info-item">
+                  <span className="info-label">IMPORTANT:</span>
+                  <span className="info-value">Do not leave or refresh site while booking in progress</span>
+                </div>
+                <div className="info-item">
+                  <span className="info-label">CONTACT:</span>
+                  <span className="info-value">+447754666843 on WhatsApp</span>
+                </div>
+              </div>
+            )}
+          </div>
           <div className="header-title">
             <h1>RideSmart</h1>
             <p>Search, Book, and Cancel Rides</p>
@@ -480,29 +512,6 @@ function App() {
           </button>
         </div>
       </header>
-
-      <div className="info-section">
-        <div className="info-card">
-          <div className="info-content">
-            <div className="info-item">
-              <span className="info-label">Service Hours:</span>
-              <span className="info-value">5:00 PM – 4:00 AM on weekdays</span>
-            </div>
-            <div className="info-item">
-              <span className="info-label">Boundaries:</span>
-              <span className="info-value">You must book within RideSmart boundaries, or this app will show errors</span>
-            </div>
-            <div className="info-item">
-              <span className="info-label">IMPORTANT:</span>
-              <span className="info-value">Do not leave or refresh site while booking in progress</span>
-            </div>
-            <div className="info-item">
-              <span className="info-label">CONTACT:</span>
-              <span className="info-value">+447754666843 on WhatsApp</span>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <main className="App-main">
         {error && (
@@ -637,8 +646,8 @@ function App() {
                             <rect x="12" y="7" width="2" height="2" fill="currentColor"/>
                           </svg>
                           <span className="current-location-text">
-                            <span>Use current</span>
-                            <span>location</span>
+                            <span>My</span>
+                            <span>Location</span>
                           </span>
                         </button>
                         <button
@@ -646,34 +655,14 @@ function App() {
                           onClick={() => setMapSelectMode('origin')}
                           disabled={!mapOrigin && mapSelectMode !== 'origin'}
                         >
-                          {mapOrigin ? (
-                            <>
-                              <span>✓ Origin</span>
-                              <span>Set</span>
-                            </>
-                          ) : (
-                            <>
-                              <span>Set</span>
-                              <span>Origin</span>
-                            </>
-                          )}
+                          {mapOrigin ? '✓ Origin' : 'Origin'}
                         </button>
                         <button
                           className={`map-select-btn ${mapSelectMode === 'destination' ? 'active' : ''}`}
                           onClick={() => setMapSelectMode('destination')}
                           disabled={!mapDestination && mapSelectMode !== 'destination'}
                         >
-                          {mapDestination ? (
-                            <>
-                              <span>✓ Destination</span>
-                              <span>Set</span>
-                            </>
-                          ) : (
-                            <>
-                              <span>Set</span>
-                              <span>Destination</span>
-                            </>
-                          )}
+                          {mapDestination ? '✓ Dest' : 'Destination'}
                         </button>
                         <button
                           className="map-clear-btn"
@@ -687,7 +676,7 @@ function App() {
                           disabled={!mapOrigin && !mapDestination}
                           title="Clear all selected locations"
                         >
-                          Clear All
+                          Clear
                         </button>
                       </div>
                     </div>

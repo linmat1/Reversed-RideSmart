@@ -16,7 +16,7 @@ function mergeSnapshot(prev, next) {
   };
 }
 
-function DeveloperPanel({ onClose }) {
+function DeveloperPanel({ onClose, onIndividualBooking }) {
   const API_BASE = getApiBase();
   const [activeTab, setActiveTab] = useState('rides');
   const [snapshot, setSnapshot] = useState({ ride_log: [], access_log: [] });
@@ -145,6 +145,11 @@ function DeveloperPanel({ onClose }) {
             <span className="developer-panel-storage" title={storageInfo.note || ''}>
               Storage: {storageInfo.storage === 'postgres' ? 'Postgres (persists)' : `SQLite${storageInfo.path ? ` — not persisting on serverless` : ''}`}
             </span>
+          )}
+          {onIndividualBooking && (
+            <button type="button" className="developer-individual-btn" onClick={onIndividualBooking}>
+              Individual Booking
+            </button>
           )}
           <button type="button" className="developer-panel-close" onClick={onClose}>
             Close

@@ -3,6 +3,10 @@
 backend/.env
 *.env
 !*.env.example
+.env*.local
+
+# Node
+node_modules/
 
 # Node
 node_modules/

@@ -2,14 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import './LyftBooker.css';
 import MapSelector from './MapSelector';
 import { getApiBase } from './config';
+import PRESET_LOCATIONS from './presetLocations';
 
 function LyftBooker({ onBack }) {
   const API_BASE = getApiBase();
   const [users, setUsers] = useState([]);
-  const [routes, setRoutes] = useState([]);
   const [originalUser, setOriginalUser] = useState('');
-  const [selectedRoute, setSelectedRoute] = useState('');
-  const [searchMode, setSearchMode] = useState('map'); // 'route' or 'map' - default to 'map'
   const [mapOrigin, setMapOrigin] = useState(null);
   const [mapDestination, setMapDestination] = useState(null);
   const [mapSelectMode, setMapSelectMode] = useState('origin'); // 'origin', 'destination', or 'none'
@@ -60,48 +58,29 @@ function LyftBooker({ onBack }) {
 
   // Fetch users and routes on mount
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchUsers = async () => {
       try {
-        const [usersRes, routesRes] = await Promise.all([
-          fetch(`${API_BASE}/api/users`),
-          fetch(`${API_BASE}/api/routes`)
-        ]);
-
-        if (usersRes.ok) {
-          const usersData = await usersRes.json();
-          setUsers(usersData.users || []);
-          // Don't set default user - user must select
-        }
-
-        if (routesRes.ok) {
-          const routesData = await routesRes.json();
-          setRoutes(routesData.routes || []);
-          if (routesData.routes?.length > 0) {
-            setSelectedRoute(routesData.routes[0].id);
-          }
+        const res = await fetch(`${API_BASE}/api/users`);
+        if (res.ok) {
+          const data = await res.json();
+          setUsers(data.users || []);
         }
       } catch (err) {
-        console.error('Error fetching data:', err);
+        console.error('Error fetching users:', err);
       } finally {
         setLoading(false);
       }
     };
-    fetchData();
+    fetchUsers();
   }, [API_BASE]);
 
   const runOrchestrator = async () => {
-    // Validate based on search mode
     if (!originalUser) {
       alert('Please select an original person (who wants the lyft sent to)');
       return;
     }
 
-    if (searchMode === 'route' && !selectedRoute) {
-      alert('Please select a route');
-      return;
-    }
-
-    if (searchMode === 'map' && (!mapOrigin || !mapDestination)) {
+    if (!mapOrigin || !mapDestination) {
       alert('Please select both origin and destination on the map');
       return;
     }
@@ -111,27 +90,21 @@ function LyftBooker({ onBack }) {
     setLog(['Starting Lyft Orchestrator...']);
 
     try {
-      let requestBody = {
-        original_user: originalUser
-      };
-
-      if (searchMode === 'route') {
-        requestBody.route_id = selectedRoute;
-      } else {
-        // Map mode - send custom coordinates with reverse-geocoded addresses
-        const originFallback = `(${mapOrigin.lat.toFixed(6)}, ${mapOrigin.lng.toFixed(6)})`;
-        const destFallback = `(${mapDestination.lat.toFixed(6)}, ${mapDestination.lng.toFixed(6)})`;
-        requestBody.origin = {
+      const originFallback = `(${mapOrigin.lat.toFixed(6)}, ${mapOrigin.lng.toFixed(6)})`;
+      const destFallback = `(${mapDestination.lat.toFixed(6)}, ${mapDestination.lng.toFixed(6)})`;
+      const requestBody = {
+        original_user: originalUser,
+        origin: {
           latlng: { lat: mapOrigin.lat, lng: mapOrigin.lng },
           full_geocoded_addr: originAddr?.full_geocoded_addr || originFallback,
           geocoded_addr: originAddr?.geocoded_addr || originFallback,
-        };
-        requestBody.destination = {
+        },
+        destination: {
           latlng: { lat: mapDestination.lat, lng: mapDestination.lng },
-          full_geocoded_addr: `🚗 ${destAddr?.full_geocoded_addr || destFallback}`,
-          geocoded_addr: `🚗 ${destAddr?.geocoded_addr || destFallback}`,
-        };
-      }
+          full_geocoded_addr: destAddr?.full_geocoded_addr || destFallback,
+          geocoded_addr: destAddr?.geocoded_addr || destFallback,
+        },
+      };
 
       // Use fetch with ReadableStream for Server-Sent Events (live streaming)
       const response = await fetch(`${API_BASE}/api/lyft/run`, {
@@ -292,6 +265,23 @@ function LyftBooker({ onBack }) {
     return users.filter(u => u.id !== originalUser).map(u => u.name);
   };
 
+  const applyPresetLocation = (index) => {
+    const loc = PRESET_LOCATIONS[index];
+    if (!loc) return;
+    const coords = { lat: loc.lat, lng: loc.lng };
+    if (mapSelectMode === 'destination' || (mapSelectMode === 'none' && mapOrigin)) {
+      setMapDestination(coords);
+      setDestAddr({ full_geocoded_addr: loc.name, geocoded_addr: loc.name });
+      setMapSelectMode('none');
+    } else {
+      setMapOrigin(coords);
+      setOriginAddr({ full_geocoded_addr: loc.name, geocoded_addr: loc.name });
+      setMapSelectMode('destination');
+      setCenterOnOrigin(true);
+      setTimeout(() => setCenterOnOrigin(false), 100);
+    }
+  };
+
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
       alert('Geolocation is not supported by your browser');
@@ -385,11 +375,6 @@ function LyftBooker({ onBack }) {
 
   return (
     <div className="lyft-booker">
-      <div className="lyft-header">
-        <h1>🚗 Lyft Booker</h1>
-        <p>Get free Lyft rides by filling RideSmart capacity</p>
-      </div>
-
       {!running && !result && !log.length && (
         <div className="lyft-setup">
           <div className="setup-section">
@@ -407,145 +392,90 @@ function LyftBooker({ onBack }) {
           </div>
 
           <div className="setup-section">
-            <label>📍 Route Selection:</label>
-            <div className="search-mode-toggle">
-              <button
-                className={`mode-toggle-btn ${searchMode === 'map' ? 'active' : ''}`}
-                onClick={() => {
-                  setSearchMode('map');
-                  setMapOrigin(null);
-                  setMapDestination(null);
-                  setOriginAddr(null);
-                  setDestAddr(null);
-                  setMapSelectMode('origin');
-                }}
-              >
-                Use Map
-              </button>
-              <button
-                className={`mode-toggle-btn ${searchMode === 'route' ? 'active' : ''}`}
-                onClick={() => {
-                  setSearchMode('route');
-                  setMapOrigin(null);
-                  setMapDestination(null);
-                  setOriginAddr(null);
-                  setDestAddr(null);
-                  setMapSelectMode('origin');
-                }}
-              >
-                Use Route
-              </button>
+            <div className="map-controls">
+              <div className="map-buttons">
+                <button
+                  className="map-current-location-btn"
+                  onClick={getCurrentLocation}
+                  disabled={gettingLocation}
+                  title="Use your current location as origin"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="8" cy="8" r="4" fill="currentColor"/>
+                    <rect x="7" y="2" width="2" height="2" fill="currentColor"/>
+                    <rect x="7" y="12" width="2" height="2" fill="currentColor"/>
+                    <rect x="2" y="7" width="2" height="2" fill="currentColor"/>
+                    <rect x="12" y="7" width="2" height="2" fill="currentColor"/>
+                  </svg>
+                  <span className="current-location-text">
+                    <span>My</span>
+                    <span>Location</span>
+                  </span>
+                </button>
+                <button
+                  className={`map-select-btn ${mapSelectMode === 'origin' ? 'active' : ''}`}
+                  onClick={() => setMapSelectMode('origin')}
+                  disabled={!mapOrigin && mapSelectMode !== 'origin'}
+                >
+                  {mapOrigin ? '✓ Origin' : 'Origin'}
+                </button>
+                <button
+                  className={`map-select-btn ${mapSelectMode === 'destination' ? 'active' : ''}`}
+                  onClick={() => setMapSelectMode('destination')}
+                  disabled={!mapDestination && mapSelectMode !== 'destination'}
+                >
+                  {mapDestination ? '✓ Dest' : 'Destination'}
+                </button>
+                <button
+                  className="map-clear-btn"
+                  onClick={() => {
+                    setMapOrigin(null);
+                    setMapDestination(null);
+                    setOriginAddr(null);
+                    setDestAddr(null);
+                    setMapSelectMode('origin');
+                  }}
+                  disabled={!mapOrigin && !mapDestination}
+                  title="Clear all selected locations"
+                >
+                  Clear
+                </button>
+              </div>
+              {PRESET_LOCATIONS.length > 0 && (
+                <select
+                  value=""
+                  onChange={(e) => { if (e.target.value !== '') applyPresetLocation(Number(e.target.value)); }}
+                  className="lyft-select preset-location-select"
+                >
+                  <option value="">
+                    {mapSelectMode === 'destination' || (mapSelectMode === 'none' && mapOrigin)
+                      ? '-- Pick destination --'
+                      : '-- Pick origin --'}
+                  </option>
+                  {PRESET_LOCATIONS.map((loc, i) => (
+                    <option key={i} value={i}>{loc.name}</option>
+                  ))}
+                </select>
+              )}
             </div>
           </div>
-
-          {searchMode === 'route' ? (
-            <div className="setup-section">
-              <label>📍 Select Route:</label>
-              <select 
-                value={selectedRoute} 
-                onChange={(e) => setSelectedRoute(e.target.value)}
-                className="lyft-select"
-              >
-                {routes.map(route => (
-                  <option key={route.id} value={route.id}>
-                    {route.origin.name} → {route.destination.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          ) : (
-            <>
-              <div className="setup-section">
-                <div className="map-controls">
-                  <div className="map-buttons">
-                    <button
-                      className="map-current-location-btn"
-                      onClick={getCurrentLocation}
-                      disabled={gettingLocation}
-                      title="Use your current location as origin"
-                    >
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="8" cy="8" r="4" fill="currentColor"/>
-                        <rect x="7" y="2" width="2" height="2" fill="currentColor"/>
-                        <rect x="7" y="12" width="2" height="2" fill="currentColor"/>
-                        <rect x="2" y="7" width="2" height="2" fill="currentColor"/>
-                        <rect x="12" y="7" width="2" height="2" fill="currentColor"/>
-                      </svg>
-                      <span className="current-location-text">
-                        <span>Use current</span>
-                        <span>location</span>
-                      </span>
-                    </button>
-                    <button
-                      className={`map-select-btn ${mapSelectMode === 'origin' ? 'active' : ''}`}
-                      onClick={() => setMapSelectMode('origin')}
-                      disabled={!mapOrigin && mapSelectMode !== 'origin'}
-                    >
-                      {mapOrigin ? (
-                        <>
-                          <span>✓ Origin</span>
-                          <span>Set</span>
-                        </>
-                      ) : (
-                        <>
-                          <span>Set</span>
-                          <span>Origin</span>
-                        </>
-                      )}
-                    </button>
-                    <button
-                      className={`map-select-btn ${mapSelectMode === 'destination' ? 'active' : ''}`}
-                      onClick={() => setMapSelectMode('destination')}
-                      disabled={!mapDestination && mapSelectMode !== 'destination'}
-                    >
-                      {mapDestination ? (
-                        <>
-                          <span>✓ Destination</span>
-                          <span>Set</span>
-                        </>
-                      ) : (
-                        <>
-                          <span>Set</span>
-                          <span>Destination</span>
-                        </>
-                      )}
-                    </button>
-                    <button
-                      className="map-clear-btn"
-                      onClick={() => {
-                        setMapOrigin(null);
-                        setMapDestination(null);
-                        setOriginAddr(null);
-                        setDestAddr(null);
-                        setMapSelectMode('origin');
-                      }}
-                      disabled={!mapOrigin && !mapDestination}
-                      title="Clear all selected locations"
-                    >
-                      Clear All
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <div className="setup-section">
-                <MapSelector
-                  origin={mapOrigin}
-                  destination={mapDestination}
-                  onOriginSelect={(coords) => {
-                    setMapOrigin(coords);
-                    setMapSelectMode('destination');
-                    setCenterOnOrigin(false); // Don't center when manually clicking
-                  }}
-                  onDestinationSelect={(coords) => {
-                    setMapDestination(coords);
-                    setMapSelectMode('none');
-                  }}
-                  selectMode={mapSelectMode}
-                  centerOnOrigin={centerOnOrigin}
-                />
-              </div>
-            </>
-          )}
+          <div className="setup-section setup-section-map">
+            <MapSelector
+              origin={mapOrigin}
+              destination={mapDestination}
+              onOriginSelect={(coords) => {
+                setMapOrigin(coords);
+                setMapSelectMode('destination');
+                setCenterOnOrigin(false);
+              }}
+              onDestinationSelect={(coords) => {
+                setMapDestination(coords);
+                setMapSelectMode('none');
+              }}
+              selectMode={mapSelectMode}
+              centerOnOrigin={centerOnOrigin}
+            />
+          </div>
 
           <div className="setup-info">
             <h3>Configuration</h3>
@@ -567,8 +497,7 @@ function LyftBooker({ onBack }) {
             disabled={
               !originalUser ||
               users.length < 2 ||
-              (searchMode === 'route' && !selectedRoute) ||
-              (searchMode === 'map' && (!mapOrigin || !mapDestination))
+              !mapOrigin || !mapDestination
             }
           >
             🚀 Start Lyft Orchestrator

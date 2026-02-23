@@ -57,6 +57,21 @@ function MapCenter({ center, zoom, shouldCenter }) {
   return null;
 }
 
+// Fit map to show both origin and destination markers
+function FitBounds({ origin, destination }) {
+  const map = useMap();
+  useEffect(() => {
+    if (origin && destination) {
+      const bounds = L.latLngBounds(
+        [origin.lat, origin.lng],
+        [destination.lat, destination.lng]
+      );
+      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
+    }
+  }, [origin, destination, map]);
+  return null;
+}
+
 function MapSelector({ origin, destination, onOriginSelect, onDestinationSelect, selectMode, centerOnOrigin }) {
   const [mapReady, setMapReady] = useState(false);
 
@@ -90,7 +105,7 @@ function MapSelector({ origin, destination, onOriginSelect, onDestinationSelect,
       <MapContainer
         center={defaultCenter}
         zoom={defaultZoom}
-        style={{ height: '400px', width: '100%', borderRadius: '12px' }}
+        style={{ width: '100%', borderRadius: '12px' }}
         className="map-container"
       >
         <TileLayer
@@ -100,6 +115,7 @@ function MapSelector({ origin, destination, onOriginSelect, onDestinationSelect,
         {centerOnOrigin && origin && (
           <MapCenter center={[origin.lat, origin.lng]} zoom={15} shouldCenter={centerOnOrigin} />
         )}
+        <FitBounds origin={origin} destination={destination} />
         <MapClickHandler onMapClick={handleMapClick} selectMode={selectMode} />
         {origin && (
           <Marker position={[origin.lat, origin.lng]} icon={originIcon}>

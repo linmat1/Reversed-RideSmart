@@ -1,47 +1,65 @@
 .map-selector-container {
   width: 100%;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+  .map-selector-container {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0;
+  }
 }
 
 .map-container {
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
   overflow: hidden;
+  height: clamp(260px, 50vh, 420px);
+}
+
+@media (max-width: 768px) {
+  .map-container {
+    flex: 1;
+    min-height: 120px;
+    height: auto !important;
+  }
 }
 
 .map-loading {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 400px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  height: 280px;
+  background: rgba(255, 255, 255, 0.04);
   border-radius: 12px;
-  color: #d0d0d0;
-  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.95rem;
 }
 
 .map-instructions {
-  margin-top: 1rem;
-  padding: 1rem;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.1) 100%);
-  backdrop-filter: blur(10px);
+  margin-top: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  background: rgba(255, 255, 255, 0.06);
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
   text-align: center;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 500;
-  min-height: 60px; /* Prevent layout shifts when text changes */
+  min-height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
-/* For light backgrounds (like in LyftBooker white card) */
-.lyft-setup .map-instructions {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-  color: #333;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+@media (max-width: 768px) {
+  .map-instructions {
+    display: none;
+  }
 }
 
 .map-instructions p {
@@ -53,12 +71,7 @@
   font-weight: 700;
 }
 
-/* For light backgrounds */
-.lyft-setup .map-instructions strong {
-  color: #333;
-}
-
-/* Override Leaflet popup styles for dark theme */
+/* Leaflet theme overrides */
 .leaflet-popup-content-wrapper {
   background: #1a1a2e;
   color: #e0e0e0;
@@ -72,4 +85,3 @@
 .leaflet-container {
   background: #16213e;
 }
-

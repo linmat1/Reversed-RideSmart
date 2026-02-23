@@ -1,485 +1,601 @@
+/* ── Container ── */
 .lyft-booker {
   max-width: 700px;
   width: 100%;
   margin: 0 auto;
-  padding: 20px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  padding: 0 1rem 2rem;
   box-sizing: border-box;
-  flex-shrink: 0; /* Prevent container from shrinking */
-  contain: layout style; /* Prevent layout shifts from affecting parent */
 }
 
+@media (max-width: 768px) {
+  .lyft-booker {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0.4rem 0.75rem 0.5rem;
+    max-width: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ── Header ── */
 .lyft-header {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 1.25rem;
 }
 
 .lyft-header h1 {
   color: #FF00BF;
-  font-size: 2.5rem;
-  margin: 10px 0;
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin: 0.25rem 0;
 }
 
 .lyft-header p {
-  color: #666;
-  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.9rem;
 }
 
-.back-button {
-  background: #333;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background 0.2s;
-}
-
-.back-button:hover {
-  background: #444;
-}
-
-/* Setup Section */
+/* ── Setup Section (dark themed) ── */
 .lyft-setup {
-  background: #f8f9fa;
-  border-radius: 12px;
-  padding: 25px;
-  margin-bottom: 20px;
-  min-height: 600px; /* Prevent layout shifts */
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0.5rem 0;
+  margin-bottom: 1.25rem;
   width: 100%;
-  max-width: 100%;
-  min-width: 0; /* Prevent flex shrinking */
   box-sizing: border-box;
-  overflow: hidden; /* Prevent content from causing width changes */
-  flex-shrink: 0; /* Prevent container from shrinking */
-  contain: layout; /* Isolate layout calculations */
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .lyft-setup {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0;
+    padding: 0.25rem 0 0;
+  }
+}
+
+@media (min-width: 769px) {
+  .lyft-setup {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 1.5rem;
+  }
 }
 
 .setup-section {
-  margin-bottom: 20px;
-  min-height: fit-content;
+  margin-bottom: 1.25rem;
   width: 100%;
-  max-width: 100%;
-  min-width: 0;
   box-sizing: border-box;
-  flex-shrink: 0;
+}
+
+.setup-section:last-of-type {
+  margin-bottom: 1rem;
 }
 
 .setup-section label {
   display: block;
   font-weight: 600;
-  margin-bottom: 8px;
-  color: #333;
+  margin-bottom: 0.5rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .setup-section {
+    margin-bottom: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  .setup-section label {
+    margin-bottom: 0.3rem;
+    font-size: 0.82rem;
+  }
+
+  .setup-section.setup-section-map {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
 }
 
 .lyft-select {
   width: 100%;
-  min-width: 0; /* Prevent flex shrinking issues */
-  max-width: 100%;
-  padding: 12px;
-  font-size: 1rem;
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  background: white;
-  color: #333;
+  padding: 0.7rem 0.75rem;
+  font-size: 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
   cursor: pointer;
   transition: border-color 0.2s;
   box-sizing: border-box;
-  display: block; /* Ensure block-level display */
-  flex-shrink: 0; /* Prevent shrinking */
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  min-height: 44px;
 }
 
 .lyft-select:focus {
   border-color: #FF00BF;
   outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 0, 191, 0.15);
+}
+
+@media (max-width: 768px) {
+  .lyft-select {
+    padding: 0.55rem 0.65rem;
+    font-size: 0.85rem;
+    min-height: 40px;
+  }
 }
 
 .lyft-select option {
-  background: white;
-  color: #333;
-  padding: 8px;
+  background: #1a1a2e;
+  color: #ffffff;
 }
 
+/* ── Setup Info ── */
 .setup-info {
-  background: #e8f4f8;
-  border-radius: 8px;
-  padding: 15px;
-  margin: 20px 0;
+  background: rgba(78, 205, 196, 0.08);
+  border: 1px solid rgba(78, 205, 196, 0.15);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  margin: 1rem 0;
+}
+
+@media (max-width: 768px) {
+  .setup-info {
+    display: none;
+  }
 }
 
 .setup-info h3 {
-  margin: 0 0 10px 0;
-  color: #333;
+  margin: 0 0 0.5rem 0;
+  color: #4ecdc4;
+  font-size: 0.9rem;
+  font-weight: 700;
 }
 
 .setup-info p {
-  margin: 5px 0;
-  color: #555;
+  margin: 0.25rem 0;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.85rem;
 }
 
+.setup-info p strong {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* ── Warning ── */
 .warning-message {
-  background: #fff3cd;
-  border: 1px solid #ffc107;
-  color: #856404;
-  padding: 15px;
-  border-radius: 8px;
-  margin: 20px 0;
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.25);
+  color: #fbbf24;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  margin: 1rem 0;
+  font-size: 0.85rem;
 }
 
 .warning-message code {
-  background: rgba(0,0,0,0.1);
-  padding: 2px 6px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.15rem 0.4rem;
   border-radius: 4px;
+  font-size: 0.8rem;
 }
 
+/* ── Start Button ── */
 .start-button {
   width: 100%;
-  padding: 16px;
-  font-size: 1.2rem;
-  font-weight: 600;
+  padding: 0.85rem;
+  font-size: 1.05rem;
+  font-weight: 700;
   background: linear-gradient(135deg, #FF00BF 0%, #FF6B35 100%);
   color: white;
   border: none;
-  border-radius: 12px;
+  border-radius: 14px;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 16px rgba(255, 0, 191, 0.25);
+  min-height: 48px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .start-button {
+    padding: 0.65rem;
+    font-size: 0.95rem;
+    min-height: 44px;
+    border-radius: 12px;
+    margin-top: 0.25rem;
+  }
 }
 
 .start-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(255, 0, 191, 0.3);
+  box-shadow: 0 6px 20px rgba(255, 0, 191, 0.35);
 }
 
 .start-button:disabled {
-  background: #ccc;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.3);
   cursor: not-allowed;
+  box-shadow: none;
 }
 
-/* Log Section */
+/* ── Log Section ── */
 .lyft-log {
-  background: #1a1a2e;
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 20px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+  .lyft-log,
+  .lyft-result,
+  .active-bookings-section {
+    flex-shrink: 0;
+  }
 }
 
 .lyft-log h3 {
   color: #fff;
-  margin: 0 0 15px 0;
+  margin: 0 0 0.75rem 0;
+  font-size: 1rem;
+  font-weight: 700;
 }
 
 .log-container {
-  max-height: 400px;
+  max-height: 350px;
   overflow-y: auto;
   overflow-x: hidden;
-  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
-  font-size: 0.85rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8rem;
+  -webkit-overflow-scrolling: touch;
 }
 
 .log-entry {
-  color: #c0c0c0;
-  padding: 4px 8px;
-  margin: 2px 0;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 0.25rem 0.5rem;
+  margin: 0.1rem 0;
   border-radius: 4px;
   overflow-wrap: break-word;
   word-break: break-word;
   white-space: pre-wrap;
 }
 
-.log-entry.success {
-  color: #4ade80;
-}
-
-.log-entry.error {
-  color: #f87171;
-}
+.log-entry.success { color: #4ade80; }
+.log-entry.error   { color: #f87171; }
 
 .log-entry.section {
   color: #60a5fa;
   font-weight: 600;
-  margin-top: 10px;
+  margin-top: 0.5rem;
 }
 
 .log-entry.running {
   color: #fbbf24;
-  animation: pulse 1s infinite;
+  animation: pulse 1.2s infinite;
 }
 
 @keyframes pulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  50%      { opacity: 0.4; }
 }
 
-/* Result Section */
+/* ── Result Section ── */
 .lyft-result {
   text-align: center;
-  padding: 30px;
-  border-radius: 12px;
-  margin-top: 20px;
+  padding: 1.5rem;
+  border-radius: 14px;
+  margin-top: 1rem;
 }
 
 .lyft-result.success {
-  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(22, 163, 74, 0.15) 100%);
+  border: 1px solid rgba(34, 197, 94, 0.3);
   color: white;
 }
 
 .lyft-result.failed {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.25);
   color: white;
 }
 
 .lyft-result h2 {
-  font-size: 2rem;
-  margin: 0 0 15px 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem 0;
 }
 
 .lyft-result p {
-  font-size: 1.1rem;
-  margin: 0 0 20px 0;
+  font-size: 0.95rem;
+  margin: 0 0 1rem 0;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .booking-details {
-  background: rgba(255,255,255,0.2);
-  padding: 15px;
-  border-radius: 8px;
-  margin: 20px 0;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 1rem;
+  border-radius: 10px;
+  margin: 1rem 0;
 }
 
 .booking-details h4 {
-  margin: 0 0 10px 0;
+  margin: 0 0 0.5rem 0;
+  color: #fff;
+}
+
+.booking-details p {
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .reset-button {
-  background: white;
-  color: #333;
-  border: none;
-  padding: 12px 30px;
-  font-size: 1rem;
-  font-weight: 600;
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.7rem 1.75rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border-radius: 10px;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: all 0.2s;
+  min-height: 44px;
 }
 
 .reset-button:hover {
-  transform: scale(1.05);
+  background: rgba(255, 255, 255, 0.18);
 }
 
-/* Loading */
-.loading {
+/* ── Loading ── */
+.lyft-booker .loading {
   text-align: center;
-  padding: 50px;
-  font-size: 1.2rem;
-  color: #666;
+  padding: 2.5rem 1rem;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.5);
 }
 
-/* Active Bookings Section */
+/* ── Active Bookings Section ── */
 .active-bookings-section {
-  background: #2a2a3e;
-  border-radius: 12px;
-  padding: 20px;
-  margin: 20px 0;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 14px;
+  padding: 1rem;
+  margin: 1rem 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .active-bookings-section h3 {
   color: #fff;
-  margin: 0 0 10px 0;
-  font-size: 1.3rem;
+  margin: 0 0 0.35rem 0;
+  font-size: 1.1rem;
+  font-weight: 700;
 }
 
 .bookings-subtitle {
-  color: #aaa;
-  font-size: 0.9rem;
-  margin: 0 0 15px 0;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.8rem;
+  margin: 0 0 0.75rem 0;
 }
 
 .bookings-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0.5rem;
 }
 
 .booking-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(255, 255, 255, 0.05);
-  padding: 12px 15px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 0.5rem;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.75rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .booking-info {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 0.5rem;
   flex: 1;
+  min-width: 0;
+  flex-wrap: wrap;
 }
 
 .booking-info strong {
   color: #fff;
-  font-size: 1rem;
+  font-size: 0.9rem;
 }
 
 .booking-type {
   background: linear-gradient(135deg, #FF00BF 0%, #FF6B35 100%);
   color: white;
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 0.85rem;
-  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
 }
 
 .booking-id {
-  color: #aaa;
-  font-size: 0.9rem;
-  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.75rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 .cancel-booking-btn {
-  background: linear-gradient(135deg, rgba(220, 53, 69, 0.8) 0%, rgba(220, 53, 69, 0.6) 100%);
-  color: white;
-  border: 1px solid rgba(220, 53, 69, 0.5);
-  padding: 8px 16px;
+  background: rgba(220, 53, 69, 0.15);
+  color: #ff8a8a;
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  padding: 0.45rem 0.75rem;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 600;
-  transition: all 0.3s;
+  font-size: 0.8rem;
+  font-weight: 700;
+  transition: all 0.2s;
+  min-height: 36px;
+  flex-shrink: 0;
 }
 
 .cancel-booking-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, rgba(220, 53, 69, 1) 0%, rgba(220, 53, 69, 0.8) 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+  background: rgba(220, 53, 69, 0.25);
 }
 
 .cancel-booking-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
-/* Search Mode Toggle */
-.search-mode-toggle {
+/* ── Search Mode Toggle (inside LyftBooker) ── */
+.lyft-setup .search-mode-toggle {
   display: flex;
-  gap: 1rem;
+  gap: 0.5rem;
   justify-content: center;
-  margin: 15px 0;
-  flex-wrap: wrap;
+  margin: 0.5rem 0;
 }
 
-.mode-toggle-btn {
-  padding: 0.75rem 2rem;
-  font-size: 1rem;
+@media (max-width: 768px) {
+  .lyft-setup .search-mode-toggle {
+    margin: 0.25rem 0;
+  }
+
+  .lyft-setup .mode-toggle-btn {
+    min-height: 38px;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.82rem;
+  }
+
+  .lyft-setup .map-buttons {
+    gap: 0.35rem;
+  }
+
+  .lyft-setup .map-select-btn,
+  .lyft-setup .map-current-location-btn,
+  .lyft-setup .map-clear-btn {
+    min-height: 38px;
+  }
+
+  .lyft-setup .map-controls {
+    margin-bottom: 0.35rem;
+  }
+}
+
+.lyft-setup .mode-toggle-btn {
+  flex: 1;
+  max-width: 150px;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-  color: #666;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.4);
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+  min-height: 44px;
 }
 
-.mode-toggle-btn:hover {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.1) 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+.lyft-setup .mode-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
 
-.mode-toggle-btn.active {
+.lyft-setup .mode-toggle-btn.active {
   background: linear-gradient(135deg, #FF00BF 0%, #FF6B35 100%);
   color: white;
-  border-color: rgba(255, 0, 191, 0.5);
-  box-shadow: 0 4px 16px rgba(255, 0, 191, 0.4);
+  border-color: rgba(255, 0, 191, 0.4);
+  box-shadow: 0 3px 12px rgba(255, 0, 191, 0.3);
 }
 
-/* Map Controls */
-.map-controls {
-  margin-bottom: 1.5rem;
+/* ── Map Controls (inside LyftBooker) ── */
+.lyft-setup .map-controls {
+  width: 100%;
 }
 
-.map-buttons {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  flex-wrap: nowrap; /* Keep all buttons on one line */
-  min-height: 50px; /* Prevent layout shifts when buttons change state */
-  align-items: center;
+.lyft-setup .map-buttons {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr auto;
+  gap: 0.5rem;
+  align-items: stretch;
 }
 
-.map-select-btn {
-  padding: 0.75rem 1.5rem;
-  font-size: 0.95rem;
+.lyft-setup .map-select-btn {
+  padding: 0.6rem 0.5rem;
+  font-size: 0.8rem;
   font-weight: 600;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-  color: #666;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.4);
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(10px);
-  width: 160px; /* Fixed width to prevent size changes - set to accommodate "✓ Destination Set" */
+  transition: all 0.2s ease;
   text-align: center;
-  box-sizing: border-box;
-  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 0;
-  line-height: 1.2;
+  line-height: 1.25;
+  min-height: 44px;
 }
 
-.map-select-btn span {
+.lyft-setup .map-select-btn span {
   display: block;
 }
 
-.map-select-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.1) 100%);
-  transform: translateY(-2px);
+.lyft-setup .map-select-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
 }
 
-.map-select-btn.active {
+.lyft-setup .map-select-btn.active {
   background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
   color: white;
-  border-color: rgba(40, 167, 69, 0.5);
-  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+  border-color: rgba(40, 167, 69, 0.4);
+  box-shadow: 0 3px 10px rgba(40, 167, 69, 0.3);
 }
 
-.map-select-btn:disabled {
-  opacity: 0.5;
+.lyft-setup .map-select-btn:disabled {
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
-.map-current-location-btn {
-  padding: 0.5rem 0.6rem;
-  font-size: 0.75rem;
+.lyft-setup .map-current-location-btn {
+  padding: 0.5rem;
+  font-size: 0.7rem;
   font-weight: 600;
-  border-radius: 8px;
-  border: 1px solid rgba(33, 150, 243, 0.3);
-  background: linear-gradient(135deg, rgba(33, 150, 243, 0.2) 0%, rgba(33, 150, 243, 0.1) 100%);
-  color: #2196F3;
+  border-radius: 10px;
+  border: 1px solid rgba(33, 150, 243, 0.2);
+  background: rgba(33, 150, 243, 0.08);
+  color: #64b5f6;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.3rem;
+  gap: 0.2rem;
   flex-direction: column;
-  width: auto;
-  min-width: 0;
+  min-height: 44px;
+  min-width: 44px;
 }
 
-.map-current-location-btn svg {
+.lyft-setup .map-current-location-btn svg {
   flex-shrink: 0;
 }
 
-.current-location-text {
-  font-size: 0.65rem;
+.lyft-setup .current-location-text {
+  font-size: 0.6rem;
   line-height: 1.1;
   display: flex;
   flex-direction: column;
@@ -487,41 +603,100 @@
   text-align: center;
 }
 
-.current-location-text span {
+.lyft-setup .current-location-text span {
   display: block;
 }
 
-.map-current-location-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, rgba(33, 150, 243, 0.3) 0%, rgba(33, 150, 243, 0.2) 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+.lyft-setup .map-current-location-btn:hover:not(:disabled) {
+  background: rgba(33, 150, 243, 0.15);
 }
 
-.map-current-location-btn:disabled {
-  opacity: 0.6;
+.lyft-setup .map-current-location-btn:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
-.map-clear-btn {
-  padding: 0.75rem 1.5rem;
-  font-size: 0.95rem;
+.lyft-setup .map-clear-btn {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
   font-weight: 600;
-  border-radius: 8px;
-  border: 1px solid rgba(220, 53, 69, 0.3);
-  background: linear-gradient(135deg, rgba(220, 53, 69, 0.2) 0%, rgba(220, 53, 69, 0.1) 100%);
+  border-radius: 10px;
+  border: 1px solid rgba(220, 53, 69, 0.2);
+  background: rgba(220, 53, 69, 0.08);
   color: #ff6b6b;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.map-clear-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, rgba(220, 53, 69, 0.3) 0%, rgba(220, 53, 69, 0.2) 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.2);
+.lyft-setup .map-clear-btn:hover:not(:disabled) {
+  background: rgba(220, 53, 69, 0.15);
 }
 
-.map-clear-btn:disabled {
-  opacity: 0.4;
+.lyft-setup .map-clear-btn:disabled {
+  opacity: 0.3;
   cursor: not-allowed;
+}
+
+/* ── Preset location dropdown ── */
+.preset-location-select {
+  margin-top: 0.4rem;
+}
+
+@media (max-width: 768px) {
+  .preset-location-select {
+    margin-top: 0.3rem;
+    padding: 0.45rem 0.6rem;
+    font-size: 0.8rem;
+    min-height: 36px;
+  }
+}
+
+/* ── Map instructions override for dark setup ── */
+.lyft-setup .map-instructions {
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.lyft-setup .map-instructions strong {
+  color: #ffffff;
+}
+
+/* ── Small mobile ── */
+@media (max-width: 380px) {
+  .lyft-setup .map-buttons {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem;
+  }
+
+  .lyft-setup .map-current-location-btn {
+    grid-column: 1;
+  }
+
+  .lyft-setup .map-clear-btn {
+    grid-column: 2;
+  }
+
+  .lyft-header h1 {
+    font-size: 1.5rem;
+  }
+}
+
+/* ── Desktop ── */
+@media (min-width: 640px) {
+  .lyft-booker {
+    padding: 0 1.5rem 2rem;
+  }
+
+  .lyft-setup {
+    padding: 1.5rem;
+  }
+
+  .lyft-header h1 {
+    font-size: 2rem;
+  }
 }
