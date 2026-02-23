@@ -4,6 +4,11 @@ backend/.env
 *.env
 !*.env.example
 
+# Node
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+
 # Python
 __pycache__/
 *.py[cod]
@@ -34,3 +39,5 @@ backend/logs/
 # Developer logs DB (SQLite)
 *.db
 backend/data/
+.vercel
+.env*.local
