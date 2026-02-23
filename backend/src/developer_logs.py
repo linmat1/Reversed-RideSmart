@@ -21,8 +21,11 @@ from src.developer_logs_db import (
     insert_ride,
     update_ride_cancelled,
     insert_access,
+    insert_request,
+    update_request,
     load_ride_entries,
     load_access_entries,
+    load_request_entries,
 )
 
 
@@ -68,6 +71,25 @@ class UserAccessEntry:
     created_at: float = field(default_factory=_now_ts)
 
 
+@dataclass
+class RequestLogEntry:
+    """A single orchestrator request (one full run of the Lyft booker)."""
+    id: str
+    user_key: str
+    user_name: str
+    origin_lat: Optional[float] = None
+    origin_lng: Optional[float] = None
+    dest_lat: Optional[float] = None
+    dest_lng: Optional[float] = None
+    origin_addr: str = ""
+    dest_addr: str = ""
+    success: bool = False
+    status: str = "running"  # "running" | "success" | "failed"
+    log_text: str = ""
+    created_at: float = field(default_factory=_now_ts)
+    finished_at: Optional[float] = None
+
+
 class DeveloperLogStore:
     """Developer ride log and user access log: persisted to SQLite, broadcast via SSE."""
 
@@ -75,17 +97,20 @@ class DeveloperLogStore:
         self._lock = threading.Lock()
         self._ride_entries: List[RideLogEntry] = []
         self._access_entries: List[UserAccessEntry] = []
+        self._request_entries: List[RequestLogEntry] = []
         self._ride_id_counter = 0
         self._access_id_counter = 0
+        self._request_id_counter = 0
         self._subscribers: List[queue.Queue[str]] = []
         self._load_from_db()
 
     def _load_from_db(self) -> None:
-        """Load ride and access entries from DB and set id counters."""
+        """Load ride, access, and request entries from DB and set id counters."""
         try:
             init_schema()
             ride_dicts = load_ride_entries()
             access_dicts = load_access_entries()
+            request_dicts = load_request_entries()
         except Exception as e:
             print(f"Developer logs: failed to load from DB: {e}")
             return
@@ -116,6 +141,25 @@ class DeveloperLogStore:
                     created_at=d["created_at"],
                 )
             )
+        for d in request_dicts:
+            self._request_entries.append(
+                RequestLogEntry(
+                    id=d["id"],
+                    user_key=d["user_key"],
+                    user_name=d["user_name"],
+                    origin_lat=d.get("origin_lat"),
+                    origin_lng=d.get("origin_lng"),
+                    dest_lat=d.get("dest_lat"),
+                    dest_lng=d.get("dest_lng"),
+                    origin_addr=d.get("origin_addr", ""),
+                    dest_addr=d.get("dest_addr", ""),
+                    success=bool(d.get("success", False)),
+                    status=d.get("status", "running"),
+                    log_text=d.get("log_text", ""),
+                    created_at=d["created_at"],
+                    finished_at=d.get("finished_at"),
+                )
+            )
         if self._ride_entries:
             self._ride_id_counter = max(
                 _parse_counter_from_id(e.id, "ride") for e in self._ride_entries
@@ -123,6 +167,10 @@ class DeveloperLogStore:
         if self._access_entries:
             self._access_id_counter = max(
                 _parse_counter_from_id(e.id, "access") for e in self._access_entries
+            )
+        if self._request_entries:
+            self._request_id_counter = max(
+                _parse_counter_from_id(e.id, "req") for e in self._request_entries
             )
 
     def _next_ride_id(self) -> str:
@@ -132,6 +180,10 @@ class DeveloperLogStore:
     def _next_access_id(self) -> str:
         self._access_id_counter += 1
         return f"access_{self._access_id_counter}_{int(_now_ts() * 1000)}"
+
+    def _next_request_id(self) -> str:
+        self._request_id_counter += 1
+        return f"req_{self._request_id_counter}_{int(_now_ts() * 1000)}"
 
     # --- Ride log ---
     def append_booking(
@@ -228,6 +280,80 @@ class DeveloperLogStore:
         with self._lock:
             return [asdict(e) for e in reversed(self._access_entries)]
 
+    # --- Request log (orchestrator runs) ---
+    def append_request(
+        self,
+        user_key: str,
+        user_name: str,
+        origin_lat: Optional[float] = None,
+        origin_lng: Optional[float] = None,
+        dest_lat: Optional[float] = None,
+        dest_lng: Optional[float] = None,
+        origin_addr: str = "",
+        dest_addr: str = "",
+    ) -> RequestLogEntry:
+        with self._lock:
+            entry = RequestLogEntry(
+                id=self._next_request_id(),
+                user_key=user_key,
+                user_name=user_name,
+                origin_lat=origin_lat,
+                origin_lng=origin_lng,
+                dest_lat=dest_lat,
+                dest_lng=dest_lng,
+                origin_addr=origin_addr,
+                dest_addr=dest_addr,
+            )
+            try:
+                insert_request(asdict(entry))
+            except Exception as e:
+                print(f"Developer logs: failed to persist request: {e}")
+                traceback.print_exc()
+            self._request_entries.append(entry)
+            self._broadcast_locked()
+            return entry
+
+    def update_request_entry(
+        self,
+        entry_id: str,
+        log_text: Optional[str] = None,
+        status: Optional[str] = None,
+        success: Optional[bool] = None,
+        finished_at: Optional[float] = None,
+    ) -> None:
+        updates: Dict[str, Any] = {}
+        if log_text is not None:
+            updates["log_text"] = log_text
+        if status is not None:
+            updates["status"] = status
+        if success is not None:
+            updates["success"] = success
+        if finished_at is not None:
+            updates["finished_at"] = finished_at
+        if not updates:
+            return
+        with self._lock:
+            for e in self._request_entries:
+                if e.id == entry_id:
+                    if log_text is not None:
+                        e.log_text = log_text
+                    if status is not None:
+                        e.status = status
+                    if success is not None:
+                        e.success = success
+                    if finished_at is not None:
+                        e.finished_at = finished_at
+                    break
+            try:
+                update_request(entry_id, updates)
+            except Exception as ex:
+                print(f"Developer logs: failed to persist request update: {ex}")
+            self._broadcast_locked()
+
+    def get_request_log(self) -> List[Dict[str, Any]]:
+        with self._lock:
+            return [asdict(e) for e in reversed(self._request_entries)]
+
     # --- Snapshot for SSE ---
     def snapshot(self) -> Dict[str, Any]:
         # When using Postgres, read from DB every time so all instances/tabs see the same data.
@@ -235,10 +361,12 @@ class DeveloperLogStore:
             try:
                 ride_dicts = load_ride_entries()
                 access_dicts = load_access_entries()
+                request_dicts = load_request_entries()
                 return {
                     "ts": _now_ts(),
                     "ride_log": list(reversed(ride_dicts)),
                     "access_log": list(reversed(access_dicts)),
+                    "request_log": list(reversed(request_dicts)),
                 }
             except Exception as e:
                 print(f"Developer logs: snapshot from DB failed: {e}")
@@ -247,6 +375,7 @@ class DeveloperLogStore:
                 "ts": _now_ts(),
                 "ride_log": [asdict(e) for e in reversed(self._ride_entries)],
                 "access_log": [asdict(e) for e in reversed(self._access_entries)],
+                "request_log": [asdict(e) for e in reversed(self._request_entries)],
             }
 
     # --- SSE subscribe / broadcast ---
@@ -273,10 +402,12 @@ class DeveloperLogStore:
         try:
             ride_dicts = load_ride_entries()
             access_dicts = load_access_entries()
+            request_dicts = load_request_entries()
             return {
                 "ts": _now_ts(),
                 "ride_log": list(reversed(ride_dicts)),
                 "access_log": list(reversed(access_dicts)),
+                "request_log": list(reversed(request_dicts)),
             }
         except Exception as e:
             print(f"Developer logs: snapshot from DB failed: {e}")
@@ -299,6 +430,7 @@ class DeveloperLogStore:
             "ts": _now_ts(),
             "ride_log": [asdict(e) for e in reversed(self._ride_entries)],
             "access_log": [asdict(e) for e in reversed(self._access_entries)],
+            "request_log": [asdict(e) for e in reversed(self._request_entries)],
         }
 
 
