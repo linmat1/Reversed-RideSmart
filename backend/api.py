@@ -16,6 +16,7 @@ from src.logger import log_booking, log_lyft_orchestrator, log_search
 from src.booking_state import booking_state
 from src.developer_logs import developer_logs
 from src.developer_logs_db import get_storage_info
+from src.reverse_geocode import reverse_geocode
 import json
 import queue
 import threading
@@ -37,6 +38,7 @@ def index():
         "status": "ok",
         "message": "RideSmart API is running",
         "endpoints": [
+            "GET  /api/reverse-geocode",
             "GET  /api/config",
             "GET  /api/routes",
             "GET  /api/users",
@@ -158,6 +160,30 @@ def stream_status():
             'Connection': 'keep-alive'
         }
     )
+
+@app.route('/api/reverse-geocode', methods=['GET'])
+def reverse_geocode_endpoint():
+    """Return a human-readable address for a lat/lng pair."""
+    lat = request.args.get('lat', type=float)
+    lng = request.args.get('lng', type=float)
+    if lat is None or lng is None:
+        return jsonify({"error": "Missing lat or lng query parameters"}), 400
+
+    result = reverse_geocode(lat, lng)
+    if result is None:
+        return jsonify({"error": "Reverse geocoding failed"}), 500
+
+    addr = result["raw"].get("address", {})
+    house = addr.get("house_number", "")
+    road = addr.get("road", "")
+    street_parts = [p for p in (house, road) if p]
+    street_address = " ".join(street_parts) if street_parts else result["short_address"]
+
+    return jsonify({
+        "full_geocoded_addr": result["full_address"],
+        "geocoded_addr": street_address,
+    })
+
 
 @app.route('/api/search', methods=['POST'])
 def search():
