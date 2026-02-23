@@ -21,6 +21,8 @@ function LyftBooker({ onBack }) {
   const [cancellingBooking, setCancellingBooking] = useState(null);
   const [gettingLocation, setGettingLocation] = useState(false);
   const [centerOnOrigin, setCenterOnOrigin] = useState(false); // Only center when using current location
+  const [originAddr, setOriginAddr] = useState(null);
+  const [destAddr, setDestAddr] = useState(null);
   const logEndRef = useRef(null);
 
   // Auto-scroll log to bottom
@@ -29,6 +31,32 @@ function LyftBooker({ onBack }) {
       logEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [log]);
+
+  const fetchAddress = async (lat, lng) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/reverse-geocode?lat=${lat}&lng=${lng}`);
+      if (res.ok) return await res.json();
+    } catch (err) {
+      console.error('Reverse geocode error:', err);
+    }
+    return null;
+  };
+
+  useEffect(() => {
+    if (!mapOrigin) { setOriginAddr(null); return; }
+    let cancelled = false;
+    fetchAddress(mapOrigin.lat, mapOrigin.lng).then(addr => { if (!cancelled) setOriginAddr(addr); });
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapOrigin]);
+
+  useEffect(() => {
+    if (!mapDestination) { setDestAddr(null); return; }
+    let cancelled = false;
+    fetchAddress(mapDestination.lat, mapDestination.lng).then(addr => { if (!cancelled) setDestAddr(addr); });
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapDestination]);
 
   // Fetch users and routes on mount
   useEffect(() => {
@@ -90,22 +118,18 @@ function LyftBooker({ onBack }) {
       if (searchMode === 'route') {
         requestBody.route_id = selectedRoute;
       } else {
-        // Map mode - send custom coordinates
+        // Map mode - send custom coordinates with reverse-geocoded addresses
+        const originFallback = `(${mapOrigin.lat.toFixed(6)}, ${mapOrigin.lng.toFixed(6)})`;
+        const destFallback = `(${mapDestination.lat.toFixed(6)}, ${mapDestination.lng.toFixed(6)})`;
         requestBody.origin = {
-          latlng: {
-            lat: mapOrigin.lat,
-            lng: mapOrigin.lng
-          },
-          full_geocoded_addr: `Custom Location (${mapOrigin.lat.toFixed(6)}, ${mapOrigin.lng.toFixed(6)})`,
-          geocoded_addr: `(${mapOrigin.lat.toFixed(6)}, ${mapOrigin.lng.toFixed(6)})`
+          latlng: { lat: mapOrigin.lat, lng: mapOrigin.lng },
+          full_geocoded_addr: originAddr?.full_geocoded_addr || originFallback,
+          geocoded_addr: originAddr?.geocoded_addr || originFallback,
         };
         requestBody.destination = {
-          latlng: {
-            lat: mapDestination.lat,
-            lng: mapDestination.lng
-          },
-          full_geocoded_addr: `Custom Location (${mapDestination.lat.toFixed(6)}, ${mapDestination.lng.toFixed(6)})`,
-          geocoded_addr: `(${mapDestination.lat.toFixed(6)}, ${mapDestination.lng.toFixed(6)})`
+          latlng: { lat: mapDestination.lat, lng: mapDestination.lng },
+          full_geocoded_addr: destAddr?.full_geocoded_addr || destFallback,
+          geocoded_addr: destAddr?.geocoded_addr || destFallback,
         };
       }
 
@@ -391,6 +415,8 @@ function LyftBooker({ onBack }) {
                   setSearchMode('map');
                   setMapOrigin(null);
                   setMapDestination(null);
+                  setOriginAddr(null);
+                  setDestAddr(null);
                   setMapSelectMode('origin');
                 }}
               >
@@ -402,6 +428,8 @@ function LyftBooker({ onBack }) {
                   setSearchMode('route');
                   setMapOrigin(null);
                   setMapDestination(null);
+                  setOriginAddr(null);
+                  setDestAddr(null);
                   setMapSelectMode('origin');
                 }}
               >
@@ -487,6 +515,8 @@ function LyftBooker({ onBack }) {
                       onClick={() => {
                         setMapOrigin(null);
                         setMapDestination(null);
+                        setOriginAddr(null);
+                        setDestAddr(null);
                         setMapSelectMode('origin');
                       }}
                       disabled={!mapOrigin && !mapDestination}
