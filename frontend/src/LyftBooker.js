@@ -385,11 +385,6 @@ function LyftBooker({ onBack }) {
 
   return (
     <div className="lyft-booker">
-      <div className="lyft-header">
-        <h1>🚗 Lyft Booker</h1>
-        <p>Get free Lyft rides by filling RideSmart capacity</p>
-      </div>
-
       {!running && !result && !log.length && (
         <div className="lyft-setup">
           <div className="setup-section">
@@ -472,8 +467,8 @@ function LyftBooker({ onBack }) {
                         <rect x="12" y="7" width="2" height="2" fill="currentColor"/>
                       </svg>
                       <span className="current-location-text">
-                        <span>Use current</span>
-                        <span>location</span>
+                        <span>My</span>
+                        <span>Location</span>
                       </span>
                     </button>
                     <button
@@ -481,34 +476,14 @@ function LyftBooker({ onBack }) {
                       onClick={() => setMapSelectMode('origin')}
                       disabled={!mapOrigin && mapSelectMode !== 'origin'}
                     >
-                      {mapOrigin ? (
-                        <>
-                          <span>✓ Origin</span>
-                          <span>Set</span>
-                        </>
-                      ) : (
-                        <>
-                          <span>Set</span>
-                          <span>Origin</span>
-                        </>
-                      )}
+                      {mapOrigin ? '✓ Origin' : 'Origin'}
                     </button>
                     <button
                       className={`map-select-btn ${mapSelectMode === 'destination' ? 'active' : ''}`}
                       onClick={() => setMapSelectMode('destination')}
                       disabled={!mapDestination && mapSelectMode !== 'destination'}
                     >
-                      {mapDestination ? (
-                        <>
-                          <span>✓ Destination</span>
-                          <span>Set</span>
-                        </>
-                      ) : (
-                        <>
-                          <span>Set</span>
-                          <span>Destination</span>
-                        </>
-                      )}
+                      {mapDestination ? '✓ Dest' : 'Destination'}
                     </button>
                     <button
                       className="map-clear-btn"
@@ -522,7 +497,7 @@ function LyftBooker({ onBack }) {
                       disabled={!mapOrigin && !mapDestination}
                       title="Clear all selected locations"
                     >
-                      Clear All
+                      Clear
                     </button>
                   </div>
                 </div>

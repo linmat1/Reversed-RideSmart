@@ -1,23 +1,26 @@
+/* ── Floating Panel ── */
 .booking-status-panel {
   position: fixed;
-  right: 14px;
-  bottom: 14px;
-  width: 340px;
-  max-width: calc(100vw - 28px);
-  background: rgba(20, 24, 32, 0.92);
+  right: 12px;
+  bottom: 12px;
+  width: 300px;
+  max-width: calc(100vw - 24px);
+  background: rgba(16, 18, 26, 0.94);
   color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 14px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(12px);
   z-index: 9999;
   overflow: hidden;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  font-size: 13px;
 }
 
+/* Collapsed = small pill */
 .booking-status-panel.collapsed {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   max-width: none;
   border-radius: 50%;
 }
@@ -56,35 +59,37 @@
   margin: 0;
 }
 
+/* ── Header ── */
 .booking-status-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 12px;
+  padding: 8px 10px;
   cursor: pointer;
   user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .booking-status-title {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .booking-status-conn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   font-weight: 600;
-  font-size: 12px;
-  opacity: 0.9;
+  font-size: 11px;
+  opacity: 0.8;
 }
 
 .booking-dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: #ff4d4f;
 }
@@ -96,114 +101,142 @@
 .booking-status-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .booking-status-btn {
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
   color: #fff;
   font-weight: 700;
-  font-size: 12px;
-  padding: 6px 8px;
-  border-radius: 10px;
+  font-size: 11px;
+  padding: 4px 7px;
+  border-radius: 8px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .booking-status-btn:hover {
-  background: rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.1);
 }
 
+/* ── Body ── */
 .booking-status-body {
-  padding: 10px 12px 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.10);
-  max-height: 52vh;
+  padding: 8px 10px 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  max-height: 40vh;
   overflow: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .booking-user {
-  padding: 10px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 12px;
-  margin-bottom: 10px;
-  background: rgba(255, 255, 255, 0.04);
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  margin-bottom: 8px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.booking-user:last-child {
+  margin-bottom: 0;
 }
 
 .booking-user-top {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px;
 }
 
 .booking-user-name {
   font-weight: 800;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .booking-user-status {
-  font-size: 12px;
-  opacity: 0.9;
+  font-size: 11px;
+  opacity: 0.7;
   text-transform: lowercase;
 }
 
 .booking-user-message {
-  margin-top: 6px;
-  font-size: 12px;
-  opacity: 0.85;
+  margin-top: 4px;
+  font-size: 11px;
+  opacity: 0.65;
 }
 
 .booking-rides {
-  margin-top: 8px;
+  margin-top: 6px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .booking-ride {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  padding: 8px 8px;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.18);
-  border: 1px solid rgba(255, 255, 255, 0.10);
+  gap: 8px;
+  padding: 6px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .booking-ride-left {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
+  min-width: 0;
 }
 
 .booking-ride-type {
   font-weight: 800;
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .booking-ride-id {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 12px;
-  opacity: 0.9;
+  font-size: 11px;
+  opacity: 0.7;
 }
 
 .booking-cancel-btn {
-  border: 1px solid rgba(255, 77, 79, 0.55);
-  background: rgba(255, 77, 79, 0.10);
+  border: 1px solid rgba(255, 77, 79, 0.4);
+  background: rgba(255, 77, 79, 0.08);
   color: #ffb3b5;
   font-weight: 800;
-  font-size: 12px;
-  padding: 6px 8px;
-  border-radius: 10px;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+  min-height: 30px;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .booking-cancel-btn:disabled {
-  opacity: 0.55;
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .booking-empty {
-  font-size: 12px;
-  opacity: 0.9;
-  padding: 6px 0 0;
+  font-size: 11px;
+  opacity: 0.6;
+  padding: 4px 0 0;
 }
 
+/* ── Mobile: move to bottom-center, full width ── */
+@media (max-width: 480px) {
+  .booking-status-panel {
+    right: 8px;
+    bottom: 8px;
+    width: 260px;
+    max-width: calc(100vw - 16px);
+  }
+
+  .booking-status-panel.collapsed {
+    width: 32px;
+    height: 32px;
+  }
+}

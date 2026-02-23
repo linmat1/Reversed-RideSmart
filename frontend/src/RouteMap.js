@@ -170,7 +170,7 @@ function RouteMap({ routeData, bookingData }) {
       <MapContainer
         center={defaultCenter}
         zoom={defaultZoom}
-        style={{ height: '300px', width: '100%', borderRadius: '12px' }}
+        style={{ height: 'clamp(220px, 40vh, 350px)', width: '100%', borderRadius: '12px' }}
         className="route-map"
       >
         <TileLayer
