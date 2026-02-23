@@ -824,6 +824,15 @@
   animation: fadeIn 0.15s ease-out;
 }
 
+.info-tagline {
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 .info-dropdown .info-item {
   display: flex;
   flex-direction: column;

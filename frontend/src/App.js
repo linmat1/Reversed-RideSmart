@@ -423,6 +423,7 @@ function App() {
               </button>
               {showInfo && (
                 <div className="info-dropdown">
+                  <p className="info-tagline">Get Free Lyft Rides</p>
                   <div className="info-item">
                     <span className="info-label">Service Hours:</span>
                     <span className="info-value">5:00 PM – 4:00 AM</span>
@@ -444,7 +445,6 @@ function App() {
             </div>
             <div className="header-title">
               <h1>RideSmarter</h1>
-              <p>Get Free Lyft Rides</p>
             </div>
             <button className="developer-toggle" onClick={handleDeveloperClick} type="button">
               Developer
