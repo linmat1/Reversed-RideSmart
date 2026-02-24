@@ -21,6 +21,8 @@ function LyftBooker({ onBack }) {
   const [centerOnOrigin, setCenterOnOrigin] = useState(false); // Only center when using current location
   const [originAddr, setOriginAddr] = useState(null);
   const [destAddr, setDestAddr] = useState(null);
+  const skipOriginGeocode = useRef(false);
+  const skipDestGeocode = useRef(false);
   const logEndRef = useRef(null);
 
   // Auto-scroll log to bottom
@@ -42,6 +44,7 @@ function LyftBooker({ onBack }) {
 
   useEffect(() => {
     if (!mapOrigin) { setOriginAddr(null); return; }
+    if (skipOriginGeocode.current) { skipOriginGeocode.current = false; return; }
     let cancelled = false;
     fetchAddress(mapOrigin.lat, mapOrigin.lng).then(addr => { if (!cancelled) setOriginAddr(addr); });
     return () => { cancelled = true; };
@@ -50,6 +53,7 @@ function LyftBooker({ onBack }) {
 
   useEffect(() => {
     if (!mapDestination) { setDestAddr(null); return; }
+    if (skipDestGeocode.current) { skipDestGeocode.current = false; return; }
     let cancelled = false;
     fetchAddress(mapDestination.lat, mapDestination.lng).then(addr => { if (!cancelled) setDestAddr(addr); });
     return () => { cancelled = true; };
@@ -269,13 +273,17 @@ function LyftBooker({ onBack }) {
     const loc = PRESET_LOCATIONS[index];
     if (!loc) return;
     const coords = { lat: loc.lat, lng: loc.lng };
+    const addrLabel = loc.address || loc.name;
+    const addrObj = { full_geocoded_addr: addrLabel, geocoded_addr: addrLabel };
     if (mapSelectMode === 'destination' || (mapSelectMode === 'none' && mapOrigin)) {
+      skipDestGeocode.current = true;
       setMapDestination(coords);
-      setDestAddr({ full_geocoded_addr: loc.name, geocoded_addr: loc.name });
+      setDestAddr(addrObj);
       setMapSelectMode('none');
     } else {
+      skipOriginGeocode.current = true;
       setMapOrigin(coords);
-      setOriginAddr({ full_geocoded_addr: loc.name, geocoded_addr: loc.name });
+      setOriginAddr(addrObj);
       setMapSelectMode('destination');
       setCenterOnOrigin(true);
       setTimeout(() => setCenterOnOrigin(false), 100);
