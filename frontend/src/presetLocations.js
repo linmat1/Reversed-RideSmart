@@ -16,6 +16,10 @@ const PRESET_LOCATIONS = [
   { name: "Max P Central",         lat: 41.79312581304385, lng: -87.59967843343847 },
   { name: "Harper",                lat: 41.787921894310315, lng: -87.59962260588838 },
   { name: "Whole Foods",           lat: 41.80189679900715, lng: -87.58797328827974 },
+  { name: "Logan",                lat: 41.785737510139455, lng: -87.60375791059381 },
+  { name: "Target",               lat: 41.79961876437076, lng: -87.5932695164637 },
+  { name: "Bookstore",            lat: 41.78966183926045, lng: -87.60149498145064 },
+  { name: "Booth",                lat: 41.78930581173118, lng: -87.59613743124996 },
 ];
 
 export default PRESET_LOCATIONS;
