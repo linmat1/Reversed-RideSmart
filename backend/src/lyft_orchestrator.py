@@ -603,20 +603,29 @@ class LyftOrchestrator:
             lyft_result_holder = [None]
 
             def poll_for_lyft():
-                """Search for Lyft continuously until found or Phase 2 finishes without finding it."""
+                """Search for Lyft continuously until Phase 2 finishes.
+
+                Fix 1: Never return early when Lyft is found — keep polling so
+                       lyft_result_holder[0] always holds the freshest proposal.
+                Fix 2: Capture started_post_phase2 *before* each search so we only
+                       exit after a complete search that definitively started after
+                       Phase 2 ended (guarantees ≥1 fresh search post-Phase2).
+                """
                 attempt = 0
                 while not self.stop_requested:
+                    # Snapshot before search — determines exit condition, not Lyft status
+                    started_post_phase2 = phase2_complete.is_set()
                     attempt += 1
                     self._log(f"  [{original_name} search #{attempt}] Searching for Lyft...")
                     result = self._search_for_rides(self.original_user_key)
                     if result['has_lyft']:
                         self._log(f"  [{original_name} search #{attempt}] ✓ Lyft found!")
-                        lyft_result_holder[0] = result
+                        lyft_result_holder[0] = result  # always keep freshest result
                         lyft_found_event.set()
-                        return
-                    self._log(f"  [{original_name} search #{attempt}] No Lyft yet")
-                    # Phase 2 finished and this search didn't find Lyft — stop polling
-                    if phase2_complete.is_set():
+                    else:
+                        self._log(f"  [{original_name} search #{attempt}] No Lyft yet")
+                    # Exit only after a search that started post-Phase2
+                    if started_post_phase2:
                         return
 
             def book_filler(filler_index, filler_key):
@@ -626,7 +635,7 @@ class LyftOrchestrator:
                 retry_count = 0
 
                 while retry_count <= max_retries:
-                    if self.stop_requested:
+                    if self.stop_requested or lyft_found_event.is_set():
                         return None
 
                     proposals = current_result.get('ridesmart_proposals', [])
@@ -729,11 +738,15 @@ class LyftOrchestrator:
                     high_demand = ("We're currently experiencing very high demand" in error_msg or
                                    "all our seats are filled" in error_msg.lower() or
                                    "high demand" in error_msg.lower())
+                    technical_issue = "technical issue" in error_msg.lower()
 
-                    if high_demand and retry_count < max_retries:
+                    if (high_demand or technical_issue) and retry_count < max_retries:
+                        reason = "Technical issue" if technical_issue else "High demand"
                         wait_time = min(2 * (retry_count + 1), 5)
-                        self._log(f"    High demand — waiting {wait_time}s then retrying...")
+                        self._log(f"    {reason} — waiting {wait_time}s then retrying...")
                         time.sleep(wait_time)
+                        if lyft_found_event.is_set():
+                            return None
                         current_result = self._search_for_rides(filler_key)
                         retry_count += 1
                     else:
@@ -752,16 +765,17 @@ class LyftOrchestrator:
             poll_thread = threading.Thread(target=poll_for_lyft, daemon=True)
             poll_thread.start()
 
-            with ThreadPoolExecutor(max_workers=len(filler_accounts)) as executor:
-                futures = [executor.submit(book_filler, i, key) for i, key in enumerate(filler_accounts)]
-                for future in as_completed(futures):
-                    try:
-                        future.result()
-                    except Exception:
-                        pass
-
-            phase2_complete.set()
-            poll_thread.join()  # wait for current search cycle to finish (at most ~12s)
+            try:
+                with ThreadPoolExecutor(max_workers=len(filler_accounts)) as executor:
+                    futures = [executor.submit(book_filler, i, key) for i, key in enumerate(filler_accounts)]
+                    for future in as_completed(futures):
+                        try:
+                            future.result()
+                        except Exception:
+                            pass
+            finally:
+                phase2_complete.set()
+            poll_thread.join(timeout=30)  # wait for current search cycle to finish (at most ~12s)
 
             successful = len(self.filler_bookings)
             self._log(f"\n  {successful}/{len(filler_accounts)} filler accounts booked successfully")

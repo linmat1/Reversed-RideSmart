@@ -26,11 +26,16 @@ function LyftBooker({ onBack }) {
   const skipOriginGeocode = useRef(false);
   const skipDestGeocode = useRef(false);
   const logEndRef = useRef(null);
+  const logContainerRef = useRef(null);
+  const receivedLogCount = useRef(0); // SSE log lines received (used for reconnect offset)
 
-  // Auto-scroll log to bottom
+  // Auto-scroll log to bottom only if already near the bottom
   useEffect(() => {
-    if (logEndRef.current) {
-      logEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    const container = logContainerRef.current;
+    if (!container) return;
+    const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 80;
+    if (isNearBottom) {
+      logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [log]);
 
@@ -93,88 +98,76 @@ function LyftBooker({ onBack }) {
 
     const controller = new AbortController();
     abortControllerRef.current = controller;
+    receivedLogCount.current = 0;
     setRunning(true);
     setCancelling(false);
     setResult(null);
     setLog(['Starting Lyft Orchestrator...']);
 
-    try {
-      const originFallback = `(${mapOrigin.lat.toFixed(6)}, ${mapOrigin.lng.toFixed(6)})`;
-      const destFallback = `(${mapDestination.lat.toFixed(6)}, ${mapDestination.lng.toFixed(6)})`;
-      const requestBody = {
-        original_user: originalUser,
-        origin: {
-          latlng: { lat: mapOrigin.lat, lng: mapOrigin.lng },
-          full_geocoded_addr: originAddr?.full_geocoded_addr || originFallback,
-          geocoded_addr: originAddr?.geocoded_addr || originFallback,
-        },
-        destination: {
-          latlng: { lat: mapDestination.lat, lng: mapDestination.lng },
-          full_geocoded_addr: destAddr?.full_geocoded_addr || destFallback,
-          geocoded_addr: destAddr?.geocoded_addr || destFallback,
-        },
-      };
-
-      // Use fetch with ReadableStream for Server-Sent Events (live streaming)
-      const response = await fetch(`${API_BASE}/api/lyft/run`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
-        signal: controller.signal
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      if (!response.body) {
-        throw new Error('Response body is not available');
-      }
-
+    // ── SSE reading helper ───────────────────────────────────────────────────
+    // Reads a streamed response (either the initial POST or a reconnect GET),
+    // updates state, and returns when the stream closes.
+    const readStream = async (response) => {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = '';
+      let gotResult = false;
+
+      const handleEvent = (data) => {
+        if (data.type === 'log') {
+          receivedLogCount.current += 1;
+          setLog(prev => [...prev, data.message]);
+
+          const bookingMatch = data.message.match(/✓\s+([A-Za-z\s]+?)\s+booked\s+(RideSmart|Lyft)[\s!]*(?:\(ride\s+ID:\s+(\d+)\)|Confirmed Ride ID:\s+(\d+))?/i);
+          if (bookingMatch) {
+            const [, userName, rideType, rideId1, rideId2] = bookingMatch;
+            const rideId = rideId1 || rideId2;
+            if (rideId) {
+              setActiveBookings(prev => {
+                const exists = prev.some(b => b.ride_id === parseInt(rideId));
+                if (!exists) return [...prev, { user_name: userName.trim(), ride_id: parseInt(rideId), ride_type: rideType }];
+                return prev;
+              });
+            }
+          }
+
+          const cancelMatch = data.message.match(/✓\s+Cancelled\s+([A-Za-z\s]+?)'s\s+(?:booking|Lyft booking)/i);
+          if (cancelMatch) {
+            const userName = cancelMatch[1].trim();
+            setActiveBookings(prev => prev.filter(b => b.user_name !== userName));
+          }
+        } else if (data.type === 'result') {
+          gotResult = true;
+          setResult({ success: data.data.success, message: data.data.message, booking: data.data.lyft_booking });
+          if (data.data.success && data.data.lyft_booking) {
+            const rides = data.data.lyft_booking.prescheduled_recurring_series_rides;
+            if (rides && rides.length > 0) {
+              const originalUserName = users.find(u => u.id === originalUser)?.name;
+              setActiveBookings(prev => [...prev, { user_name: originalUserName, ride_id: rides[0].id, ride_type: 'Lyft' }]);
+            }
+          }
+          setRunning(false);
+        } else if (data.type === 'error') {
+          gotResult = true;
+          setResult({ success: false, message: `Error: ${data.message}` });
+          setLog(prev => [...prev, `ERROR: ${data.message}`]);
+          setRunning(false);
+        }
+      };
 
       while (true) {
         const { done, value } = await reader.read();
-        
+
         if (done) {
-          // Process any remaining buffer
           if (buffer.trim()) {
-            const lines = buffer.split('\n');
-            for (const line of lines) {
+            for (const line of buffer.split('\n')) {
               if (line.startsWith('data: ')) {
-                try {
-                  const data = JSON.parse(line.slice(6));
-                  if (data.type === 'result') {
-                    setResult({
-                      success: data.data.success,
-                      message: data.data.message,
-                      booking: data.data.lyft_booking
-                    });
-                    setRunning(false);
-                  } else if (data.type === 'error') {
-                    setResult({
-                      success: false,
-                      message: `Error: ${data.message}`
-                    });
-                    setLog(prev => [...prev, `ERROR: ${data.message}`]);
-                    setRunning(false);
-                  }
-                } catch (e) {
-                  console.error('Error parsing final SSE data:', e);
-                }
+                try { handleEvent(JSON.parse(line.slice(6))); } catch (e) { /* ignore */ }
               }
             }
           }
-          // If stream closed without result, treat as error
-          // Check if we already have a result set
-          const hasResult = result !== null;
-          if (!hasResult) {
-            setResult({
-              success: false,
-              message: 'Connection closed unexpectedly. All rides have been cancelled on the server.'
-            });
+          if (!gotResult) {
+            setResult({ success: false, message: 'Connection closed unexpectedly. All rides have been cancelled on the server.' });
             setLog(prev => [...prev, 'ERROR: Connection closed unexpectedly']);
             setRunning(false);
           }
@@ -183,94 +176,80 @@ function LyftBooker({ onBack }) {
 
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split('\n');
-        buffer = lines.pop() || ''; // Keep incomplete line in buffer
+        buffer = lines.pop() || '';
 
         for (const line of lines) {
           if (line.trim() && line.startsWith('data: ')) {
             try {
               const data = JSON.parse(line.slice(6));
-              
-              if (data.type === 'log') {
-                setLog(prev => [...prev, data.message]);
-                
-                // Extract booking information from logs to track active bookings
-                // Look for patterns like "✓ {name} booked RideSmart (ride ID: {id})" or "Confirmed Ride ID: {id}"
-                const bookingMatch = data.message.match(/✓\s+([A-Za-z\s]+?)\s+booked\s+(RideSmart|Lyft)[\s!]*(?:\(ride\s+ID:\s+(\d+)\)|Confirmed Ride ID:\s+(\d+))?/i);
-                if (bookingMatch) {
-                  const [, userName, rideType, rideId1, rideId2] = bookingMatch;
-                  const rideId = rideId1 || rideId2;
-                  if (rideId) {
-                    setActiveBookings(prev => {
-                      // Avoid duplicates
-                      const exists = prev.some(b => b.ride_id === parseInt(rideId));
-                      if (!exists) {
-                        return [...prev, {
-                          user_name: userName.trim(),
-                          ride_id: parseInt(rideId),
-                          ride_type: rideType
-                        }];
-                      }
-                      return prev;
-                    });
-                  }
-                }
-                
-                // Remove cancelled bookings from active list
-                const cancelMatch = data.message.match(/✓\s+Cancelled\s+([A-Za-z\s]+?)'s\s+(?:booking|Lyft booking)/i);
-                if (cancelMatch) {
-                  const userName = cancelMatch[1].trim();
-                  setActiveBookings(prev => prev.filter(b => b.user_name !== userName));
-                }
-              } else if (data.type === 'result') {
-                setResult({
-                  success: data.data.success,
-                  message: data.data.message,
-                  booking: data.data.lyft_booking
-                });
-                
-                // Extract final booking info if successful
-                if (data.data.success && data.data.lyft_booking) {
-                  const rides = data.data.lyft_booking.prescheduled_recurring_series_rides;
-                  if (rides && rides.length > 0) {
-                    const originalUserName = users.find(u => u.id === originalUser)?.name;
-                    setActiveBookings(prev => [...prev, {
-                      user_name: originalUserName,
-                      ride_id: rides[0].id,
-                      ride_type: 'Lyft'
-                    }]);
-                  }
-                }
-                
-                setRunning(false);
-                return;
-              } else if (data.type === 'error') {
-                setResult({
-                  success: false,
-                  message: `Error: ${data.message}`
-                });
-                setLog(prev => [...prev, `ERROR: ${data.message}`]);
-                setRunning(false);
-                return;
-              }
+              handleEvent(data);
+              if (data.type === 'result' || data.type === 'error') return;
             } catch (e) {
               console.error('Error parsing SSE data:', e, 'Line:', line);
             }
           }
         }
       }
-      
-      // setRunning(false) is already handled in the result/error handlers above
+    };
+    // ── End SSE reading helper ───────────────────────────────────────────────
+
+    const originFallback = `(${mapOrigin.lat.toFixed(6)}, ${mapOrigin.lng.toFixed(6)})`;
+    const destFallback = `(${mapDestination.lat.toFixed(6)}, ${mapDestination.lng.toFixed(6)})`;
+    const requestBody = {
+      original_user: originalUser,
+      origin: {
+        latlng: { lat: mapOrigin.lat, lng: mapOrigin.lng },
+        full_geocoded_addr: originAddr?.full_geocoded_addr || originFallback,
+        geocoded_addr: originAddr?.geocoded_addr || originFallback,
+      },
+      destination: {
+        latlng: { lat: mapDestination.lat, lng: mapDestination.lng },
+        full_geocoded_addr: destAddr?.full_geocoded_addr || destFallback,
+        geocoded_addr: destAddr?.geocoded_addr || destFallback,
+      },
+    };
+
+    const attemptStream = async (url, options) => {
+      const response = await fetch(url, { ...options, signal: controller.signal });
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response.body) throw new Error('Response body is not available');
+      await readStream(response);
+    };
+
+    try {
+      await attemptStream(`${API_BASE}/api/lyft/run`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody),
+      });
     } catch (err) {
       if (err.name === 'AbortError') {
         setCancelling(false);
         setRunning(false);
         return;
       }
-      // Network error or other exception
-      setResult({
-        success: false,
-        message: `Connection error: ${err.message}. The server will cancel all rides automatically.`
-      });
+
+      if (err.name === 'TypeError') {
+        // iOS Safari / backgrounded page — try to reconnect to the running orchestrator
+        const offset = receivedLogCount.current;
+        setLog(prev => [...prev, '⚠️ Connection dropped — reconnecting...']);
+        try {
+          await attemptStream(`${API_BASE}/api/lyft/reconnect?offset=${offset}`, { method: 'GET' });
+          // If reconnect also ends with TypeError, the outer catch below handles it
+        } catch (reconErr) {
+          if (reconErr.name === 'AbortError') {
+            setCancelling(false);
+            setRunning(false);
+            return;
+          }
+          setResult({ success: false, message: 'Could not reconnect. The server is still running — please check back or open the app again.' });
+          setLog(prev => [...prev, '⚠️ Reconnect failed. The server is still running in the background.']);
+          setRunning(false);
+        }
+        return;
+      }
+
+      setResult({ success: false, message: `Connection error: ${err.message}. The server will cancel all rides automatically.` });
       setLog(prev => [...prev, `ERROR: ${err.message}`]);
       setRunning(false);
     }
@@ -535,7 +514,7 @@ function LyftBooker({ onBack }) {
       {(running || log.length > 0) && (
         <div className="lyft-log">
           <h3>📋 Log</h3>
-          <div className="log-container">
+          <div className="log-container" ref={logContainerRef}>
             {log.map((entry, index) => (
               <div 
                 key={index} 

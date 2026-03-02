@@ -22,6 +22,39 @@ import queue
 import threading
 import time
 
+# ── Global state for SSE reconnection ────────────────────────────────────────
+# Keeps a log buffer + subscriber list for the most recent orchestrator run so
+# mobile clients that get dropped (iOS "Load failed") can reconnect and resume.
+_current_run = {
+    'logs': [],        # all log lines emitted so far
+    'result': None,    # final result dict, or None
+    'done': False,     # True once orchestrator finished
+    'subscribers': [], # queue.Queue objects waiting for live events
+}
+_current_run_lock = threading.Lock()
+
+
+class _FanoutQueue(queue.Queue):
+    """Queue that also fans out items to _current_run for reconnection support."""
+
+    def put(self, item, block=True, timeout=None):
+        super().put(item, block=block, timeout=timeout)
+        msg_type, content = item
+        with _current_run_lock:
+            if msg_type == 'log':
+                _current_run['logs'].append(content)
+            else:
+                _current_run['done'] = True
+                if msg_type == 'result':
+                    _current_run['result'] = content
+            for q in list(_current_run['subscribers']):
+                try:
+                    q.put_nowait(item)
+                except (queue.Full, Exception):
+                    pass
+            if msg_type != 'log':
+                _current_run['subscribers'].clear()
+
 app = Flask(__name__)
 CORS(app)  # Enable CORS for React frontend
 
@@ -48,6 +81,7 @@ def index():
             "GET  /api/status",
             "GET  /api/status/stream",
             "POST /api/lyft/run",
+            "GET  /api/lyft/reconnect",
             "POST /api/lyft/check",
             "GET  /api/developer/stream",
             "GET  /api/developer/snapshot",
@@ -514,9 +548,16 @@ def run_lyft_orchestrator():
             origin = data.get('origin', config.default_origin)
             destination = data.get('destination', config.default_destination)
         
-        # Create a queue for log messages
-        log_queue = queue.Queue()
+        # Create a fan-out queue for log messages (also feeds reconnect subscribers)
+        log_queue = _FanoutQueue()
         result_container = {'result': None}
+
+        # Reset shared run state so reconnect endpoint sees a fresh run
+        with _current_run_lock:
+            _current_run['logs'] = []
+            _current_run['result'] = None
+            _current_run['done'] = False
+            _current_run['subscribers'] = []
 
         # Create request log entry for this orchestrator run
         original_user_obj_pre = get_user(original_user)
@@ -764,14 +805,9 @@ def run_lyft_orchestrator():
                         # Send keepalive
                         yield ": keepalive\n\n"
             except GeneratorExit:
-                # Client disconnected - emergency cleanup (only filler bookings, preserve Lyft)
-                if orchestrator_instance['orchestrator']:
-                    try:
-                        orchestrator_instance['orchestrator'].request_stop("client disconnected")
-                        orchestrator_instance['orchestrator']._cancel_all_filler_bookings()
-                        # Lyft booking is preserved automatically since we only cancel filler bookings
-                    except:
-                        pass
+                # Client disconnected — do NOT stop the orchestrator.
+                # It keeps running and fans out to _current_run so the client
+                # can reconnect via GET /api/lyft/reconnect.
                 raise
             except Exception as e:
                 # Any other error - emergency cleanup (only filler bookings, preserve Lyft)
@@ -931,6 +967,85 @@ def check_lyft_availability():
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route('/api/lyft/reconnect', methods=['GET'])
+def reconnect_lyft_stream():
+    """
+    Reconnect to an in-progress orchestrator run and resume the live log.
+
+    Query params:
+        offset: int — number of log lines already received (skip those in replay)
+
+    Returns an SSE stream: replays missed log lines, then streams live events
+    until the orchestrator finishes.  Returns 404 if no run is active/recent.
+    """
+    offset = request.args.get('offset', 0, type=int)
+
+    with _current_run_lock:
+        if not _current_run['logs'] and not _current_run['done']:
+            return jsonify({'error': 'No active orchestrator run'}), 404
+
+        missed_logs = _current_run['logs'][offset:]
+        already_done = _current_run['done']
+        final_result = _current_run['result']
+
+        subscriber_q = None
+        if not already_done:
+            subscriber_q = queue.Queue(maxsize=500)
+            _current_run['subscribers'].append(subscriber_q)
+
+    def generate():
+        # Replay logs the client missed while disconnected
+        for log_line in missed_logs:
+            yield f"data: {json.dumps({'type': 'log', 'message': log_line})}\n\n"
+
+        if already_done:
+            if final_result:
+                yield f"data: {json.dumps({'type': 'result', 'data': final_result})}\n\n"
+            else:
+                yield f"data: {json.dumps({'type': 'error', 'message': 'Run finished with no result'})}\n\n"
+            return
+
+        # Stream live events until orchestrator finishes
+        try:
+            while True:
+                try:
+                    item = subscriber_q.get(timeout=15)
+                    msg_type, content = item
+                    if msg_type == 'log':
+                        yield f"data: {json.dumps({'type': 'log', 'message': content})}\n\n"
+                    elif msg_type == 'result':
+                        yield f"data: {json.dumps({'type': 'result', 'data': content})}\n\n"
+                        break
+                    elif msg_type == 'error':
+                        yield f"data: {json.dumps({'type': 'error', 'message': content})}\n\n"
+                        break
+                except queue.Empty:
+                    # Fallback: check if done (guards against missed fanout)
+                    with _current_run_lock:
+                        if _current_run['done']:
+                            if _current_run['result']:
+                                yield f"data: {json.dumps({'type': 'result', 'data': _current_run['result']})}\n\n"
+                            break
+                    yield ": keepalive\n\n"
+        except GeneratorExit:
+            with _current_run_lock:
+                try:
+                    _current_run['subscribers'].remove(subscriber_q)
+                except ValueError:
+                    pass
+            raise
+
+    return Response(
+        stream_with_context(generate()),
+        mimetype='text/event-stream',
+        headers={
+            'Cache-Control': 'no-cache',
+            'X-Accel-Buffering': 'no',
+            'Connection': 'keep-alive',
+        }
+    )
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5001)
