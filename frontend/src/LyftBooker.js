@@ -17,6 +17,8 @@ function LyftBooker({ onBack }) {
   const [log, setLog] = useState([]);
   const [activeBookings, setActiveBookings] = useState([]); // Track active bookings for manual cancellation
   const [cancellingBooking, setCancellingBooking] = useState(null);
+  const [cancelling, setCancelling] = useState(false);
+  const abortControllerRef = useRef(null);
   const [gettingLocation, setGettingLocation] = useState(false);
   const [centerOnOrigin, setCenterOnOrigin] = useState(false); // Only center when using current location
   const [originAddr, setOriginAddr] = useState(null);
@@ -89,7 +91,10 @@ function LyftBooker({ onBack }) {
       return;
     }
 
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
     setRunning(true);
+    setCancelling(false);
     setResult(null);
     setLog(['Starting Lyft Orchestrator...']);
 
@@ -114,7 +119,8 @@ function LyftBooker({ onBack }) {
       const response = await fetch(`${API_BASE}/api/lyft/run`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
+        signal: controller.signal
       });
 
       if (!response.ok) {
@@ -255,6 +261,11 @@ function LyftBooker({ onBack }) {
       
       // setRunning(false) is already handled in the result/error handlers above
     } catch (err) {
+      if (err.name === 'AbortError') {
+        setCancelling(false);
+        setRunning(false);
+        return;
+      }
       // Network error or other exception
       setResult({
         success: false,
@@ -335,6 +346,14 @@ function LyftBooker({ onBack }) {
         maximumAge: 0
       }
     );
+  };
+
+  const cancelOrchestrator = () => {
+    setCancelling(true);
+    setLog(prev => [...prev, '⏹ Stop requested. Server is cancelling all bookings...']);
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
   };
 
   const cancelIndividualBooking = async (booking) => {
@@ -533,6 +552,15 @@ function LyftBooker({ onBack }) {
             {running && <div className="log-entry running">⏳ Running...</div>}
             <div ref={logEndRef} />
           </div>
+          {running && (
+            <button
+              className="cancel-orchestrator-btn"
+              onClick={cancelOrchestrator}
+              disabled={cancelling}
+            >
+              {cancelling ? '⏹ Stopping...' : '⏹ Stop Orchestrator'}
+            </button>
+          )}
         </div>
       )}
 

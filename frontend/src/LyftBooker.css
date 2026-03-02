@@ -459,6 +459,32 @@
   cursor: not-allowed;
 }
 
+/* ── Cancel Orchestrator Button ── */
+.cancel-orchestrator-btn {
+  width: 100%;
+  margin-top: 0.75rem;
+  padding: 0.7rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  background: rgba(220, 53, 69, 0.15);
+  color: #ff8a8a;
+  border: 1px solid rgba(220, 53, 69, 0.35);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 44px;
+}
+
+.cancel-orchestrator-btn:hover:not(:disabled) {
+  background: rgba(220, 53, 69, 0.28);
+  border-color: rgba(220, 53, 69, 0.55);
+}
+
+.cancel-orchestrator-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 /* ── Search Mode Toggle (inside LyftBooker) ── */
 .lyft-setup .search-mode-toggle {
   display: flex;

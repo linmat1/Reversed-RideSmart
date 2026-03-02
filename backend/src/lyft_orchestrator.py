@@ -503,11 +503,11 @@ class LyftOrchestrator:
         CRITICAL: This method MUST ensure all booked rides are cancelled on ANY failure.
 
         Flow:
-            Phase 1 — Parallel searches: all filler accounts search simultaneously (~12s)
-            Phase 2 — Parallel bookings: all fillers book simultaneously (~12s)
-            Phase 3 — Lyft check: original user searches to see if Lyft appeared (~12s)
-            Phase 4 — Lyft booking: book Lyft for original user (~12s)
-            Phase 5 — Parallel cleanup: cancel all filler bookings simultaneously (~12s)
+            Phase 1   — Parallel searches: all filler accounts search simultaneously (~12s)
+            Phase 2+3 — Simultaneous: fillers book in parallel while original user polls for Lyft (~12-24s)
+                         Fillers distributed across vehicles (filler i → vehicle i % num_vehicles).
+            Phase 4   — Lyft booking: book Lyft for original user (~12s)
+            Phase 5   — Parallel cleanup: cancel all filler bookings simultaneously (~12s)
         """
         cleanup_done = False
         filler_bookings_lock = threading.Lock()
@@ -592,12 +592,34 @@ class LyftOrchestrator:
                     'message': f"Stopped early: {self.stop_reason}. No filler bookings were made."
                 }
 
-            # ── Phase 2: Parallel bookings ────────────────────────────────────
-            self._log(f"\n--- Phase 2: Booking RideSmart with all {len(filler_accounts)} filler accounts in parallel ---")
+            # ── Phase 2+3 (simultaneous): Filler bookings + Lyft polling ─────
+            self._log(f"\n--- Phase 2: Booking {len(filler_accounts)} fillers in parallel while polling for Lyft ---")
             self.current_step = "Booking fillers (parallel)"
             self.status = "booking"
 
-            def book_filler(filler_key):
+            # Infrastructure for parallel Lyft polling
+            lyft_found_event = threading.Event()
+            phase2_complete = threading.Event()
+            lyft_result_holder = [None]
+
+            def poll_for_lyft():
+                """Search for Lyft continuously until found or Phase 2 finishes without finding it."""
+                attempt = 0
+                while not self.stop_requested:
+                    attempt += 1
+                    self._log(f"  [{original_name} search #{attempt}] Searching for Lyft...")
+                    result = self._search_for_rides(self.original_user_key)
+                    if result['has_lyft']:
+                        self._log(f"  [{original_name} search #{attempt}] ✓ Lyft found!")
+                        lyft_result_holder[0] = result
+                        lyft_found_event.set()
+                        return
+                    self._log(f"  [{original_name} search #{attempt}] No Lyft yet")
+                    # Phase 2 finished and this search didn't find Lyft — stop polling
+                    if phase2_complete.is_set():
+                        return
+
+            def book_filler(filler_index, filler_key):
                 filler_name = USERS[filler_key]['name']
                 current_result = filler_results.get(filler_key, {})
                 max_retries = 3
@@ -616,11 +638,13 @@ class LyftOrchestrator:
                     if retry_count > 0:
                         self._log(f"  {filler_name}: retry {retry_count}/{max_retries}...")
 
-                    proposal = proposals[0]
+                    # Distribute fillers across vehicles: filler 0 → slot 0, filler 1 → slot 1, etc.
+                    slot = filler_index % len(proposals)
+                    proposal = proposals[slot]
                     ride_details = self._get_ride_details(proposal)
 
                     if retry_count == 0:
-                        self._log(f"  Booking RideSmart with {filler_name}...")
+                        self._log(f"  Booking RideSmart with {filler_name} (vehicle slot {slot + 1}/{len(proposals)})...")
                         log_lyft_orchestrator(
                             action='filler_book',
                             original_user_key=self.original_user_key,
@@ -724,13 +748,20 @@ class LyftOrchestrator:
 
                 return None
 
+            # Start Lyft polling in background while fillers book
+            poll_thread = threading.Thread(target=poll_for_lyft, daemon=True)
+            poll_thread.start()
+
             with ThreadPoolExecutor(max_workers=len(filler_accounts)) as executor:
-                futures = [executor.submit(book_filler, key) for key in filler_accounts]
+                futures = [executor.submit(book_filler, i, key) for i, key in enumerate(filler_accounts)]
                 for future in as_completed(futures):
                     try:
                         future.result()
                     except Exception:
                         pass
+
+            phase2_complete.set()
+            poll_thread.join()  # wait for current search cycle to finish (at most ~12s)
 
             successful = len(self.filler_bookings)
             self._log(f"\n  {successful}/{len(filler_accounts)} filler accounts booked successfully")
@@ -746,17 +777,12 @@ class LyftOrchestrator:
                     'message': f"Stopped early: {self.stop_reason}. All filler bookings have been cancelled."
                 }
 
-            # ── Phase 3: Check if Lyft appeared ──────────────────────────────
-            self._log(f"\n--- Phase 3: Checking if Lyft appeared ---")
-            self.current_step = f"Checking Lyft availability for {original_name}"
-            original_result = self._search_for_rides(self.original_user_key)
-
-            if original_result['has_lyft']:
-                # ── Phase 4: Book Lyft ────────────────────────────────────────
+            # ── Phase 4: Book Lyft (if found during polling) ──────────────────
+            if lyft_found_event.is_set():
                 self._log(f"\n✓ Lyft is available!")
                 self.status = "booking"
                 self.current_step = f"Booking Lyft for {original_name}"
-                result = self._book_lyft_for_original(original_result['lyft_proposal'], original_name)
+                result = self._book_lyft_for_original(lyft_result_holder[0]['lyft_proposal'], original_name)
 
                 # ── Phase 5: Cancel all fillers in parallel ───────────────────
                 self._log(f"\n--- Phase 5: Cancelling {len(self.filler_bookings)} filler booking(s) in parallel ---")
