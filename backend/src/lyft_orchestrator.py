@@ -603,13 +603,11 @@ class LyftOrchestrator:
             lyft_result_holder = [None]
 
             def poll_for_lyft():
-                """Search for Lyft continuously until Phase 2 finishes.
+                """Search for Lyft until found or Phase 2 finishes.
 
-                Fix 1: Never return early when Lyft is found — keep polling so
-                       lyft_result_holder[0] always holds the freshest proposal.
-                Fix 2: Capture started_post_phase2 *before* each search so we only
-                       exit after a complete search that definitively started after
-                       Phase 2 ended (guarantees ≥1 fresh search post-Phase2).
+                started_post_phase2 is captured *before* each search so we exit only
+                after a complete search that started after Phase 2 ended — guaranteeing
+                at least one fresh search post-Phase2 when Lyft wasn't found during it.
                 """
                 attempt = 0
                 while not self.stop_requested:
@@ -620,10 +618,10 @@ class LyftOrchestrator:
                     result = self._search_for_rides(self.original_user_key)
                     if result['has_lyft']:
                         self._log(f"  [{original_name} search #{attempt}] ✓ Lyft found!")
-                        lyft_result_holder[0] = result  # always keep freshest result
+                        lyft_result_holder[0] = result
                         lyft_found_event.set()
-                    else:
-                        self._log(f"  [{original_name} search #{attempt}] No Lyft yet")
+                        return  # stop immediately — no need to search again
+                    self._log(f"  [{original_name} search #{attempt}] No Lyft yet")
                     # Exit only after a search that started post-Phase2
                     if started_post_phase2:
                         return
