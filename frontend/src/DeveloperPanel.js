@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import './DeveloperPanel.css';
@@ -70,7 +71,8 @@ function RequestMiniMap({ entry }) {
   );
 }
 
-function DeveloperPanel({ onClose, onIndividualBooking }) {
+function DeveloperPanel() {
+  const navigate = useNavigate();
   const API_BASE = getApiBase();
   const [activeTab, setActiveTab] = useState('requests');
   const [snapshot, setSnapshot] = useState({ ride_log: [], access_log: [], request_log: [] });
@@ -202,12 +204,7 @@ function DeveloperPanel({ onClose, onIndividualBooking }) {
               Storage: {storageInfo.storage === 'postgres' ? 'Postgres (persists)' : `SQLite${storageInfo.path ? ` — not persisting on serverless` : ''}`}
             </span>
           )}
-          {onIndividualBooking && (
-            <button type="button" className="developer-individual-btn" onClick={onIndividualBooking}>
-              Individual Booking
-            </button>
-          )}
-          <button type="button" className="developer-panel-close" onClick={onClose}>
+          <button type="button" className="developer-panel-close" onClick={() => navigate('/')}>
             Close
           </button>
         </div>

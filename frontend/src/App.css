@@ -96,25 +96,6 @@
   font-weight: 500;
 }
 
-.developer-toggle {
-  background: rgba(255, 255, 255, 0.18);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  color: white;
-  padding: 0.4rem 0.75rem;
-  border-radius: 8px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  position: absolute;
-  top: calc(0.75rem + env(safe-area-inset-top, 0px));
-  right: 0.75rem;
-}
-
-.developer-toggle:hover {
-  background: rgba(255, 255, 255, 0.28);
-}
-
 .lyft-mode-button {
   margin-top: 0.75rem;
   padding: 0.6rem 1.5rem;
@@ -830,13 +811,6 @@
 
   .App-header p {
     font-size: 1rem;
-  }
-
-  .developer-toggle {
-    top: calc(1.25rem + env(safe-area-inset-top, 0px));
-    right: 1.5rem;
-    font-size: 0.8rem;
-    padding: 0.45rem 1rem;
   }
 
   .info-link {

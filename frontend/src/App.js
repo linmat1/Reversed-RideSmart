@@ -37,19 +37,6 @@ function App() {
   const [centerOnOrigin, setCenterOnOrigin] = useState(false); // Only center when using current location
   const [originAddr, setOriginAddr] = useState(null);
   const [destAddr, setDestAddr] = useState(null);
-  const [developerClickCount, setDeveloperClickCount] = useState(0);
-  const [showDeveloperPanel, setShowDeveloperPanel] = useState(false);
-
-  const handleDeveloperClick = () => {
-    const next = developerClickCount + 1;
-    if (next >= 5) {
-      setShowDeveloperPanel(true);
-      setDeveloperClickCount(0);
-    } else {
-      setDeveloperClickCount(next);
-    }
-  };
-
   const fetchAddress = async (lat, lng) => {
     try {
       const res = await fetch(`${API_BASE}/api/reverse-geocode?lat=${lat}&lng=${lng}`);
@@ -381,20 +368,6 @@ function App() {
       );
     }
 
-    // Developer panel (5 clicks on "Developer")
-    if (showDeveloperPanel) {
-      return (
-        <DeveloperPanel
-          onClose={() => setShowDeveloperPanel(false)}
-          onIndividualBooking={() => {
-            setShowDeveloperPanel(false);
-            setAppMode('normal');
-            setShowIndividualBooking(true);
-          }}
-        />
-      );
-    }
-
     // Check for maintenance mode
     const maintenanceMode = process.env.REACT_APP_MAINTENANCE_MODE === 'true';
 
@@ -418,9 +391,6 @@ function App() {
               <div className="header-title">
                 <h1>RideSmarter</h1>
               </div>
-              <button className="developer-toggle" onClick={handleDeveloperClick} type="button">
-                Developer
-              </button>
             </div>
           </header>
 
@@ -448,9 +418,6 @@ function App() {
                 🚗 Lyft Booker Mode
               </button>
             </div>
-            <button className="developer-toggle" onClick={handleDeveloperClick} type="button">
-              Developer
-            </button>
           </div>
         </header>
 
@@ -818,6 +785,7 @@ function App() {
   return (
     <Routes>
       <Route path="/info" element={<InfoPage appMode={appMode} />} />
+      <Route path="/developer" element={<DeveloperPanel />} />
       <Route path="*" element={renderMain()} />
     </Routes>
   );
