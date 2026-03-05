@@ -329,14 +329,14 @@ function LyftBooker({ onBack }) {
 
   const cancelOrchestrator = async () => {
     setCancelling(true);
-    setLog(prev => [...prev, '⏹ Stop requested. Server is cancelling all bookings...']);
+    setLog(prev => [...prev, '⏹ Stop requested. Waiting for server to cancel all bookings...']);
     try {
       await fetch(`${API_BASE}/api/lyft/stop`, { method: 'POST' });
     } catch (err) {
       console.error('Failed to send stop signal:', err);
-    }
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
     }
   };
 
