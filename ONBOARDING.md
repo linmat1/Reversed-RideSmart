@@ -30,4 +30,4 @@ Then enable **SSL Proxying** on it. This lets Proxyman decrypt and read the requ
    ```
 3. Tap it, go to **Request → Body**, and copy the entire contents
 
-Send that to me to add the account.
+Send that to me (+447754666843 on whatsapp) to add the account.

@@ -843,7 +843,12 @@ function App() {
             
             <div className="cancel-section">
               <button
-                onClick={() => cancelRide(bookedRide.prescheduled_ride_id)}
+                onClick={() => {
+                  const actualRideId =
+                    bookedRide.bookingResponse?.prescheduled_recurring_series_rides?.[0]?.id
+                    || bookedRide.prescheduled_ride_id;
+                  cancelRide(actualRideId);
+                }}
                 className="cancel-button"
                 disabled={cancelling}
               >
