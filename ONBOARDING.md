@@ -13,7 +13,7 @@ In Proxyman, start the VPN. This routes your phone's traffic through Proxyman so
 
 ## Step 3: Find the RideSmart Domain
 
-Navigate to the domain:
+Navigate to the domain (in the Proxyman app):
 
 ```
 router-ucaca.live.ridewithvia.com
