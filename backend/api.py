@@ -605,6 +605,7 @@ def run_lyft_orchestrator():
         
         def run_orchestrator():
             """Run the orchestrator in a separate thread."""
+            global _current_orchestrator
             orchestrator = None
             try:
                 # Get user name for logging
@@ -625,7 +626,6 @@ def run_lyft_orchestrator():
                 orchestrator = LyftOrchestrator(original_user, origin, destination, log_callback=log_callback)
                 orchestrator_instance['orchestrator'] = orchestrator  # Store for emergency cleanup
                 with _current_orchestrator_lock:
-                    global _current_orchestrator
                     _current_orchestrator = orchestrator
                 try:
                     booking_state.set_status(original_user, "orchestrating", "running lyft orchestrator...")
@@ -734,7 +734,6 @@ def run_lyft_orchestrator():
                     log_queue.put(('error', error_msg))
             finally:
                 with _current_orchestrator_lock:
-                    global _current_orchestrator
                     if _current_orchestrator is orchestrator:
                         _current_orchestrator = None
                 # Ensure request log entry is finalized even on error/interrupt
