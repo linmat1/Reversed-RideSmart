@@ -37,6 +37,7 @@
     border-radius: 0;
     border: none;
   }
+
 }
 
 .developer-panel-header {
@@ -44,6 +45,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
+  padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   flex-shrink: 0;
   flex-wrap: wrap;
@@ -145,6 +147,7 @@
 
 .developer-panel-body {
   padding: 0.75rem 1rem;
+  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
   overflow-y: auto;
   flex: 1;
   -webkit-overflow-scrolling: touch;

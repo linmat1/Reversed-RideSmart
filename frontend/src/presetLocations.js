@@ -22,6 +22,7 @@ const PRESET_LOCATIONS = [
   { name: "Target",               lat: 41.79961876437076, lng: -87.5932695164637 },
   { name: "Bookstore",            lat: 41.78966183926045, lng: -87.60149498145064 },
   { name: "Booth",                lat: 41.78930581173118, lng: -87.59613743124996 },
+  { name: "Garfield (Red Line)", lat: 41.794603881293966, lng: -87.63111730088698 },
 ];
 
 export default PRESET_LOCATIONS;
