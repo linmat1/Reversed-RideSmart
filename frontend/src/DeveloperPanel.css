@@ -37,6 +37,14 @@
     border-radius: 0;
     border: none;
   }
+
+  .developer-panel-header {
+    padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
+  }
+
+  .developer-panel-body {
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 .developer-panel-header {
