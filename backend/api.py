@@ -33,6 +33,9 @@ _current_run = {
 }
 _current_run_lock = threading.Lock()
 
+_current_orchestrator = None
+_current_orchestrator_lock = threading.Lock()
+
 
 class _FanoutQueue(queue.Queue):
     """Queue that also fans out items to _current_run for reconnection support."""
@@ -621,6 +624,9 @@ def run_lyft_orchestrator():
                 
                 orchestrator = LyftOrchestrator(original_user, origin, destination, log_callback=log_callback)
                 orchestrator_instance['orchestrator'] = orchestrator  # Store for emergency cleanup
+                with _current_orchestrator_lock:
+                    global _current_orchestrator
+                    _current_orchestrator = orchestrator
                 try:
                     booking_state.set_status(original_user, "orchestrating", "running lyft orchestrator...")
                 except Exception:
@@ -727,6 +733,10 @@ def run_lyft_orchestrator():
                     error_msg = f"Error: {str(e)}. All filler bookings have been cancelled."
                     log_queue.put(('error', error_msg))
             finally:
+                with _current_orchestrator_lock:
+                    global _current_orchestrator
+                    if _current_orchestrator is orchestrator:
+                        _current_orchestrator = None
                 # Ensure request log entry is finalized even on error/interrupt
                 if request_entry_id:
                     try:
@@ -905,6 +915,16 @@ def cancel_individual_booking():
             }), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route('/api/lyft/stop', methods=['POST'])
+def stop_orchestrator():
+    """Stop the currently running orchestrator and cancel all filler bookings."""
+    with _current_orchestrator_lock:
+        orchestrator = _current_orchestrator
+    if orchestrator is None:
+        return jsonify({"success": True, "message": "No orchestrator running"})
+    orchestrator.request_stop("user requested stop")
+    return jsonify({"success": True, "message": "Stop signal sent to orchestrator"})
 
 @app.route('/api/lyft/check', methods=['POST'])
 def check_lyft_availability():
