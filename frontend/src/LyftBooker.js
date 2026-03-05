@@ -452,23 +452,23 @@ function LyftBooker({ onBack }) {
                   Clear
                 </button>
               </div>
-              {PRESET_LOCATIONS.length > 0 && (
-                <select
-                  value=""
-                  onChange={(e) => { if (e.target.value !== '') applyPresetLocation(Number(e.target.value)); }}
-                  className="lyft-select preset-location-select"
-                >
-                  <option value="">
-                    {mapSelectMode === 'destination' || (mapSelectMode === 'none' && mapOrigin)
-                      ? '-- Pick destination --'
-                      : '-- Pick origin --'}
-                  </option>
-                  {PRESET_LOCATIONS.map((loc, i) => (
-                    <option key={i} value={i}>{loc.name}</option>
-                  ))}
-                </select>
-              )}
             </div>
+            {PRESET_LOCATIONS.length > 0 && (
+              <select
+                value=""
+                onChange={(e) => { if (e.target.value !== '') applyPresetLocation(Number(e.target.value)); }}
+                className="lyft-select preset-location-select"
+              >
+                <option value="">
+                  {mapSelectMode === 'destination' || (mapSelectMode === 'none' && mapOrigin)
+                    ? '-- Pick destination --'
+                    : '-- Pick origin --'}
+                </option>
+                {PRESET_LOCATIONS.map((loc, i) => (
+                  <option key={i} value={i}>{loc.name}</option>
+                ))}
+              </select>
+            )}
           </div>
           <div className="setup-section setup-section-map">
             <MapSelector

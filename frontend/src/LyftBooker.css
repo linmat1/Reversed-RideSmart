@@ -677,9 +677,6 @@
 @media (max-width: 768px) {
   .preset-location-select {
     margin-top: 0.3rem;
-    padding: 0.45rem 0.6rem;
-    font-size: 0.8rem;
-    min-height: 36px;
   }
 }
 

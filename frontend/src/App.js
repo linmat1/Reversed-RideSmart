@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Routes, Route, Link } from 'react-router-dom';
 import './App.css';
 import MapSelector from './MapSelector';
 import RouteMap from './RouteMap';
@@ -6,6 +7,7 @@ import LyftBooker from './LyftBooker';
 import MaintenancePage from './MaintenancePage';
 import BookingStatusPanel from './BookingStatusPanel';
 import DeveloperPanel from './DeveloperPanel';
+import InfoPage from './InfoPage';
 import { getApiBase, isApiMissing } from './config';
 
 function App() {
@@ -37,7 +39,6 @@ function App() {
   const [destAddr, setDestAddr] = useState(null);
   const [developerClickCount, setDeveloperClickCount] = useState(0);
   const [showDeveloperPanel, setShowDeveloperPanel] = useState(false);
-  const [showInfo, setShowInfo] = useState(false);
 
   const handleDeveloperClick = () => {
     const next = developerClickCount + 1;
@@ -367,84 +368,85 @@ function App() {
     );
   };
 
-  // Backend URL not set in production (avoids "scan for local devices" prompt)
-  if (isApiMissing()) {
-    return (
-      <div className="App" style={{ padding: '2rem', textAlign: 'center', maxWidth: '480px', margin: '0 auto' }}>
-        <h1>RideSmart</h1>
-        <p style={{ color: '#f87171', marginTop: '1rem' }}>
-          Backend URL not configured. Set <strong>REACT_APP_API_URL</strong> in your frontend project settings (e.g. Vercel Environment Variables) to your backend URL, then redeploy.
-        </p>
-      </div>
-    );
-  }
+  const renderMain = () => {
+    // Backend URL not set in production
+    if (isApiMissing()) {
+      return (
+        <div className="App" style={{ padding: '2rem', textAlign: 'center', maxWidth: '480px', margin: '0 auto' }}>
+          <h1>RideSmart</h1>
+          <p style={{ color: '#f87171', marginTop: '1rem' }}>
+            Backend URL not configured. Set <strong>REACT_APP_API_URL</strong> in your frontend project settings (e.g. Vercel Environment Variables) to your backend URL, then redeploy.
+          </p>
+        </div>
+      );
+    }
 
-  // Developer panel (5 clicks on "Developer")
-  if (showDeveloperPanel) {
-    return (
-      <DeveloperPanel
-        onClose={() => setShowDeveloperPanel(false)}
-        onIndividualBooking={() => {
-          setShowDeveloperPanel(false);
-          setAppMode('normal');
-          setShowIndividualBooking(true);
-        }}
-      />
-    );
-  }
+    // Developer panel (5 clicks on "Developer")
+    if (showDeveloperPanel) {
+      return (
+        <DeveloperPanel
+          onClose={() => setShowDeveloperPanel(false)}
+          onIndividualBooking={() => {
+            setShowDeveloperPanel(false);
+            setAppMode('normal');
+            setShowIndividualBooking(true);
+          }}
+        />
+      );
+    }
 
-  // Check for maintenance mode
-  const maintenanceMode = process.env.REACT_APP_MAINTENANCE_MODE === 'true';
-  
-  if (maintenanceMode) {
-    return (
-      <>
-        <BookingStatusPanel />
-        <MaintenancePage />
-      </>
-    );
-  }
+    // Check for maintenance mode
+    const maintenanceMode = process.env.REACT_APP_MAINTENANCE_MODE === 'true';
 
-  // If in Lyft Booker mode, show that component
-  if (appMode === 'lyft') {
+    if (maintenanceMode) {
+      return (
+        <>
+          <BookingStatusPanel />
+          <MaintenancePage />
+        </>
+      );
+    }
+
+    // If in Lyft Booker mode, show that component
+    if (appMode === 'lyft') {
+      return (
+        <div className="App">
+          <BookingStatusPanel />
+          <header className="App-header">
+            <div className="header-content">
+              <Link to="/info" className="info-link">Info</Link>
+              <div className="header-title">
+                <h1>RideSmarter</h1>
+              </div>
+              <button className="developer-toggle" onClick={handleDeveloperClick} type="button">
+                Developer
+              </button>
+            </div>
+          </header>
+
+          <LyftBooker onBack={() => setAppMode('normal')} />
+        </div>
+      );
+    }
+
     return (
       <div className="App">
         <BookingStatusPanel />
         <header className="App-header">
           <div className="header-content">
-            <div className="info-toggle-wrapper">
-              <button className="info-toggle-btn" onClick={() => setShowInfo(prev => !prev)} type="button">
-                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="1.5"/>
-                  <path d="M10 9v5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                  <circle cx="10" cy="6.5" r="1" fill="currentColor"/>
-                </svg>
-                Info
-              </button>
-              {showInfo && (
-                <div className="info-dropdown">
-                  <p className="info-tagline">Get Free Lyft Rides</p>
-                  <div className="info-item">
-                    <span className="info-label">Service Hours:</span>
-                    <span className="info-value">5:00 PM – 4:00 AM</span>
-                  </div>
-                  <div className="info-item">
-                    <span className="info-label">Boundaries:</span>
-                    <span className="info-value">You must book within RideSmart boundaries, or this app will show errors</span>
-                  </div>
-                  <div className="info-item">
-                    <span className="info-label">IMPORTANT:</span>
-                    <span className="info-value">Do not leave or refresh site while booking in progress</span>
-                  </div>
-                  <div className="info-item">
-                    <span className="info-label">CONTACT:</span>
-                    <span className="info-value">+447754666843 on WhatsApp</span>
-                  </div>
-                </div>
-              )}
-            </div>
+            <Link to="/info" className="info-link">Info</Link>
             <div className="header-title">
-              <h1>RideSmarter</h1>
+              <h1>RideSmart</h1>
+              <p>Search, Book, and Cancel Rides</p>
+              <button
+                className="lyft-mode-button"
+                onClick={() => {
+                  setAppMode('lyft');
+                  setShowIndividualBooking(false);
+                }}
+              >
+                🚗 Lyft Booker Mode
+              </button>
             </div>
             <button className="developer-toggle" onClick={handleDeveloperClick} type="button">
               Developer
@@ -452,68 +454,7 @@ function App() {
           </div>
         </header>
 
-        
-
-        <LyftBooker onBack={() => setAppMode('normal')} />
-      </div>
-    );
-  }
-
-  return (
-    <div className="App">
-      <BookingStatusPanel />
-      <header className="App-header">
-        <div className="header-content">
-          <div className="info-toggle-wrapper">
-            <button className="info-toggle-btn" onClick={() => setShowInfo(prev => !prev)} type="button">
-              <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="1.5"/>
-                <path d="M10 9v5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                <circle cx="10" cy="6.5" r="1" fill="currentColor"/>
-              </svg>
-              Info
-            </button>
-            {showInfo && (
-              <div className="info-dropdown">
-                <div className="info-item">
-                  <span className="info-label">Service Hours:</span>
-                  <span className="info-value">5:00 PM – 4:00 AM on weekdays</span>
-                </div>
-                <div className="info-item">
-                  <span className="info-label">Boundaries:</span>
-                  <span className="info-value">You must book within RideSmart boundaries, or this app will show errors</span>
-                </div>
-                <div className="info-item">
-                  <span className="info-label">IMPORTANT:</span>
-                  <span className="info-value">Do not leave or refresh site while booking in progress</span>
-                </div>
-                <div className="info-item">
-                  <span className="info-label">CONTACT:</span>
-                  <span className="info-value">+447754666843 on WhatsApp</span>
-                </div>
-              </div>
-            )}
-          </div>
-          <div className="header-title">
-            <h1>RideSmart</h1>
-            <p>Search, Book, and Cancel Rides</p>
-            <button 
-              className="lyft-mode-button"
-              onClick={() => {
-                setAppMode('lyft');
-                setShowIndividualBooking(false);
-              }}
-            >
-              🚗 Lyft Booker Mode
-            </button>
-          </div>
-          <button className="developer-toggle" onClick={handleDeveloperClick} type="button">
-            Developer
-          </button>
-        </div>
-      </header>
-
-      <main className="App-main">
+        <main className="App-main">
         {error && (
           <div className="error-message">
             {error}
@@ -871,6 +812,14 @@ function App() {
         )}
       </main>
     </div>
+    );
+  };
+
+  return (
+    <Routes>
+      <Route path="/info" element={<InfoPage appMode={appMode} />} />
+      <Route path="*" element={renderMain()} />
+    </Routes>
   );
 }
 

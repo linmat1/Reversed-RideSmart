@@ -1,0 +1,312 @@
+/* ── Info Page Shell ── */
+.info-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 40%, #16213e 70%, #0f3460 100%);
+  background-attachment: fixed;
+  animation: fadeIn 0.4s ease-out;
+}
+
+/* ── Header ── */
+.info-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  padding-top: calc(1rem + env(safe-area-inset-top, 0px));
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  background-size: 200% 200%;
+  animation: gradientShift 10s ease infinite;
+  color: white;
+  box-shadow: 0 4px 24px rgba(102, 126, 234, 0.25);
+  flex-shrink: 0;
+}
+
+.info-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.info-back-btn:hover {
+  background: rgba(255, 255, 255, 0.28);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.info-page-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.info-header-spacer {
+  width: 72px;
+}
+
+/* ── Sticky Section Nav ── */
+.info-nav {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.6rem 1rem;
+  background: rgba(15, 15, 26, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.info-nav-item {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.45rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.info-nav-item:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.info-nav-item:active {
+  background: rgba(102, 126, 234, 0.2);
+  color: #a5b4fc;
+}
+
+/* ── Content Area ── */
+.info-page-content {
+  flex: 1;
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Section ── */
+.info-section {
+  animation: fadeIn 0.5s ease-out both;
+  scroll-margin-top: 3.5rem;
+}
+
+.info-section:nth-child(2) { animation-delay: 0.1s; }
+.info-section:nth-child(3) { animation-delay: 0.2s; }
+
+.info-section-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid rgba(102, 126, 234, 0.4);
+}
+
+.info-section-tagline {
+  color: #4ecdc4;
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: -0.5rem 0 1rem;
+}
+
+/* ── Single Info List Card ── */
+.info-list-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.info-list-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.75rem 1rem;
+}
+
+.info-list-item + .info-list-item {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.info-list-label {
+  color: #4ecdc4;
+  font-weight: 700;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-list-value {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+/* ── Prose (README & Onboarding) ── */
+.info-prose {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.92rem;
+  line-height: 1.7;
+}
+
+.info-prose h3 {
+  color: #ffffff;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+}
+
+.info-prose h4 {
+  color: #ffffff;
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 1.5rem 0 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.info-prose h4:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.info-prose h5 {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 1rem 0 0.4rem;
+}
+
+.info-prose p {
+  margin: 0 0 0.75rem;
+}
+
+.info-prose ul,
+.info-prose ol {
+  margin: 0.5rem 0 0.75rem;
+  padding-left: 1.5rem;
+}
+
+.info-prose li {
+  margin-bottom: 0.35rem;
+}
+
+.info-prose strong {
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 600;
+}
+
+.info-prose code {
+  background: rgba(102, 126, 234, 0.15);
+  color: #a5b4fc;
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  font-size: 0.85em;
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+}
+
+.info-prose pre {
+  margin: 0.5rem 0 0.75rem;
+  padding: 0.85rem 1rem;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.info-prose pre code {
+  background: none;
+  padding: 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.82rem;
+  line-height: 1.55;
+  white-space: pre;
+}
+
+/* ── Table ── */
+.info-table-wrapper {
+  overflow-x: auto;
+  margin: 0.5rem 0 0.75rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.info-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.info-table th {
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  background: rgba(102, 126, 234, 0.12);
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.info-table td {
+  padding: 0.5rem 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.info-table tr:hover td {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* ── Desktop ── */
+@media (min-width: 640px) {
+  .info-page-header {
+    padding: 1.25rem 2rem;
+  }
+
+  .info-page-title {
+    font-size: 1.5rem;
+  }
+
+  .info-page-content {
+    padding: 2rem 1.5rem 4rem;
+    gap: 2.5rem;
+  }
+
+  .info-section-title {
+    font-size: 1.6rem;
+  }
+
+  .info-nav {
+    padding: 0.65rem 1.5rem;
+  }
+
+  .info-nav-item {
+    font-size: 0.9rem;
+    padding: 0.5rem 1.25rem;
+  }
+}
