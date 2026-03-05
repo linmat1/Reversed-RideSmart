@@ -17,7 +17,8 @@ body {
     Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #0f0f1a;
+  background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 40%, #16213e 70%, #0f3460 100%);
+  background-attachment: fixed;
   min-height: 100vh;
   min-height: 100dvh;
   color: #e0e0e0;
