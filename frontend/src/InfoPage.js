@@ -22,7 +22,7 @@ function InfoPage({ appMode, scrollToSection }) {
 
   return (
     <div className="info-page">
-      <header className="info-page-header">
+      <header className="info-page-header" style={{ backgroundImage: `url(${process.env.PUBLIC_URL}/uchicago-aerial.png)` }}>
         <button className="info-back-btn" onClick={() => navigate('/')} type="button">
           <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M13 4l-6 6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
