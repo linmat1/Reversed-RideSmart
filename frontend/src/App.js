@@ -785,7 +785,10 @@ function App() {
   return (
     <Routes>
       <Route path="/info" element={<InfoPage appMode={appMode} />} />
+      <Route path="/readme" element={<InfoPage appMode={appMode} scrollToSection="readme" />} />
+      <Route path="/onboarding" element={<InfoPage appMode={appMode} scrollToSection="onboarding" />} />
       <Route path="/developer" element={<DeveloperPanel />} />
+      <Route path="/d" element={<DeveloperPanel />} />
       <Route path="*" element={renderMain()} />
     </Routes>
   );

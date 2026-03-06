@@ -1,8 +1,8 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './InfoPage.css';
 
-function InfoPage({ appMode }) {
+function InfoPage({ appMode, scrollToSection }) {
   const navigate = useNavigate();
   const serviceRef = useRef(null);
   const readmeRef = useRef(null);
@@ -11,6 +11,14 @@ function InfoPage({ appMode }) {
   const scrollTo = (ref) => {
     ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
+
+  useEffect(() => {
+    if (scrollToSection === 'readme') {
+      setTimeout(() => readmeRef.current?.scrollIntoView({ block: 'start' }), 50);
+    } else if (scrollToSection === 'onboarding') {
+      setTimeout(() => onboardingRef.current?.scrollIntoView({ block: 'start' }), 50);
+    }
+  }, [scrollToSection]);
 
   return (
     <div className="info-page">
