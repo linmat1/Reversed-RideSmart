@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, Link } from 'react-router-dom';
+import { Routes, Route, Link, useSearchParams } from 'react-router-dom';
 import './App.css';
 import MapSelector from './MapSelector';
 import RouteMap from './RouteMap';
@@ -12,6 +12,7 @@ import { getApiBase, isApiMissing } from './config';
 
 function App() {
   const API_BASE = getApiBase();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [appMode, setAppMode] = useState('lyft'); // 'normal' or 'lyft' - default to 'lyft'
   const [showIndividualBooking, setShowIndividualBooking] = useState(false); // Track if individual booking is shown
   const [proposals, setProposals] = useState([]);
@@ -37,6 +38,14 @@ function App() {
   const [centerOnOrigin, setCenterOnOrigin] = useState(false); // Only center when using current location
   const [originAddr, setOriginAddr] = useState(null);
   const [destAddr, setDestAddr] = useState(null);
+  useEffect(() => {
+    if (searchParams.get('mode') === 'individual') {
+      setAppMode('normal');
+      setShowIndividualBooking(true);
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
   const fetchAddress = async (lat, lng) => {
     try {
       const res = await fetch(`${API_BASE}/api/reverse-geocode?lat=${lat}&lng=${lng}`);
@@ -391,16 +400,6 @@ function App() {
               <div className="header-title">
                 <h1>RideSmarter</h1>
               </div>
-              <button
-                className="individual-booking-link"
-                onClick={() => {
-                  setAppMode('normal');
-                  setShowIndividualBooking(true);
-                }}
-                type="button"
-              >
-                Individual Booking
-              </button>
             </div>
           </header>
 

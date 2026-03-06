@@ -204,6 +204,9 @@ function DeveloperPanel() {
               Storage: {storageInfo.storage === 'postgres' ? 'Postgres (persists)' : `SQLite${storageInfo.path ? ` — not persisting on serverless` : ''}`}
             </span>
           )}
+          <button type="button" className="developer-individual-btn" onClick={() => navigate('/?mode=individual')}>
+            Individual Booking
+          </button>
           <button type="button" className="developer-panel-close" onClick={() => navigate('/')}>
             Close
           </button>
