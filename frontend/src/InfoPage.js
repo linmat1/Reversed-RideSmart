@@ -241,7 +241,8 @@ frontend/
               <li>Go back to Proxyman and find the request URL ending in: <code>/prescheduled/recurring/get</code></li>
               <li>Tap it, go to <strong>Request → Body</strong>, and copy the entire contents</li>
             </ol>
-            <p>Send that to me (+447754666843 on WhatsApp) to add the account.</p>
+            <p>Send that to me (+447754666843 on WhatsApp) to add the account. You can now turn off the VPN in Proxyman.</p>
+            <p>Once you're confirmed onboarded, you can uninstall Proxyman entirely — it's only needed for the initial setup.</p>
           </div>
         </section>
       </main>

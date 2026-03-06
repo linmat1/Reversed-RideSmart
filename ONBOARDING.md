@@ -30,4 +30,6 @@ Then enable **SSL Proxying** on it. This lets Proxyman decrypt and read the requ
    ```
 3. Tap it, go to **Request → Body**, and copy the entire contents
 
-Send that to me (+447754666843 on whatsapp) to add the account.
+Send that to me (+447754666843 on whatsapp) to add the account. You can now turn off the VPN in Proxyman.
+
+Once you're confirmed onboarded, you can uninstall Proxyman entirely — it's only needed for the initial setup.

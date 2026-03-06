@@ -391,6 +391,16 @@ function App() {
               <div className="header-title">
                 <h1>RideSmarter</h1>
               </div>
+              <button
+                className="individual-booking-link"
+                onClick={() => {
+                  setAppMode('normal');
+                  setShowIndividualBooking(true);
+                }}
+                type="button"
+              >
+                Individual Booking
+              </button>
             </div>
           </header>
 
