@@ -137,6 +137,7 @@ function GoogleRouteMap({ routeData, bookingData }) {
         center={defaultCenter}
         zoom={14}
         onLoad={onLoad}
+        mapTypeId="hybrid"
         options={{
           streetViewControl: false,
           mapTypeControl: true,
@@ -147,6 +148,8 @@ function GoogleRouteMap({ routeData, bookingData }) {
           gestureHandling: 'greedy',
           styles: cleanStyles,
           clickableIcons: false,
+          tilt: 0,
+          rotateControl: false,
         }}
       >
         <Polygon paths={toGooglePath(viaServiceAreaEastern)} options={viaZoneStyleGoogle.serviceArea} />

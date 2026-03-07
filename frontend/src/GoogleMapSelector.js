@@ -69,6 +69,7 @@ function GoogleMapSelector({ origin, destination, onOriginSelect, onDestinationS
         onLoad={onLoad}
         onUnmount={onUnmount}
         onClick={handleClick}
+        mapTypeId="hybrid"
         options={{
           streetViewControl: false,
           mapTypeControl: true,
@@ -79,6 +80,8 @@ function GoogleMapSelector({ origin, destination, onOriginSelect, onDestinationS
           gestureHandling: 'greedy',
           styles: cleanStyles,
           clickableIcons: false,
+          tilt: 0,
+          rotateControl: false,
         }}
       >
         <Polygon paths={toGooglePath(viaServiceAreaEastern)} options={viaZoneStyleGoogle.serviceArea} />
