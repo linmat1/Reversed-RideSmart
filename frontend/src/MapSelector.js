@@ -1,8 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Polygon, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './MapSelector.css';
+import {
+  viaServiceAreaEastern,
+  viaServiceAreaWestern,
+  uchicagoMainCampus,
+  viaZoneStyle,
+} from './viaServiceZone';
 
 // Fix for default marker icons in react-leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -116,6 +122,9 @@ function MapSelector({ origin, destination, onOriginSelect, onDestinationSelect,
           <MapCenter center={[origin.lat, origin.lng]} zoom={15} shouldCenter={centerOnOrigin} />
         )}
         <FitBounds origin={origin} destination={destination} />
+        <Polygon positions={viaServiceAreaEastern} pathOptions={viaZoneStyle.serviceArea} interactive={false} />
+        <Polygon positions={viaServiceAreaWestern} pathOptions={viaZoneStyle.serviceArea} interactive={false} />
+        <Polygon positions={uchicagoMainCampus} pathOptions={viaZoneStyle.campus} interactive={false} />
         <MapClickHandler onMapClick={handleMapClick} selectMode={selectMode} />
         {origin && (
           <Marker position={[origin.lat, origin.lng]} icon={originIcon}>

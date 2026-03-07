@@ -1,8 +1,14 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Polyline, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Polyline, Polygon, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './RouteMap.css';
+import {
+  viaServiceAreaEastern,
+  viaServiceAreaWestern,
+  uchicagoMainCampus,
+  viaZoneStyle,
+} from './viaServiceZone';
 
 // Fix for default marker icons in react-leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -177,6 +183,10 @@ function RouteMap({ routeData, bookingData }) {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        
+        <Polygon positions={viaServiceAreaEastern} pathOptions={viaZoneStyle.serviceArea} interactive={false} />
+        <Polygon positions={viaServiceAreaWestern} pathOptions={viaZoneStyle.serviceArea} interactive={false} />
+        <Polygon positions={uchicagoMainCampus} pathOptions={viaZoneStyle.campus} interactive={false} />
         
         {/* Fit map to show all points */}
         <FitBounds routePoints={allPoints} />
