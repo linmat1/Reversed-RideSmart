@@ -66,7 +66,7 @@ function GoogleMapSelector({ origin, destination, onOriginSelect, onDestinationS
         onClick={handleClick}
         options={{
           streetViewControl: false,
-          mapTypeControl: false,
+          mapTypeControl: true,
           fullscreenControl: false,
           gestureHandling: 'greedy',
         }}

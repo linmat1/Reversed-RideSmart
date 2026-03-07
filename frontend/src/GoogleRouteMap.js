@@ -134,7 +134,7 @@ function GoogleRouteMap({ routeData, bookingData }) {
         onLoad={onLoad}
         options={{
           streetViewControl: false,
-          mapTypeControl: false,
+          mapTypeControl: true,
           fullscreenControl: false,
           gestureHandling: 'greedy',
         }}
