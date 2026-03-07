@@ -1,4 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { useGoogleMaps } from './mapConfig';
+import GoogleRouteMap from './GoogleRouteMap';
 import { MapContainer, TileLayer, Marker, Polyline, Polygon, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -62,7 +64,7 @@ function FitBounds({ routePoints }) {
   return null;
 }
 
-function RouteMap({ routeData, bookingData }) {
+function LeafletRouteMap({ routeData, bookingData }) {
   const [mapReady, setMapReady] = useState(false);
 
   useEffect(() => {
@@ -284,6 +286,11 @@ function RouteMap({ routeData, bookingData }) {
       </div>
     </div>
   );
+}
+
+function RouteMap(props) {
+  if (useGoogleMaps) return <GoogleRouteMap {...props} />;
+  return <LeafletRouteMap {...props} />;
 }
 
 export default RouteMap;

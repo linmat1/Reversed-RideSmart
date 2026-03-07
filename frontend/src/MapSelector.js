@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { useGoogleMaps } from './mapConfig';
+import GoogleMapSelector from './GoogleMapSelector';
 import { MapContainer, TileLayer, Marker, Polygon, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -78,7 +80,7 @@ function FitBounds({ origin, destination }) {
   return null;
 }
 
-function MapSelector({ origin, destination, onOriginSelect, onDestinationSelect, selectMode, centerOnOrigin }) {
+function LeafletMapSelector({ origin, destination, onOriginSelect, onDestinationSelect, selectMode, centerOnOrigin }) {
   const [mapReady, setMapReady] = useState(false);
 
   useEffect(() => {
@@ -150,5 +152,9 @@ function MapSelector({ origin, destination, onOriginSelect, onDestinationSelect,
   );
 }
 
-export default MapSelector;
+function MapSelector(props) {
+  if (useGoogleMaps) return <GoogleMapSelector {...props} />;
+  return <LeafletMapSelector {...props} />;
+}
 
+export default MapSelector;

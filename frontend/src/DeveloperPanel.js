@@ -1,7 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useGoogleMaps, GOOGLE_MAPS_API_KEY } from './mapConfig';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import L from 'leaflet';
+import { GoogleMap, useJsApiLoader, Marker as GMarker } from '@react-google-maps/api';
 import './DeveloperPanel.css';
 import { getApiBase } from './config';
 
@@ -38,7 +40,7 @@ function mergeSnapshot(prev, next) {
   };
 }
 
-function RequestMiniMap({ entry }) {
+function LeafletRequestMiniMap({ entry }) {
   const mapRef = useRef(null);
   const hasCoords = entry.origin_lat != null && entry.dest_lat != null;
   if (!hasCoords) return null;
@@ -69,6 +71,48 @@ function RequestMiniMap({ entry }) {
       <Marker position={dest} icon={reqDestIcon} />
     </MapContainer>
   );
+}
+
+const GREEN_MINI = 'https://maps.google.com/mapfiles/ms/icons/green-dot.png';
+const RED_MINI = 'https://maps.google.com/mapfiles/ms/icons/red-dot.png';
+const miniStyle = { width: '100%', height: '160px', borderRadius: '8px' };
+
+function GoogleRequestMiniMap({ entry }) {
+  const { isLoaded } = useJsApiLoader({ id: 'google-map-script', googleMapsApiKey: GOOGLE_MAPS_API_KEY });
+  const hasCoords = entry.origin_lat != null && entry.dest_lat != null;
+  const gMapRef = useRef(null);
+
+  const onLoad = useCallback((map) => {
+    gMapRef.current = map;
+    if (hasCoords) {
+      const bounds = new window.google.maps.LatLngBounds();
+      bounds.extend({ lat: entry.origin_lat, lng: entry.origin_lng });
+      bounds.extend({ lat: entry.dest_lat, lng: entry.dest_lng });
+      map.fitBounds(bounds, 30);
+    }
+  }, [hasCoords, entry]);
+
+  if (!hasCoords || !isLoaded) return null;
+
+  const center = { lat: (entry.origin_lat + entry.dest_lat) / 2, lng: (entry.origin_lng + entry.dest_lng) / 2 };
+
+  return (
+    <GoogleMap
+      mapContainerStyle={miniStyle}
+      center={center}
+      zoom={13}
+      onLoad={onLoad}
+      options={{ streetViewControl: false, mapTypeControl: false, fullscreenControl: false, zoomControl: false, gestureHandling: 'none' }}
+    >
+      <GMarker position={{ lat: entry.origin_lat, lng: entry.origin_lng }} icon={GREEN_MINI} />
+      <GMarker position={{ lat: entry.dest_lat, lng: entry.dest_lng }} icon={RED_MINI} />
+    </GoogleMap>
+  );
+}
+
+function RequestMiniMap(props) {
+  if (useGoogleMaps) return <GoogleRequestMiniMap {...props} />;
+  return <LeafletRequestMiniMap {...props} />;
 }
 
 function DeveloperPanel() {
