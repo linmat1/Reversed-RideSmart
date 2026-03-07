@@ -30,7 +30,10 @@ function GoogleMapSelector({ origin, destination, onOriginSelect, onDestinationS
 
   useEffect(() => { setMapReady(true); }, []);
 
-  const onLoad = useCallback((map) => { mapRef.current = map; }, []);
+  const onLoad = useCallback((map) => {
+    mapRef.current = map;
+    map.setMapTypeId('hybrid');
+  }, []);
   const onUnmount = useCallback(() => { mapRef.current = null; }, []);
 
   useEffect(() => {

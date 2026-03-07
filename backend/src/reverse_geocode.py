@@ -159,4 +159,3 @@ def get_street_address(lat: float, lng: float) -> str | None:
 
     parts = [p for p in (house, road) if p]
     return " ".join(parts) if parts else None
-

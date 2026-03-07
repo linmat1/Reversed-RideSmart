@@ -69,6 +69,7 @@ function GoogleRouteMap({ routeData, bookingData }) {
 
   const onLoad = useCallback((map) => {
     mapRef.current = map;
+    map.setMapTypeId('hybrid');
   }, []);
 
   useEffect(() => {

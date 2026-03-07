@@ -158,4 +158,3 @@ function MapSelector(props) {
 }
 
 export default MapSelector;
-
