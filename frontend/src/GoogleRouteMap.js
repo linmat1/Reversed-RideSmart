@@ -19,6 +19,11 @@ const ORANGE_MARKER = 'https://maps.google.com/mapfiles/ms/icons/orange-dot.png'
 const containerStyle = { height: 'clamp(220px, 40vh, 350px)', width: '100%', borderRadius: '12px' };
 const defaultCenter = { lat: 41.788064, lng: -87.601145 };
 
+const cleanStyles = [
+  { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] },
+  { featureType: 'transit', elementType: 'labels.icon', stylers: [{ visibility: 'off' }] },
+];
+
 function GoogleRouteMap({ routeData, bookingData }) {
   const { isLoaded } = useJsApiLoader({ id: 'google-map-script', googleMapsApiKey: GOOGLE_MAPS_API_KEY });
   const [mapReady, setMapReady] = useState(false);
@@ -135,8 +140,13 @@ function GoogleRouteMap({ routeData, bookingData }) {
         options={{
           streetViewControl: false,
           mapTypeControl: true,
+          mapTypeControlOptions: {
+            mapTypeIds: ['roadmap', 'hybrid'],
+          },
           fullscreenControl: false,
           gestureHandling: 'greedy',
+          styles: cleanStyles,
+          clickableIcons: false,
         }}
       >
         <Polygon paths={toGooglePath(viaServiceAreaEastern)} options={viaZoneStyleGoogle.serviceArea} />

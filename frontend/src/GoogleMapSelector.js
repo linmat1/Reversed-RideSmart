@@ -18,6 +18,11 @@ const RED_MARKER = 'https://maps.google.com/mapfiles/ms/icons/red-dot.png';
 const containerStyle = { width: '100%', borderRadius: '12px', height: 'clamp(260px, 50vh, 420px)' };
 const defaultCenter = { lat: 41.788064, lng: -87.601145 };
 
+const cleanStyles = [
+  { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] },
+  { featureType: 'transit', elementType: 'labels.icon', stylers: [{ visibility: 'off' }] },
+];
+
 function GoogleMapSelector({ origin, destination, onOriginSelect, onDestinationSelect, selectMode, centerOnOrigin }) {
   const { isLoaded } = useJsApiLoader({ id: 'google-map-script', googleMapsApiKey: GOOGLE_MAPS_API_KEY });
   const [mapReady, setMapReady] = useState(false);
@@ -67,8 +72,13 @@ function GoogleMapSelector({ origin, destination, onOriginSelect, onDestinationS
         options={{
           streetViewControl: false,
           mapTypeControl: true,
+          mapTypeControlOptions: {
+            mapTypeIds: ['roadmap', 'hybrid'],
+          },
           fullscreenControl: false,
           gestureHandling: 'greedy',
+          styles: cleanStyles,
+          clickableIcons: false,
         }}
       >
         <Polygon paths={toGooglePath(viaServiceAreaEastern)} options={viaZoneStyleGoogle.serviceArea} />
