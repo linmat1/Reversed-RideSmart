@@ -170,3 +170,4 @@ frontend/
 - All filler bookings are always cancelled at the end, whether or not a Lyft was found.
 - The "stop" button lets you abort mid-orchestration; in-flight requests finish before cleanup begins.
 
+
