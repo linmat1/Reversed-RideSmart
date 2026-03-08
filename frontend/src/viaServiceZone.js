@@ -113,22 +113,3 @@ export const viaZoneStyle = {
     interactive: false,
   },
 };
-
-export const viaZoneStyleGoogle = {
-  serviceArea: {
-    strokeColor: '#e74c3c',
-    strokeWeight: 2,
-    strokeOpacity: 0.7,
-    fillColor: '#e74c3c',
-    fillOpacity: 0.08,
-    clickable: false,
-  },
-  campus: {
-    strokeColor: '#8B0000',
-    strokeWeight: 2,
-    strokeOpacity: 0.8,
-    fillColor: '#8B0000',
-    fillOpacity: 0.12,
-    clickable: false,
-  },
-};
