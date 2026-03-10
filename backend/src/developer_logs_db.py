@@ -214,39 +214,35 @@ def update_request(entry_id: str, updates: Dict[str, Any], db_path: Optional[Pat
         conn.commit()
 
 
-def load_request_entries(db_path: Optional[Path] = None, limit: int = 100, include_log_text: bool = False) -> List[Dict[str, Any]]:
-    """Load most recent request log entries, oldest first."""
+def load_request_entries(db_path: Optional[Path] = None) -> List[Dict[str, Any]]:
+    """Load all request log entries, oldest first."""
     conn = _get_connection(db_path)
-    cols = "*" if include_log_text else (
-        "id, user_key, user_name, origin_lat, origin_lng, dest_lat, dest_lng, "
-        "origin_addr, dest_addr, success, status, created_at, finished_at"
-    )
     with _lock:
-        cur = conn.execute(f"SELECT {cols} FROM request_log ORDER BY created_at DESC LIMIT ?", (limit,))
+        cur = conn.execute("SELECT * FROM request_log ORDER BY created_at ASC")
         rows = cur.fetchall()
-    return [_row_to_request_entry(r) for r in reversed(rows)]
+    return [_row_to_request_entry(r) for r in rows]
 
 
-def load_ride_entries(db_path: Optional[Path] = None, limit: int = 200) -> List[Dict[str, Any]]:
-    """Load most recent ride log entries, oldest first."""
+def load_ride_entries(db_path: Optional[Path] = None) -> List[Dict[str, Any]]:
+    """Load all ride log entries, oldest first (so reversed() in memory gives newest first)."""
     conn = _get_connection(db_path)
     with _lock:
         cur = conn.execute(
-            "SELECT * FROM ride_log ORDER BY created_at DESC LIMIT ?", (limit,)
+            "SELECT * FROM ride_log ORDER BY created_at ASC"
         )
         rows = cur.fetchall()
-    return [_row_to_ride_entry(r) for r in reversed(rows)]
+    return [_row_to_ride_entry(r) for r in rows]
 
 
-def load_access_entries(db_path: Optional[Path] = None, limit: int = 200) -> List[Dict[str, Any]]:
-    """Load most recent access log entries, oldest first."""
+def load_access_entries(db_path: Optional[Path] = None) -> List[Dict[str, Any]]:
+    """Load all access log entries, oldest first."""
     conn = _get_connection(db_path)
     with _lock:
         cur = conn.execute(
-            "SELECT * FROM access_log ORDER BY created_at DESC LIMIT ?", (limit,)
+            "SELECT * FROM access_log ORDER BY created_at ASC"
         )
         rows = cur.fetchall()
-    return [_row_to_access_entry(r) for r in reversed(rows)]
+    return [_row_to_access_entry(r) for r in rows]
 
 
 def _row_to_ride_entry(row: sqlite3.Row) -> Dict[str, Any]:
@@ -277,7 +273,6 @@ def _row_to_access_entry(row: sqlite3.Row) -> Dict[str, Any]:
 
 
 def _row_to_request_entry(row: sqlite3.Row) -> Dict[str, Any]:
-    keys = row.keys() if hasattr(row, "keys") else []
     return {
         "id": row["id"],
         "user_key": row["user_key"],
@@ -290,7 +285,7 @@ def _row_to_request_entry(row: sqlite3.Row) -> Dict[str, Any]:
         "dest_addr": row["dest_addr"],
         "success": bool(row["success"]),
         "status": row["status"],
-        "log_text": row["log_text"] if "log_text" in keys else "",
+        "log_text": row["log_text"],
         "created_at": row["created_at"],
         "finished_at": row["finished_at"],
     }
@@ -332,11 +327,11 @@ if _postgres_url:
         def insert_access(entry: Dict[str, Any], db_path: Optional[Path] = None) -> None:
             _pg_insert_access(entry)
 
-        def load_ride_entries(db_path: Optional[Path] = None, limit: int = 200) -> List[Dict[str, Any]]:
-            return _pg_load_ride_entries(limit=limit)
+        def load_ride_entries(db_path: Optional[Path] = None) -> List[Dict[str, Any]]:
+            return _pg_load_ride_entries()
 
-        def load_access_entries(db_path: Optional[Path] = None, limit: int = 200) -> List[Dict[str, Any]]:
-            return _pg_load_access_entries(limit=limit)
+        def load_access_entries(db_path: Optional[Path] = None) -> List[Dict[str, Any]]:
+            return _pg_load_access_entries()
 
         def insert_request(entry: Dict[str, Any], db_path: Optional[Path] = None) -> None:
             _pg_insert_request(entry)
@@ -344,8 +339,8 @@ if _postgres_url:
         def update_request(entry_id: str, updates: Dict[str, Any], db_path: Optional[Path] = None) -> None:
             _pg_update_request(entry_id, updates)
 
-        def load_request_entries(db_path: Optional[Path] = None, limit: int = 100, include_log_text: bool = False) -> List[Dict[str, Any]]:
-            return _pg_load_request_entries(limit=limit, include_log_text=include_log_text)
+        def load_request_entries(db_path: Optional[Path] = None) -> List[Dict[str, Any]]:
+            return _pg_load_request_entries()
     except Exception as e:
         print(f"Developer logs: Postgres not available ({e}), using SQLite")
 

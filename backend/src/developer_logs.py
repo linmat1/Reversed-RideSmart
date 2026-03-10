@@ -110,7 +110,7 @@ class DeveloperLogStore:
             init_schema()
             ride_dicts = load_ride_entries()
             access_dicts = load_access_entries()
-            request_dicts = load_request_entries(include_log_text=True)
+            request_dicts = load_request_entries()
         except Exception as e:
             print(f"Developer logs: failed to load from DB: {e}")
             return
@@ -356,6 +356,7 @@ class DeveloperLogStore:
 
     # --- Snapshot for SSE ---
     def snapshot(self) -> Dict[str, Any]:
+        # When using Postgres, read from DB every time so all instances/tabs see the same data.
         if _use_postgres():
             try:
                 ride_dicts = load_ride_entries()
@@ -370,17 +371,20 @@ class DeveloperLogStore:
             except Exception as e:
                 print(f"Developer logs: snapshot from DB failed: {e}")
         with self._lock:
-            return self._snapshot_locked()
+            return {
+                "ts": _now_ts(),
+                "ride_log": [asdict(e) for e in reversed(self._ride_entries)],
+                "access_log": [asdict(e) for e in reversed(self._access_entries)],
+                "request_log": [asdict(e) for e in reversed(self._request_entries)],
+            }
 
     # --- SSE subscribe / broadcast ---
     def subscribe(self) -> queue.Queue[str]:
         q: queue.Queue[str] = queue.Queue()
         with self._lock:
             self._subscribers.append(q)
-            if _use_postgres():
-                data = self._snapshot_from_db_if_postgres() or self._snapshot_locked()
-            else:
-                data = self._snapshot_locked()
+            # When using Postgres, initial snapshot from DB so new client sees shared state
+            data = self._snapshot_from_db_if_postgres() or self._snapshot_locked()
             q.put(json.dumps({"type": "snapshot", "data": data}))
         return q
 
@@ -410,7 +414,7 @@ class DeveloperLogStore:
             return None
 
     def _broadcast_locked(self) -> None:
-        data = self._snapshot_locked()
+        data = self._snapshot_from_db_if_postgres() or self._snapshot_locked()
         payload = json.dumps({"type": "snapshot", "data": data})
         dead: List[queue.Queue[str]] = []
         for q in self._subscribers:
