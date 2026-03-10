@@ -160,20 +160,24 @@ def insert_access(entry: Dict[str, Any]) -> None:
         conn.commit()
 
 
-def load_ride_entries() -> List[Dict[str, Any]]:
+def load_ride_entries(limit: int = 200) -> List[Dict[str, Any]]:
     with _conn() as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute("SELECT * FROM ride_log ORDER BY created_at ASC")
+            cur.execute(
+                "SELECT * FROM ride_log ORDER BY created_at DESC LIMIT %s", (limit,)
+            )
             rows = cur.fetchall()
-    return [_row_to_ride(r) for r in rows]
+    return [_row_to_ride(r) for r in reversed(rows)]
 
 
-def load_access_entries() -> List[Dict[str, Any]]:
+def load_access_entries(limit: int = 200) -> List[Dict[str, Any]]:
     with _conn() as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute("SELECT * FROM access_log ORDER BY created_at ASC")
+            cur.execute(
+                "SELECT * FROM access_log ORDER BY created_at DESC LIMIT %s", (limit,)
+            )
             rows = cur.fetchall()
-    return [_row_to_access(r) for r in rows]
+    return [_row_to_access(r) for r in reversed(rows)]
 
 
 def insert_request(entry: Dict[str, Any]) -> None:
@@ -229,12 +233,19 @@ def update_request(entry_id: str, updates: Dict[str, Any]) -> None:
         conn.commit()
 
 
-def load_request_entries() -> List[Dict[str, Any]]:
+def load_request_entries(limit: int = 100, include_log_text: bool = False) -> List[Dict[str, Any]]:
+    cols = "*" if include_log_text else (
+        "id, user_key, user_name, origin_lat, origin_lng, dest_lat, dest_lng, "
+        "origin_addr, dest_addr, success, status, created_at, finished_at"
+    )
     with _conn() as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute("SELECT * FROM request_log ORDER BY created_at ASC")
+            cur.execute(
+                f"SELECT {cols} FROM request_log ORDER BY created_at DESC LIMIT %s",
+                (limit,),
+            )
             rows = cur.fetchall()
-    return [_row_to_request(r) for r in rows]
+    return [_row_to_request(r) for r in reversed(rows)]
 
 
 def _row_to_ride(row: Dict[str, Any]) -> Dict[str, Any]:
@@ -265,7 +276,7 @@ def _row_to_access(row: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _row_to_request(row: Dict[str, Any]) -> Dict[str, Any]:
-    return {
+    d = {
         "id": row["id"],
         "user_key": row["user_key"],
         "user_name": row["user_name"],
@@ -277,7 +288,8 @@ def _row_to_request(row: Dict[str, Any]) -> Dict[str, Any]:
         "dest_addr": row["dest_addr"],
         "success": bool(row["success"]),
         "status": row["status"],
-        "log_text": row["log_text"],
+        "log_text": row.get("log_text", ""),
         "created_at": float(row["created_at"]),
         "finished_at": float(row["finished_at"]) if row["finished_at"] is not None else None,
     }
+    return d

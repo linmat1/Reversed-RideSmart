@@ -95,46 +95,55 @@ function DeveloperPanel() {
     return () => { cancelled = true; };
   }, [API_BASE]);
 
-  // SSE for live updates (when this tab hits the same instance that got the write)
+  // SSE for live updates with automatic reconnection
   useEffect(() => {
-    const es = new EventSource(`${API_BASE}/api/developer/stream`);
-    eventSourceRef.current = es;
+    let cancelled = false;
+    let reconnectTimer = null;
 
-    es.onopen = () => {
-      setConnected(true);
-      setError(null);
-    };
+    function connect() {
+      if (cancelled) return;
+      const es = new EventSource(`${API_BASE}/api/developer/stream`);
+      eventSourceRef.current = es;
 
-    es.onmessage = (evt) => {
-      try {
-        const payload = JSON.parse(evt.data);
-        if (payload?.type === 'snapshot' && payload?.data) {
-          const next = payload.data;
-          setSnapshot((prev) => mergeSnapshot(prev, next));
+      es.onopen = () => {
+        setConnected(true);
+        setError(null);
+      };
+
+      es.onmessage = (evt) => {
+        try {
+          const payload = JSON.parse(evt.data);
+          if (payload?.type === 'snapshot' && payload?.data) {
+            setSnapshot((prev) => mergeSnapshot(prev, payload.data));
+          }
+        } catch {
+          // ignore
         }
-      } catch {
-        // ignore
-      }
-    };
+      };
 
-    es.onerror = () => {
-      setConnected(false);
-      try {
-        es.close();
-      } catch {}
-    };
+      es.onerror = () => {
+        setConnected(false);
+        try { es.close(); } catch {}
+        eventSourceRef.current = null;
+        if (!cancelled) {
+          reconnectTimer = setTimeout(connect, 3000);
+        }
+      };
+    }
+
+    connect();
 
     return () => {
+      cancelled = true;
+      if (reconnectTimer) clearTimeout(reconnectTimer);
       if (eventSourceRef.current) {
-        try {
-          eventSourceRef.current.close();
-        } catch {}
+        try { eventSourceRef.current.close(); } catch {}
         eventSourceRef.current = null;
       }
     };
   }, [API_BASE]);
 
-  // Poll snapshot every 5s so all tabs/incognito see same data (backend reads from DB when Postgres is set)
+  // Poll snapshot as a safety net (serves from memory so cheap on the backend)
   useEffect(() => {
     const fetchSnapshot = async () => {
       try {
@@ -148,9 +157,9 @@ function DeveloperPanel() {
       }
     };
     fetchSnapshot();
-    const interval = setInterval(fetchSnapshot, 5000);
+    const interval = setInterval(fetchSnapshot, connected ? 30000 : 10000);
     return () => clearInterval(interval);
-  }, [API_BASE]);
+  }, [API_BASE, connected]);
 
   const cancelRide = async (userKey, rideId) => {
     const key = `${userKey}-${rideId}`;
@@ -196,9 +205,6 @@ function DeveloperPanel() {
       <div className="developer-panel">
         <div className="developer-panel-header">
           <h1>Developer</h1>
-          <span className={`developer-panel-live ${connected ? 'connected' : ''}`}>
-            {connected ? 'live' : 'reconnecting…'}
-          </span>
           {storageInfo && (
             <span className="developer-panel-storage" title={storageInfo.note || ''}>
               Storage: {storageInfo.storage === 'postgres' ? 'Postgres (persists)' : `SQLite${storageInfo.path ? ` — not persisting on serverless` : ''}`}

@@ -589,11 +589,15 @@ def run_lyft_orchestrator():
             request_entry_id = None
 
         log_lines = []
+        _last_db_flush = [0.0]
+        _LOG_FLUSH_INTERVAL = 3.0
 
         def log_callback(message):
             """Callback function to send logs to the queue and accumulate for request log."""
             log_lines.append(message)
-            if request_entry_id:
+            now = time.time()
+            if request_entry_id and now - _last_db_flush[0] >= _LOG_FLUSH_INTERVAL:
+                _last_db_flush[0] = now
                 try:
                     developer_logs.update_request_entry(request_entry_id, log_text="\n".join(log_lines))
                 except Exception:
