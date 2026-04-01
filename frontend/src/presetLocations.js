@@ -23,6 +23,7 @@ const PRESET_LOCATIONS = [
   { name: "Bookstore",           lat: 41.78966183926045,  lng: -87.60149498145064, address: "970 E 58th St, Chicago, IL 60637 ッ" },
   { name: "Booth",               lat: 41.78930581173118,  lng: -87.59613743124996, address: "5807 S Woodlawn Ave, Chicago, IL 60637 ッ" },
   { name: "Garfield (Red Line)", lat: 41.794603881293966, lng: -87.63111730088698, address: "220 W. Garfield Blvd., Chicago, IL 60609 ッ" },
+  { name: "Zeta",               lat: 41.797086000127834, lng: -87.59645997666371, address: "5431 S Woodlawn Ave, Chicago, IL 60615 ッ" },
 ];
 
 export default PRESET_LOCATIONS;
