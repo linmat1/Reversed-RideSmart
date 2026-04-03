@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './LyftBooker.css';
 import MapSelector from './MapSelector';
+import GoogleMapSelector from './GoogleMapSelector';
 import { getApiBase } from './config';
 import PRESET_LOCATIONS from './presetLocations';
+
+const MapComponent = process.env.REACT_APP_MAP_PROVIDER !== 'leaflet' ? GoogleMapSelector : MapSelector;
 
 function LyftBooker({ onBack }) {
   const API_BASE = getApiBase();
@@ -389,7 +392,7 @@ function LyftBooker({ onBack }) {
       {!running && !result && !log.length && (
         <div className="lyft-setup">
           <div className="setup-section">
-            <label>👤 Original Person (who wants the lyft sent to):</label>
+            <label>Original Person (who wants the lyft sent to):</label>
             <select 
               value={originalUser} 
               onChange={(e) => setOriginalUser(e.target.value)}
@@ -471,7 +474,7 @@ function LyftBooker({ onBack }) {
             )}
           </div>
           <div className="setup-section setup-section-map">
-            <MapSelector
+            <MapComponent
               origin={mapOrigin}
               destination={mapDestination}
               onOriginSelect={(coords) => {

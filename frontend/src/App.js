@@ -3,12 +3,18 @@ import { Routes, Route, Link, useSearchParams } from 'react-router-dom';
 import './App.css';
 import MapSelector from './MapSelector';
 import RouteMap from './RouteMap';
+import GoogleMapSelector from './GoogleMapSelector';
+import GoogleRouteMap from './GoogleRouteMap';
 import LyftBooker from './LyftBooker';
 import MaintenancePage from './MaintenancePage';
 import BookingStatusPanel from './BookingStatusPanel';
 import DeveloperPanel from './DeveloperPanel';
 import InfoPage from './InfoPage';
 import { getApiBase, isApiMissing } from './config';
+
+const useGoogleMaps = process.env.REACT_APP_MAP_PROVIDER !== 'leaflet';
+const MapComponent = useGoogleMaps ? GoogleMapSelector : MapSelector;
+const RouteMapComponent = useGoogleMaps ? GoogleRouteMap : RouteMap;
 
 function App() {
   const API_BASE = getApiBase();
@@ -597,7 +603,7 @@ function App() {
                         </button>
                       </div>
                     </div>
-                    <MapSelector
+                    <MapComponent
                       origin={mapOrigin}
                       destination={mapDestination}
                       onOriginSelect={(coords) => {
@@ -753,9 +759,9 @@ function App() {
                 <p>Loading route...</p>
               </div>
             )}
-            <RouteMap 
-              routeData={routeData} 
-              bookingData={bookedRide?.bookingResponse} 
+            <RouteMapComponent
+              routeData={routeData}
+              bookingData={bookedRide?.bookingResponse}
             />
             
             <div className="cancel-section">
