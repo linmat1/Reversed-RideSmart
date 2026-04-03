@@ -116,8 +116,8 @@ function GoogleMapSelector({ origin, destination, onOriginSelect, onDestinationS
           fullscreenControl: false,
           tilt: 0,
           gestureHandling: 'greedy',
-          mapTypeId: 'satellite',
-          mapTypeControlOptions: { mapTypeIds: ['satellite', 'roadmap'] },
+          mapTypeId: 'hybrid',
+          mapTypeControlOptions: { mapTypeIds: ['hybrid', 'roadmap'] },
           styles: [
             { featureType: 'poi', stylers: [{ visibility: 'off' }] },
             { featureType: 'transit', stylers: [{ visibility: 'off' }] },

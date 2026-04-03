@@ -173,8 +173,8 @@ function GoogleRouteMap({ routeData, bookingData }) {
           tilt: 0,
           gestureHandling: 'greedy',
           clickableIcons: false,
-          mapTypeId: 'satellite',
-          mapTypeControlOptions: { mapTypeIds: ['satellite', 'roadmap'] },
+          mapTypeId: 'hybrid',
+          mapTypeControlOptions: { mapTypeIds: ['hybrid', 'roadmap'] },
           styles: [
             { featureType: 'poi', stylers: [{ visibility: 'off' }] },
             { featureType: 'transit', stylers: [{ visibility: 'off' }] },
