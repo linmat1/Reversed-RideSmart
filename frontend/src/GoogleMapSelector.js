@@ -87,6 +87,17 @@ function GoogleMapSelector({ origin, destination, onOriginSelect, onDestinationS
 
   const cursor = selectMode === 'origin' || selectMode === 'destination' ? 'crosshair' : 'grab';
 
+  const makePinIcon = (fill, stroke) => ({
+    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="25" height="41"><path fill="${fill}" stroke="${stroke}" stroke-width="1.5" d="M12.5 0C5.6 0 0 5.6 0 12.5c0 9.9 12.5 28.5 12.5 28.5S25 22.4 25 12.5C25 5.6 19.4 0 12.5 0z"/><circle cx="12.5" cy="12.5" r="5.5" fill="white" opacity="0.85"/></svg>`
+    )}`,
+    scaledSize: new window.google.maps.Size(25, 41),
+    anchor: new window.google.maps.Point(12, 41),
+  });
+
+  const originIcon = makePinIcon('#22c55e', '#15803d');
+  const destIcon   = makePinIcon('#ef4444', '#b91c1c');
+
   return (
     <div className="map-selector-container">
       <GoogleMap
@@ -100,7 +111,13 @@ function GoogleMapSelector({ origin, destination, onOriginSelect, onDestinationS
           cursor,
           disableDefaultUI: false,
           zoomControl: true,
+          streetViewControl: false,
+          rotateControl: false,
+          fullscreenControl: false,
+          tilt: 0,
+          gestureHandling: 'greedy',
           mapTypeId: 'satellite',
+          mapTypeControlOptions: { mapTypeIds: ['satellite', 'roadmap'] },
           styles: [
             { featureType: 'poi', stylers: [{ visibility: 'off' }] },
             { featureType: 'transit', stylers: [{ visibility: 'off' }] },
@@ -114,14 +131,14 @@ function GoogleMapSelector({ origin, destination, onOriginSelect, onDestinationS
         {origin && (
           <Marker
             position={{ lat: origin.lat, lng: origin.lng }}
-            label={{ text: 'A', color: '#fff', fontWeight: 'bold' }}
+            icon={originIcon}
             title="Origin"
           />
         )}
         {destination && (
           <Marker
             position={{ lat: destination.lat, lng: destination.lng }}
-            label={{ text: 'B', color: '#fff', fontWeight: 'bold' }}
+            icon={destIcon}
             title="Destination"
           />
         )}

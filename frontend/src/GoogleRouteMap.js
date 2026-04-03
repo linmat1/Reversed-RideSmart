@@ -119,6 +119,18 @@ function GoogleRouteMap({ routeData, bookingData }) {
     return <div className="route-map-error"><p>No route data available</p></div>;
   }
 
+  const makePinIcon = (fill, stroke) => ({
+    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="25" height="41"><path fill="${fill}" stroke="${stroke}" stroke-width="1.5" d="M12.5 0C5.6 0 0 5.6 0 12.5c0 9.9 12.5 28.5 12.5 28.5S25 22.4 25 12.5C25 5.6 19.4 0 12.5 0z"/><circle cx="12.5" cy="12.5" r="5.5" fill="white" opacity="0.85"/></svg>`
+    )}`,
+    scaledSize: new window.google.maps.Size(25, 41),
+    anchor: new window.google.maps.Point(12, 41),
+  });
+
+  const pickupIcon = makePinIcon('#22c55e', '#15803d');
+  const dropoffIcon = makePinIcon('#ef4444', '#b91c1c');
+  const stopIcon    = makePinIcon('#f97316', '#c2410c');
+
   return (
     <div className="route-map-container">
       <h3>🗺️ Your Trip</h3>
@@ -155,8 +167,14 @@ function GoogleRouteMap({ routeData, bookingData }) {
         options={{
           disableDefaultUI: false,
           zoomControl: true,
+          streetViewControl: false,
+          rotateControl: false,
+          fullscreenControl: false,
+          tilt: 0,
+          gestureHandling: 'greedy',
           clickableIcons: false,
           mapTypeId: 'satellite',
+          mapTypeControlOptions: { mapTypeIds: ['satellite', 'roadmap'] },
           styles: [
             { featureType: 'poi', stylers: [{ visibility: 'off' }] },
             { featureType: 'transit', stylers: [{ visibility: 'off' }] },
@@ -180,11 +198,7 @@ function GoogleRouteMap({ routeData, bookingData }) {
           <Marker
             key={`stop-${i}`}
             position={stop.position}
-            label={{
-              text: stop.isPickup ? 'A' : stop.isDropoff ? 'B' : String(i + 1),
-              color: '#fff',
-              fontWeight: 'bold',
-            }}
+            icon={stop.isPickup ? pickupIcon : stop.isDropoff ? dropoffIcon : stopIcon}
             title={stop.isPickup ? 'Pickup' : stop.isDropoff ? 'Dropoff' : 'Stop'}
           />
         ))}
@@ -194,14 +208,14 @@ function GoogleRouteMap({ routeData, bookingData }) {
             {bookingLocations.pickup && (
               <Marker
                 position={bookingLocations.pickup}
-                label={{ text: 'A', color: '#fff', fontWeight: 'bold' }}
+                icon={pickupIcon}
                 title={`Pickup: ${bookingLocations.pickupName}`}
               />
             )}
             {bookingLocations.dropoff && (
               <Marker
                 position={bookingLocations.dropoff}
-                label={{ text: 'B', color: '#fff', fontWeight: 'bold' }}
+                icon={dropoffIcon}
                 title={`Dropoff: ${bookingLocations.dropoffName}`}
               />
             )}
@@ -212,11 +226,11 @@ function GoogleRouteMap({ routeData, bookingData }) {
       <div className="route-map-legend">
         <div className="legend-item">
           <span className="legend-marker pickup"></span>
-          <span>Pickup (A)</span>
+          <span>Pickup</span>
         </div>
         <div className="legend-item">
           <span className="legend-marker dropoff"></span>
-          <span>Dropoff (B)</span>
+          <span>Dropoff</span>
         </div>
         {hasRouteData && (
           <div className="legend-item">
