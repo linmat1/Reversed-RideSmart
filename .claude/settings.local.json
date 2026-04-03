@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "WebSearch",
+      "Bash(git add:*)",
+      "Bash(git commit -m 'Fix App Runner: move pip install to run pre-run phase:*)",
+      "Bash(git push:*)"
     ]
   }
 }
