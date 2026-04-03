@@ -2,11 +2,12 @@ version: 1.0
 runtime: python311
 build:
   commands:
-    pre-build:
-      - pip install --upgrade pip setuptools wheel
     build:
-      - pip install -r requirements.txt --no-cache-dir
+      - echo "Source ready"
 run:
+  pre-run:
+    - pip3 install --upgrade pip
+    - pip3 install -r requirements.txt --no-cache-dir
   command: gunicorn -w 4 -b 0.0.0.0:8080 api:app
   network:
     port: 8080
