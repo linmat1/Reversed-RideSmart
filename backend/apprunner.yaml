@@ -14,3 +14,138 @@ run:
   env:
     - name: PORT
       value: "8080"
+  secrets:
+    # App config
+    - name: REACT_APP_MAINTENANCE_MODE
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:REACT_APP_MAINTENANCE_MODE::"
+    - name: MAP_PROVIDER
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:MAP_PROVIDER::"
+    - name: GOOGLE_MAPS_API_KEY
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:GOOGLE_MAPS_API_KEY::"
+    - name: DEFAULT_USER
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:DEFAULT_USER::"
+    # Postgres
+    - name: POSTGRES_URL
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:POSTGRES_URL::"
+    - name: POSTGRES_URL_NON_POOLING
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:POSTGRES_URL_NON_POOLING::"
+    - name: POSTGRES_PRISMA_URL
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:POSTGRES_PRISMA_URL::"
+    - name: POSTGRES_HOST
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:POSTGRES_HOST::"
+    - name: POSTGRES_USER
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:POSTGRES_USER::"
+    - name: POSTGRES_PASSWORD
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:POSTGRES_PASSWORD::"
+    - name: POSTGRES_DATABASE
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:POSTGRES_DATABASE::"
+    # Supabase
+    - name: NEXT_PUBLIC_SUPABASE_URL
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:NEXT_PUBLIC_SUPABASE_URL::"
+    - name: NEXT_PUBLIC_SUPABASE_ANON_KEY
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:NEXT_PUBLIC_SUPABASE_ANON_KEY::"
+    - name: NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY::"
+    - name: SUPABASE_URL
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:SUPABASE_URL::"
+    - name: SUPABASE_ANON_KEY
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:SUPABASE_ANON_KEY::"
+    - name: SUPABASE_SERVICE_ROLE_KEY
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:SUPABASE_SERVICE_ROLE_KEY::"
+    - name: SUPABASE_JWT_SECRET
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:SUPABASE_JWT_SECRET::"
+    - name: SUPABASE_SECRET_KEY
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:SUPABASE_SECRET_KEY::"
+    - name: SUPABASE_PUBLISHABLE_KEY
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:SUPABASE_PUBLISHABLE_KEY::"
+    # User 1: Matthew
+    - name: USER_MATTHEW_NAME
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_MATTHEW_NAME::"
+    - name: USER_MATTHEW_AUTH_TOKEN
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_MATTHEW_AUTH_TOKEN::"
+    - name: USER_MATTHEW_USER_ID
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_MATTHEW_USER_ID::"
+    # User 2: Tomas
+    - name: USER_TOMASLV_NAME
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_TOMASLV_NAME::"
+    - name: USER_TOMASLV_AUTH_TOKEN
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_TOMASLV_AUTH_TOKEN::"
+    - name: USER_TOMASLV_USER_ID
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_TOMASLV_USER_ID::"
+    # User 3: Joshua Cheung
+    - name: USER_JOSHUACHEUNG_NAME
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_JOSHUACHEUNG_NAME::"
+    - name: USER_JOSHUACHEUNG_AUTH_TOKEN
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_JOSHUACHEUNG_AUTH_TOKEN::"
+    - name: USER_JOSHUACHEUNG_USER_ID
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_JOSHUACHEUNG_USER_ID::"
+    # User 4: Charles Marsden
+    - name: USER_CHARLESMARSDEN_NAME
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_CHARLESMARSDEN_NAME::"
+    - name: USER_CHARLESMARSDEN_AUTH_TOKEN
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_CHARLESMARSDEN_AUTH_TOKEN::"
+    - name: USER_CHARLESMARSDEN_USER_ID
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_CHARLESMARSDEN_USER_ID::"
+    # User 6: Atul
+    - name: USER_ATUL_NAME
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_ATUL_NAME::"
+    - name: USER_ATUL_AUTH_TOKEN
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_ATUL_AUTH_TOKEN::"
+    - name: USER_ATUL_USER_ID
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_ATUL_USER_ID::"
+    # User 7: Maman
+    - name: USER_MAMAN_NAME
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_MAMAN_NAME::"
+    - name: USER_MAMAN_AUTH_TOKEN
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_MAMAN_AUTH_TOKEN::"
+    - name: USER_MAMAN_USER_ID
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_MAMAN_USER_ID::"
+    # User 8: Rahil
+    - name: USER_RAHIL_NAME
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_RAHIL_NAME::"
+    - name: USER_RAHIL_AUTH_TOKEN
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_RAHIL_AUTH_TOKEN::"
+    - name: USER_RAHIL_USER_ID
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_RAHIL_USER_ID::"
+    # User 9: Tim
+    - name: USER_TIM_NAME
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_TIM_NAME::"
+    - name: USER_TIM_AUTH_TOKEN
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_TIM_AUTH_TOKEN::"
+    - name: USER_TIM_USER_ID
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_TIM_USER_ID::"
+    # User 10: Keelyn
+    - name: USER_KEELYN_NAME
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_KEELYN_NAME::"
+    - name: USER_KEELYN_AUTH_TOKEN
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_KEELYN_AUTH_TOKEN::"
+    - name: USER_KEELYN_USER_ID
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_KEELYN_USER_ID::"
+    # User 11: Eric
+    - name: USER_ERIC_NAME
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_ERIC_NAME::"
+    - name: USER_ERIC_AUTH_TOKEN
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_ERIC_AUTH_TOKEN::"
+    - name: USER_ERIC_USER_ID
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_ERIC_USER_ID::"
+    # User 12: Valerie
+    - name: USER_VALERIE_NAME
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_VALERIE_NAME::"
+    - name: USER_VALERIE_AUTH_TOKEN
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_VALERIE_AUTH_TOKEN::"
+    - name: USER_VALERIE_USER_ID
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_VALERIE_USER_ID::"
+    # User 13: Joshua S
+    - name: USER_JOSHUAS_NAME
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_JOSHUAS_NAME::"
+    - name: USER_JOSHUAS_AUTH_TOKEN
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_JOSHUAS_AUTH_TOKEN::"
+    - name: USER_JOSHUAS_USER_ID
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_JOSHUAS_USER_ID::"
+    # User 14: Nina
+    - name: USER_NINA_NAME
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_NINA_NAME::"
+    - name: USER_NINA_AUTH_TOKEN
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_NINA_AUTH_TOKEN::"
+    - name: USER_NINA_USER_ID
+      value-from: "arn:aws:secretsmanager:us-east-1:964993352993:secret:RideSmarter-Backend-Q4w5Y1:USER_NINA_USER_ID::"
