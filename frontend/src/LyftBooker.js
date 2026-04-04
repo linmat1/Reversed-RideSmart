@@ -55,6 +55,7 @@ function LyftBooker({ onBack }) {
   useEffect(() => {
     if (!mapOrigin) { setOriginAddr(null); return; }
     if (skipOriginGeocode.current) { skipOriginGeocode.current = false; return; }
+    setOriginAddr(null);  // Clear stale address from previous selection
     let cancelled = false;
     fetchAddress(mapOrigin.lat, mapOrigin.lng).then(addr => { if (!cancelled) setOriginAddr(addr); });
     return () => { cancelled = true; };
@@ -64,6 +65,7 @@ function LyftBooker({ onBack }) {
   useEffect(() => {
     if (!mapDestination) { setDestAddr(null); return; }
     if (skipDestGeocode.current) { skipDestGeocode.current = false; return; }
+    setDestAddr(null);  // Clear stale address from previous selection
     let cancelled = false;
     fetchAddress(mapDestination.lat, mapDestination.lng).then(addr => { if (!cancelled) setDestAddr(addr); });
     return () => { cancelled = true; };
