@@ -97,38 +97,49 @@ function DeveloperPanel() {
 
   // SSE for live updates (when this tab hits the same instance that got the write)
   useEffect(() => {
-    const es = new EventSource(`${API_BASE}/api/developer/stream`);
-    eventSourceRef.current = es;
+    let cancelled = false;
+    let reconnectTimer = null;
 
-    es.onopen = () => {
-      setConnected(true);
-      setError(null);
-    };
+    function connect() {
+      if (cancelled) return;
+      const es = new EventSource(`${API_BASE}/api/developer/stream`);
+      eventSourceRef.current = es;
 
-    es.onmessage = (evt) => {
-      try {
-        const payload = JSON.parse(evt.data);
-        if (payload?.type === 'snapshot' && payload?.data) {
-          const next = payload.data;
-          setSnapshot((prev) => mergeSnapshot(prev, next));
+      es.onopen = () => {
+        setConnected(true);
+        setError(null);
+      };
+
+      es.onmessage = (evt) => {
+        try {
+          const payload = JSON.parse(evt.data);
+          if (payload?.type === 'snapshot' && payload?.data) {
+            const next = payload.data;
+            setSnapshot((prev) => mergeSnapshot(prev, next));
+          }
+        } catch {
+          // ignore
         }
-      } catch {
-        // ignore
-      }
-    };
+      };
 
-    es.onerror = () => {
-      setConnected(false);
-      try {
-        es.close();
-      } catch {}
-    };
+      es.onerror = () => {
+        setConnected(false);
+        try { es.close(); } catch {}
+        eventSourceRef.current = null;
+        // Auto-reconnect after 3s
+        if (!cancelled) {
+          reconnectTimer = setTimeout(connect, 3000);
+        }
+      };
+    }
+
+    connect();
 
     return () => {
+      cancelled = true;
+      if (reconnectTimer) clearTimeout(reconnectTimer);
       if (eventSourceRef.current) {
-        try {
-          eventSourceRef.current.close();
-        } catch {}
+        try { eventSourceRef.current.close(); } catch {}
         eventSourceRef.current = null;
       }
     };

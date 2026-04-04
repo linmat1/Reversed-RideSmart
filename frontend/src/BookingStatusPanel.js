@@ -57,50 +57,59 @@ function BookingStatusPanel() {
     fetchSnapshot();
 
     // Prefer SSE for real-time sync across all clients.
-    try {
-      const es = new EventSource(`${API_BASE}/api/status/stream`);
-      eventSourceRef.current = es;
+    let cancelled = false;
+    let reconnectTimer = null;
 
-      es.onopen = () => {
-        setConnected(true);
-        setError(null);
-        stopPolling();
-      };
+    function connectSSE() {
+      if (cancelled) return;
+      try {
+        const es = new EventSource(`${API_BASE}/api/status/stream`);
+        eventSourceRef.current = es;
 
-      es.onmessage = (evt) => {
-        try {
-          const payload = JSON.parse(evt.data);
-          if (payload?.type === 'snapshot') {
-            setSnapshot(payload.data);
+        es.onopen = () => {
+          setConnected(true);
+          setError(null);
+          stopPolling();
+        };
+
+        es.onmessage = (evt) => {
+          try {
+            const payload = JSON.parse(evt.data);
+            if (payload?.type === 'snapshot') {
+              setSnapshot(payload.data);
+            }
+          } catch {
+            // ignore parse errors
           }
-        } catch {
-          // ignore parse errors
-        }
-      };
+        };
 
-      es.onerror = () => {
+        es.onerror = () => {
+          setConnected(false);
+          startPolling();
+          try { es.close(); } catch {}
+          eventSourceRef.current = null;
+          // Auto-reconnect SSE after 3s
+          if (!cancelled) {
+            reconnectTimer = setTimeout(connectSSE, 3000);
+          }
+        };
+      } catch (e) {
         setConnected(false);
-        // Fall back to polling. Mobile networks can be flaky; polling keeps UI in sync.
         startPolling();
-        try {
-          es.close();
-        } catch {
-          // ignore
+        if (!cancelled) {
+          reconnectTimer = setTimeout(connectSSE, 3000);
         }
-      };
-    } catch (e) {
-      setConnected(false);
-      startPolling();
+      }
     }
 
+    connectSSE();
+
     return () => {
+      cancelled = true;
+      if (reconnectTimer) clearTimeout(reconnectTimer);
       stopPolling();
       if (eventSourceRef.current) {
-        try {
-          eventSourceRef.current.close();
-        } catch {
-          // ignore
-        }
+        try { eventSourceRef.current.close(); } catch {}
         eventSourceRef.current = null;
       }
     };
