@@ -220,7 +220,10 @@ frontend/
           <h2 className="info-section-title">Onboarding: Adding a New Account</h2>
 
           <div className="info-prose">
-            <h4>Step 1: Install Proxyman</h4>
+            <p style={{ color: '#ef4444', fontWeight: 'bold', marginBottom: '1rem' }}>
+              Onboarding is temporarily unavailable — Via recently changed their authentication flow, so the steps below may not work as described.
+            </p>
+            {/* <h4>Step 1: Install Proxyman</h4>
             <p>Download <strong>Proxyman</strong> from the App Store on your iPhone and complete the initial setup, including:</p>
             <ul>
               <li>Downloading and installing the Proxyman certificate</li>
@@ -243,6 +246,7 @@ frontend/
             </ol>
             <p>Send that to me (+447754666843 on WhatsApp) to add the account. You can now turn off the VPN in Proxyman.</p>
             <p>Once you're confirmed onboarded, you can uninstall Proxyman entirely — it's only needed for the initial setup.</p>
+            */}
           </div>
         </section>
       </main>
