@@ -406,6 +406,7 @@ function App() {
               <div className="header-title">
                 <h1>RideSmarter</h1>
               </div>
+              <Link to="/developer" className="developer-link">Developer</Link>
             </div>
           </header>
 
@@ -433,6 +434,7 @@ function App() {
                 🚗 Lyft Booker Mode
               </button>
             </div>
+            <Link to="/developer" className="developer-link">Developer</Link>
           </div>
         </header>
 

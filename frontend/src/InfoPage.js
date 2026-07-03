@@ -4,6 +4,7 @@ import './InfoPage.css';
 
 function InfoPage({ appMode, scrollToSection }) {
   const navigate = useNavigate();
+  const overviewRef = useRef(null);
   const serviceRef = useRef(null);
   const readmeRef = useRef(null);
   const onboardingRef = useRef(null);
@@ -34,12 +35,28 @@ function InfoPage({ appMode, scrollToSection }) {
       </header>
 
       <nav className="info-nav">
+        <button className="info-nav-item" onClick={() => scrollTo(overviewRef)}>Overview</button>
         <button className="info-nav-item" onClick={() => scrollTo(serviceRef)}>Service Info</button>
         <button className="info-nav-item" onClick={() => scrollTo(readmeRef)}>README</button>
         <button className="info-nav-item" onClick={() => scrollTo(onboardingRef)}>Onboarding</button>
       </nav>
 
       <main className="info-page-content">
+        {/* Overview */}
+        <section className="info-section" ref={overviewRef}>
+          <h2 className="info-section-title">Overview</h2>
+          <div className="info-prose">
+            <p><strong>RideSmarter gets UChicago students a free, private Lyft on demand — in about a minute.</strong></p>
+            <ul>
+              <li><strong>Shared vans, free upgrades.</strong> RideSmart shuttles are shared rides. The moment a van fills up, the service automatically bumps the next rider to a free Lyft instead.</li>
+              <li><strong>On demand, not by luck.</strong> RideSmarter triggers that upgrade every time, turning a crowded shuttle into a private Lyft.</li>
+              <li><strong>Fully automated.</strong> It fills the van with a fleet of stand-in accounts, grabs the Lyft the instant it's offered, books it under your name, and cancels every stand-in.</li>
+              <li><strong>Reverse-engineered from scratch.</strong> RideSmart has no public API — so a man-in-the-middle proxy on an iPhone captured the app's encrypted network traffic, which was then decrypted and analyzed to reveal exactly how it searches, books, and cancels rides.</li>
+              <li><strong>Effortless.</strong> You just pick your pickup and drop-off — RideSmarter handles the rest, start to finish.</li>
+            </ul>
+          </div>
+        </section>
+
         {/* Service Info */}
         <section className="info-section" ref={serviceRef}>
           <h2 className="info-section-title">Service Info</h2>
